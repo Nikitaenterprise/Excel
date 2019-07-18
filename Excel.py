@@ -50,7 +50,6 @@ class TKE:
         self.excelBook = ExcelBook(wbName)
         self.header = excelBook.ws['A1':'BU9']
 
-
     def restructurization(self):
         for cells in excelBook.ws['H12:H22']:
             for cell in cells:
@@ -76,6 +75,20 @@ def restructurization(activeSheet):
             if cell.value != None:
                 updateCell(cell.row, activeSheet)
     return
+ 
+def updateFormula(activeSheet, inertedColumn):
+    for cells in activeSheet['B12':'L12']:
+        for cell in cells:
+            token = openpyxl.formula.Tokenizer(str(cell.value))
+            #print(cell.value, token.items)
+            for element in token.items:
+                if element == 'OPERAND RANGE':
+                    token.value
+                print(element)
+                
+
+    return
+
 
 # Opening workbook at sheet 1
 wb = openpyxl.load_workbook('./first.xlsx')
@@ -90,18 +103,24 @@ totalRowNumber = activeSheet.max_row
 wb2 = openpyxl.load_workbook('./second.xlsx')
 activeSheet2 = wb2[wb2.sheetnames[0]]
 
-activeSheet.insert_cols(openpyxl.utils.column_index_from_string('H'))
+
+updateFormula(activeSheet, 1)
+#activeSheet.insert_cols(openpyxl.utils.column_index_from_string('H'), fill_formulae=False)
 #for cell in activeSheet2['I']:
 #   activeSheet.cell(row = cell.row, column = cell.column-1, value = cell.value)
 
-for cell in activeSheet['J']:
-    oldColumn = openpyxl.utils.get_column_letter(cell.column)
-    newColumn = openpyxl.utils.get_column_letter(cell.column + 1)
-    newAdress = str(newColumn) + str(cell.row)
+#activeSheet.move_range('J12:L22', rows=0, cols=1, translate=True)
+
+#for cell in activeSheet['J']:
+#    oldColumn = openpyxl.utils.get_column_letter(cell.column)
+#    newColumn = openpyxl.utils.get_column_letter(cell.column + 1)
+#    newAdress = str(newColumn) + str(cell.row)
     
-    print(oldColumn, str(cell.row), cell.value, newColumn, newAdress, activeSheet[str(oldColumn)+str(cell.row)].value)
-    
-    activeSheet[newAdress] = openpyxl.formula.translate.Translator(cell.value, origin=str(oldColumn)+str(cell.row)).translate_formula(newAdress)
-    print(oldColumn, str(cell.row), cell.value, newColumn, newAdress)
+    #print(oldColumn, str(cell.row), cell.value, newColumn, newAdress, activeSheet[str(oldColumn)+str(cell.row)].value)
+    # updateFormula(cell.value)
+    #activeSheet[newAdress] = openpyxl.formula.translate.Translator(cell.value, origin=str(oldColumn)+str(cell.row)).translate_formula(newAdress)
+    #print(oldColumn, str(cell.row), cell.value, newColumn, newAdress)
+
+
 wb.save('out.xlsx')
 wb.close()
