@@ -70,25 +70,56 @@ def updateCell(coord, activeSheet):
     return
 
 def restructurization(activeSheet):
-    for cellObj in activeSheet['F12':'F22']:
-        for cell in cellObj:
+    for cells in activeSheet['F12':'F22']:
+        for cell in cells:
             if cell.value != None:
                 updateCell(cell.row, activeSheet)
     return
  
-def updateFormula(activeSheet, inertedColumn):
-    for cells in activeSheet['B12':'L12']:
+def findColumnsWithFormulas(ws):
+    """Creates a list with coordinates of all cells wich
+    contains ranges (=SUM(A1:A3), =A1+B1, but not =RANDOM(1:100))
+    from upper cells in the search range (very usefull to find
+    under the header of the table because its often the place
+    where formulas are created and then broached to the bottom
+    of the table)
+
+    Keyword arguments:
+    ws -- active worksheet
+    
+    """
+    columnsWithFormulas = []
+    for cells in ws['B12':'L12']:
         for cell in cells:
             token = openpyxl.formula.Tokenizer(str(cell.value))
-            #print(cell.value, token.items)
             for element in token.items:
-                if element == 'OPERAND RANGE':
-                    token.value
-                print(element)
-                
+                if element.subtype == 'RANGE':
+                    columnsWithFormulas.append(cell.coordinate)
+    return columnsWithFormulas
 
+def checkRangeInFormulas(ws, range: str, columnsWithFormulas):
+    """Check a list with coordinates wich contains forulas with 
+    some kind of ranges for intersection with modified 
+    range after insertion of new column
+
+    Keyword arguments:
+    ws -- active worksheet
+    range -- string with modified range (should be 
+    up to right corner of table)
+    columnsWithFormulas -- list of all top (under the header) 
+    cells with formulas wich contains ranges
+
+    """
+    split = range.split(':')
+    minCoordinate = openpyxl.utils.coordinate_to_tuple(split[0])
+    maxCoordinate = openpyxl.utils.coordinate_to_tuple(split[1])
+    minColumn, maxColumn = minCoordinate[1], maxCoordinate[1]
+    for coordinate in columnsWithFormulas:
+        column = openpyxl.utils.coordinate_to_tuple(coordinate)
+        if column[1] < minColumn:
+            print(column, minColumn)
+            print('fff')
     return
-
 
 # Opening workbook at sheet 1
 wb = openpyxl.load_workbook('./first.xlsx')
@@ -104,12 +135,13 @@ wb2 = openpyxl.load_workbook('./second.xlsx')
 activeSheet2 = wb2[wb2.sheetnames[0]]
 
 
-updateFormula(activeSheet, 1)
+
 #activeSheet.insert_cols(openpyxl.utils.column_index_from_string('H'), fill_formulae=False)
 #for cell in activeSheet2['I']:
 #   activeSheet.cell(row = cell.row, column = cell.column-1, value = cell.value)
-
-#activeSheet.move_range('J12:L22', rows=0, cols=1, translate=True)
+columns = findColumnsWithFormulas(activeSheet)
+activeSheet.move_range('J12:L22', rows=0, cols=1, translate=True)
+checkRangeInFormulas(activeSheet, 'J12:L22', columns)
 
 #for cell in activeSheet['J']:
 #    oldColumn = openpyxl.utils.get_column_letter(cell.column)
