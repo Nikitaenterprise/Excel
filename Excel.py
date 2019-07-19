@@ -3,8 +3,8 @@ import openpyxl
 
 class ExcelBook:
 
-    def __init__(self, name: str):
-        self.wb = openpyxl.load_workbook(name)
+    def __init__(self, name: str, data_only=False):
+        self.wb = openpyxl.load_workbook(name, data_only=data_only)
         self.ws = wb[wb.sheetnames[0]]
 
     def getMaxRowForSheet(self, ws):
@@ -48,18 +48,68 @@ class ExcelBook:
 class TKE:
 
     def __init__(self, wbName: str):
-        self.excelBook = ExcelBook(wbName)
+        self.wb = ExcelBook(wbName, data_only=True)
         self.header = excelBook.ws['A1':'BU9']
 
+    def compareNumberOfCompanies(self):
+        # TODO
+        return
+
+    def fillCellsWithString(self, cell, str: str):
+        cell.value = str
+        return
+
+    def getListOfCellsWithCriteria(self, range, criteria):
+        list = []
+        for cells in wb.ws[range]:
+            for cell in cells:
+                if cell.value == criteria:
+                    list.append(cell)
+        return list
+
+    def setThereIsAPlan(self):
+        list1 = getListOfCellsWithCriteria('I', 0)             # Check the range
+        list2 = getListOfCellsWithCriteria('J', 0)             # Check the range
+
+        #for cell1, cell2 in list1, list2:
+            #if cell1 == cell2:
+                # TODO
+                # Set string into other sell
+                
+        return
+
     def restructurization(self):
+        """Set 1 to those companies who have a restructurization contract
+
+        """
         for cells in excelBook.ws['H12:H22']:
             for cell in cells:
                 if cell.value != None:
                     excelBook.updateCell(cell.row, excelBook.ws)
         return
 
+    def copyColumnFromLastDay(self, name: str):
+        """Opens ysterday workbook and copies one specific column
+        to current workbook shifting other columns
+
+        Keyword arguments:
+        name -- name of yesterday workbook
+        """
+        self.wbFromYesterday = ExcelBook(name, data_only=True)
+        compareNumberOfCompanies()
+        activeSheet.move_range('K12:N22', rows=0, cols=1)           #Check the right range!!!!!!!!!
+        for cell in wbFromYesterday.ws['I']:
+            wb.ws.cell(row = cell.row, column = cell.column-1, value = cell.value)
+
+        #fillCellsWithString('договир э')
+        return
+
     def start(self):
         restructurization()
+        copyColumnFromLastDay('./second.xlsx')
+        setThereIsAPlan()
+        
+
 
 class FormulaTransformer:
 
