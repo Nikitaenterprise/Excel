@@ -1,3 +1,6 @@
+import openpyxl
+
+
 class FormulaTransformer:
 
     def __init__(self, ws):
@@ -13,17 +16,16 @@ class FormulaTransformer:
 
         Keyword arguments:
         ws -- active worksheet
-    
         """
         columnsWithFormulas = []
-        for cells in ws['B12':'L12']:
+        for cells in ws["B12":"L12"]:
             for cell in cells:
                 token = openpyxl.formula.Tokenizer(str(cell.value))
                 for element in token.items:
-                    if element.subtype == 'RANGE':
+                    if element.subtype == "RANGE":
                         columnsWithFormulas.append(cell.coordinate)
 
-        """Deleting repeats(multiple inclusions)"""
+        #Deleting repeats(multiple inclusions)
         columnsWithFormulasWithoutRepeat = []
         for i in columnsWithFormulas:
             if i not in columnsWithFormulasWithoutRepeat:
@@ -43,10 +45,9 @@ class FormulaTransformer:
         up to right corner of table)
         columnsWithFormulas -- list of all top (under the header) 
         cells with formulas wich contains ranges
-
         """
         columnsList = []
-        split = range.split(':')
+        split = range.split(":")
         minCoordinate = openpyxl.utils.coordinate_to_tuple(split[0])
         maxCoordinate = openpyxl.utils.coordinate_to_tuple(split[1])
         minColumn, maxColumn = minCoordinate[1], maxCoordinate[1]
@@ -65,39 +66,38 @@ class FormulaTransformer:
         ws -- active worksheet
         targetColumns -- sequence of columns that should be modified
         newColumnCoordinates -- integer that corresponds to number of inserted columns
-
         """
         for column in targetColumns:
-            print('targetColumns = ', targetColumns)
+            print("targetColumns = ", targetColumns)
             for cell in ws[column]:
-                print('beginning of cycle', cell.value)
+                print("beginning of cycle", cell.value)
                 token = openpyxl.formula.Tokenizer(str(cell.value))
                 if cell.value == None:
                     continue
-                newCellValue = str('=')
+                newCellValue = str("=")
                 for element in token.items:
-                    print('beginning if subsycle', 'element.value = ', element.value,
-                         'element.type = ', element.type, 'element.subtype = ', element.subtype)
-                    if element.subtype == 'RANGE':
+                    print("beginning if subsycle", "element.value = ", element.value,
+                         "element.type = ", element.type, "element.subtype = ", element.subtype)
+                    if element.subtype == "RANGE":
                         coord = openpyxl.utils.coordinate_to_tuple(element.value)
-                        print('coord = ', coord)
+                        print("coord = ", coord)
                         newColumn = coord[1] + newColumnCoordinate
-                        print('newColumn = ', newColumn)
+                        print("newColumn = ", newColumn)
                         newCoordinate = str(openpyxl.utils.get_column_letter(newColumn) + str(coord[0]))
                         newCellValue+=newCoordinate
                     else:
                         newCellValue+=element.value
-                    print('newCellValue = ', newCellValue)
-                    print('exit subloop')
+                    print("newCellValue = ", newCellValue)
+                    print("exit subloop")
                 cell.value = newCellValue
-                print('exit loop')
+                print("exit loop")
                 print(cell.value)
         return
 
      
 """
 # Opening workbook at sheet 1
-wb = openpyxl.load_workbook('./first.xlsx')
+wb = openpyxl.load_workbook("./first.xlsx")
 activeSheet = wb[wb.sheetnames[0]]
 
 # Set 1 in column AS
@@ -106,15 +106,15 @@ restructurization(activeSheet)
 totalRowNumber = activeSheet.max_row
 
 # Open second workbook at sheet 1
-wb2 = openpyxl.load_workbook('./second.xlsx')
+wb2 = openpyxl.load_workbook("./second.xlsx")
 activeSheet2 = wb2[wb2.sheetnames[0]]
 
 
 columns = findColumnsWithFormulas(activeSheet)
-activeSheet.move_range('K12:N22', rows=0, cols=1, translate=True)
-columnsList = checkRangeInFormulas(activeSheet, 'K12:N22', columns)
+activeSheet.move_range("K12:N22", rows=0, cols=1, translate=True)
+columnsList = checkRangeInFormulas(activeSheet, "K12:N22", columns)
 modifyFormulaInColumnFterInsertion(activeSheet, columnsList, 1)
 
-wb.save('out.xlsx')
+wb.save("out.xlsx")
 wb.close()
 """

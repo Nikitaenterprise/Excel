@@ -126,6 +126,8 @@ dmypy.json
 *.suo
 *.user
 *.sln.docstates
+*.xlsx
+*.xls
 
 # Build results
 [Dd]ebug/

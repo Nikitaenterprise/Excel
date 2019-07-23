@@ -22,7 +22,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Excel.py" />
+    <Compile Include="ExcelBook.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FormulaTransformer.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Header.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
