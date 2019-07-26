@@ -29,24 +29,49 @@ class TKE:
 
         #Opens ysterday workbook and copies one specific column to current 
         #workbook shifting other columns
-        fillColor = openpyxl.styles.PatternFill(start_color="cdffcd",
-                                                fill_type="solid"
-                                                ) #Set fill color green
-        fillBlue = openpyxl.styles.PatternFill(start_color="9acdff",
-                                                fill_type="solid"
-                                                ) #Set fill color blue
+        #fillColor = openpyxl.styles.PatternFill(start_color="cdffcd",
+        #                                        fill_type="solid"
+        #                                        ) #Set fill color green
+        #fillBlue = openpyxl.styles.PatternFill(start_color="9acdff",
+        #                                        fill_type="solid"
+        #                                        ) #Set fill color blue
 
-        font = openpyxl.styles.Font(name="Arial",sz=9)      # Set font
-        border = openpyxl.styles.Border(left=openpyxl.styles.Side(border_style="thin",
-                                        color='000000'),
-                                        right=openpyxl.styles.Side(border_style="thin",
-                                        color='000000'),
-                                        top=openpyxl.styles.Side(border_style="thin",
-                                        color='000000'),
-                                        bottom=openpyxl.styles.Side(border_style="thin",
-                                        color='000000')
-                                        )                       # Set border
+        #font = openpyxl.styles.Font(name="Arial",sz=9)      # Set font
+        #border = openpyxl.styles.Border(left=openpyxl.styles.Side(border_style="thin",
+        #                                color='000000'),
+        #                                right=openpyxl.styles.Side(border_style="thin",
+        #                                color='000000'),
+        #                                top=openpyxl.styles.Side(border_style="thin",
+        #                                color='000000'),
+        #                                bottom=openpyxl.styles.Side(border_style="thin",
+        #                                color='000000')
+        #                                )                       # Set border
+        self.save("ggg.xlsx")
+        excel = win32com.client.Dispatch("Excel.Application")
+        excel.Visible = False
+        workbook = excel.Workbooks.Open("C:\Code\Python\Excel\ggg.xlsx")
+        sheet = workbook.Worksheets(1)
+        rangeObj = sheet.Range("AS1:AS2")
+        rangeObj.EntireColumn.Insert()
+        del rangeObj
+
         wbFromYesterday = ExcelBook("./second.xlsx", data_only=True)
+
+        excelYesterday = win32com.client.Dispatch("Excel.Application")
+        excelYesterday.Visible = False
+        workbookYesterday = excelYesterday.Workbooks.Open("C:\Code\Python\Excel\second.xlsx") # Right path
+        sheetYesterday = workbookYesterday.Worksheets(1)
+        sheetYesterday.Range("AN1:AN"+str(wbFromYesterday.ws.max_row)).Unmerge()
+        sheet.Range("AS1:AS"+str(self.numberOfRows)).Unmerge()
+        rangeObjYesterday = sheetYesterday.Range("AN1:AN"+str(wbFromYesterday.ws.max_row)).Copy()
+        sheet.Paste(sheet.Range("AS1:AS"+str(self.numberOfRows)))
+        workbookYesterday.Close()
+        workbook.Save()
+        workbook.Close()
+        excelYesterday.Quit()
+        excel.Quit()
+
+
         columnNumber = openpyxl.utils.column_index_from_string("AS")
         if self.numberOfRows == wbFromYesterday.ws.max_row:                    #TODO make the right check
             rangeIter = "AS1" + ":" + "BU" + str(self.numberOfRows)
@@ -122,7 +147,7 @@ class TKE:
                                     value=dx
                                     )
 
-        self.wb.unmerge()
+        #self.wb.unmerge()
         return
 
     def hideColumns(self):
