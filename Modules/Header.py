@@ -1,5 +1,5 @@
 import openpyxl
-from ExcelBook import ExcelBook
+from .ExcelBook import ExcelBook
 
 class Header(ExcelBook):
 
@@ -46,3 +46,6 @@ class Header(ExcelBook):
     def unmergeCells(self):
         
         return
+
+if __name__ == "__main__":
+    print("I`m Header file")

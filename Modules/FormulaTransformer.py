@@ -118,3 +118,6 @@ modifyFormulaInColumnFterInsertion(activeSheet, columnsList, 1)
 wb.save("out.xlsx")
 wb.close()
 """
+
+if __name__ == "__main__":
+    print("I`m FormulaTransformer file")
