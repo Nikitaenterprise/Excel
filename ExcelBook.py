@@ -94,3 +94,54 @@ class ExcelBook:
                 if cell.value == criteria:
                     listOfCells.append(cell)
         return listOfCells
+
+    def checkRowForRegion(self, row: int, column: int):
+        """In excel files sometimes it can be observed that some rows
+        contains sum of data of other rows below or under them.
+        Such rows often contain name of 'область' on their left column
+        Under them there are companies in this district.
+        This function checks the row for containing name of district
+        in specific column
+
+        TODO
+
+        Keyword arguments:
+        range
+        """
+        return
+
+    def unmerge(self):
+        for range in self.ws.merged_cells.ranges:
+            rangeList = list(range.bounds)
+            minCol = rangeList[0]
+            minRow = rangeList[1]
+            maxCol = rangeList[2]
+            maxRow = rangeList[3]
+            self.ws.unmerge_cells(start_row=minRow,
+                                start_column=minCol,
+                                end_row=maxRow,
+                                end_column=maxCol
+                                )
+        return
+
+
+    def merge(self, range: str):
+        start = range.split(":")[0]
+        end = range.split(":")[1]
+        minRow = openpyxl.utils.coordinate_to_tuple(start)[0]
+        minCol = openpyxl.utils.coordinate_to_tuple(start)[1]
+        maxRow = openpyxl.utils.coordinate_to_tuple(end)[0]
+        maxCol = openpyxl.utils.coordinate_to_tuple(end)[1]
+        self.ws.merge_cells(start_row=minRow,
+                            start_column=minCol,
+                            end_row=maxRow,
+                            end_column=maxCol
+                            )
+        return
+
+    def mergeByTuple(self, rangeList: list):
+        for range in rangeList:
+            coord = list(range.bounds)
+            rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
+            self.merge(rangeStr)
+        return
