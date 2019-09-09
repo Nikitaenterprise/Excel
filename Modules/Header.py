@@ -1,5 +1,9 @@
+import sys
+sys.path.append("..")
+
 import openpyxl
-from .ExcelBook import ExcelBook
+
+from Excel.Modules.ExcelBook import ExcelBook
 
 class Header(ExcelBook):
 
@@ -25,11 +29,11 @@ class Header(ExcelBook):
     #        for cell in cells:
     #            yield cell
 
-    def generator(self):
-        """Generator throug the header.
-        Returns cell
-        """
-        return super().generator(header)
+    # def generator(self):
+    #     """Generator throug the header.
+    #     Returns cell
+    #     """
+    #     return super().generator(header)
 
     def findCellByStr(self, value: str):
         """Finds first cell by searchin in the header 
@@ -38,7 +42,7 @@ class Header(ExcelBook):
         Keyword argument:
         value -- searching string
         """
-        for cells in self.wb.ws[self.header]:
+        for cells in self.ws[self.header]:
             for cell in cells:
                 if cell.value == value:
                     return [cell.row, cell.column]

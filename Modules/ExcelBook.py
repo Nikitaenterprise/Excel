@@ -1,11 +1,35 @@
+import os
+
 import openpyxl
+import win32com
 
 
 class ExcelBook:
 
     def __init__(self, name: str, data_only=False):
-        self.wb = openpyxl.load_workbook(name, data_only=data_only)
-        self.ws = self.wb[self.wb.sheetnames[0]]
+        if ".xls" in name:
+            self.reSaveFromXlsToXlsx(name)
+        elif ".xlsx" in name:
+            self.wb = openpyxl.load_workbook(name, data_only=data_only)
+            self.ws = self.wb[self.wb.sheetnames[0]]
+
+    def reSaveFromXlsToXlsx(self, name: str):
+        """Opens file in .xls format and saves it 
+        in .xlsx format using pyWin32
+        
+        Keyword arguments:
+        name -- name of file that will be changed
+        """
+        newName = os.path.splitext(name)[0]
+        newName += str(".xlsx")
+        excelApp = win32com.client.Dispatch("Excel.Application")
+        #name = "C:/Users/LuzhanskyiM-Inet/Development/Excel/Fiscal plan/rrrr.xls"
+        excelApp.Visible = False
+        wb = excelApp.Workbooks.Open(os.path.abspath(name))
+        xlWorkbookDefault = 51
+        wb.SaveAs(os.path.abspath(newName), FileFormat=xlWorkbookDefault)
+        excelApp.Quit()
+        return
 
     def save(self, name: str):
         """Closes file and save it to project root dir
@@ -72,7 +96,7 @@ class ExcelBook:
             for cell in cells:
                 if cell.value == value:
                     return cell
-        return Null
+        return None
 
     def getListOfCellsWithCriteria(self, range: str, criteria):
         """Returns list of cells with values equal to criteria
@@ -145,10 +169,7 @@ class ExcelBook:
             rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
             self.merge(rangeStr)
         return
-<<<<<<< HEAD:Modules/ExcelBook.py
 
 
 if __name__ == "__main__":
-    print("I`m ExcelBook file")
-=======
->>>>>>> aceb9719ae26f6f9991c1e52c644e217ba0bd260:ExcelBook.py
+    print("I`m ExcelBook.py file")

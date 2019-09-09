@@ -1,6 +1,7 @@
-from Excel import TKE
+from FiscalPlan.FiscalPlan import FiscalPlan
 
-first = TKE("./first.xlsx")
-first.start()  
-first.hideColumns()
-first.save("./out.xlsx")
+
+if __name__ == "__main__":
+    print("I`m main file")
+    excelBook = FiscalPlan(r"FiscalPlan\НадходженняНаКР_.xls")
+    excelBook.run()

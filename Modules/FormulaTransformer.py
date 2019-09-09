@@ -6,7 +6,7 @@ class FormulaTransformer:
     def __init__(self, ws):
         self.ws = ws
 
-    def findColumnsWithFormulas(self):
+    def findColumnsWithFormulas(self, ws):
         """Creates a list with coordinates of all cells wich
         contains ranges (=SUM(A1:A3), =A1+B1, but not =RANDOM(1:100))
         from upper cells in the search range (very usefull to find
@@ -50,14 +50,15 @@ class FormulaTransformer:
         split = range.split(":")
         minCoordinate = openpyxl.utils.coordinate_to_tuple(split[0])
         maxCoordinate = openpyxl.utils.coordinate_to_tuple(split[1])
-        minColumn, maxColumn = minCoordinate[1], maxCoordinate[1]
+        minColumn = minCoordinate[1]
+        maxColumn = maxCoordinate[1]
         for coordinate in columnsWithFormulas:
             column = openpyxl.utils.coordinate_to_tuple(coordinate)[1]
             if column < minColumn:
                 columnsList.append(openpyxl.utils.get_column_letter(column))
         return columnsList
 
-    def modifyFormulaInColumnFterInsertion(self, targetColumns, newColumnCoordinate: str):
+    def modifyFormulaInColumnFterInsertion(self, ws, targetColumns, newColumnCoordinate: str):
         """Function looks throug whole column and if there is a cell with formula
         like =A1+B1 and if column has been inserted between A1 and B1 then it will
         modify formula to =A1+C1
