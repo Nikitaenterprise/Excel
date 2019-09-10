@@ -12,7 +12,7 @@ from Modules.Header import Header
 class TKE:
 
     def __init__(self, wbName: str):
-        self.wb = ExcelBook(wbName, data_only=True)
+        self.wb = ExcelBook(wbName)
         self.header = Header(wbName, "A1:BU9")
         self.numberOfRows = self.wb.ws.max_row
 
@@ -59,7 +59,7 @@ class TKE:
         rangeObj.EntireColumn.Insert()
         del rangeObj
 
-        wbFromYesterday = ExcelBook("./second.xlsx", data_only=True)
+        wbFromYesterday = ExcelBook("./second.xlsx")
 
         excelYesterday = win32com.client.Dispatch("Excel.Application")
         excelYesterday.Visible = False

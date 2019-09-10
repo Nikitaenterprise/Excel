@@ -6,12 +6,29 @@ import win32com
 
 class ExcelBook:
 
-    def __init__(self, name: str, data_only=False):
-        if ".xls" in name:
-            self.reSaveFromXlsToXlsx(name)
-        elif ".xlsx" in name:
-            self.wb = openpyxl.load_workbook(name, data_only=data_only)
+
+    def __init__(self, name: str, data_only=True, read=True, worksheet: int=0):
+        self.nameOfFile = name
+        self.data_only = data_only
+        if read == True:
+            self.readExcelFile()
+
+    def readExcelFile(self):
+        """Reads file after creation of class instance by default.
+        If this function wasn`t called after initialization of class instance
+        (for example if you dont want to allocate a lot of memory by opening
+        many excel books, but you want to initialize a class instances)
+        then it can be called after.
+        """
+        extension = os.path.splitext(self.nameOfFile)[1] # may be .xls or .xlsx
+        if extension == ".xls":
+            self.reSaveFromXlsToXlsx(self.nameOfFile)
+            extension = os.path.splitext(self.nameOfFile)[1] # reinitialize extension
+        if extension == ".xlsx":
+            self.wb = openpyxl.load_workbook(self.nameOfFile, data_only=self.data_only)
             self.ws = self.wb[self.wb.sheetnames[0]]
+            self.vv = 2
+        return True
 
     def reSaveFromXlsToXlsx(self, name: str):
         """Opens file in .xls format and saves it 
@@ -23,11 +40,11 @@ class ExcelBook:
         newName = os.path.splitext(name)[0]
         newName += str(".xlsx")
         excelApp = win32com.client.Dispatch("Excel.Application")
-        #name = "C:/Users/LuzhanskyiM-Inet/Development/Excel/Fiscal plan/rrrr.xls"
         excelApp.Visible = False
         wb = excelApp.Workbooks.Open(os.path.abspath(name))
-        xlWorkbookDefault = 51
-        wb.SaveAs(os.path.abspath(newName), FileFormat=xlWorkbookDefault)
+        xlsx = 51 # Code for xslx format
+        wb.SaveAs(os.path.abspath(newName), FileFormat=xlsx)
+        self.nameOfFile = newName
         excelApp.Quit()
         return
 
@@ -85,25 +102,29 @@ class ExcelBook:
                     cell.value = value
         return
 
-    def findCellByStr(self, value):
+    def findCellByStr(self, value, range: str = None):
         """Finds first cell by searchin in whole sheet 
         the target value
 
         Keyword argument:
         value -- searching value (str, int, ...)
+        range -- search range (I22:J22, or I), by default set to None
         """
-        for cells in self.ws:
-            for cell in cells:
-                if cell.value == value:
-                    return cell
+        if range == None:
+            diapason = self.ws
+        if range != None:
+            diapason = self.ws[range]
+
+        for cell in diapason:
+            if cell.value == value:
+                return cell
         return None
 
     def getListOfCellsWithCriteria(self, range: str, criteria):
         """Returns list of cells with values equal to criteria
 
         Keyword argument:
-        range -- search range, could be with or 
-        without ':' (I22:J22, or I)
+        range -- search range (I22:J22, I, ...)
         criteria -- search criteria in cells values
         """
         listOfCells = []
