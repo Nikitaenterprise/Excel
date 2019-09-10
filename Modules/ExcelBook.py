@@ -8,7 +8,7 @@ class ExcelBook:
 
 
     def __init__(self, name: str, data_only=True, read=True, worksheet: int=0):
-        self.nameOfFile = name
+        self.fileNameWithPath = name
         self.data_only = data_only
         if read == True:
             self.readExcelFile()
@@ -20,14 +20,13 @@ class ExcelBook:
         many excel books, but you want to initialize a class instances)
         then it can be called after.
         """
-        extension = os.path.splitext(self.nameOfFile)[1] # may be .xls or .xlsx
+        extension = os.path.splitext(self.fileNameWithPath)[1] # may be .xls or .xlsx
         if extension == ".xls":
-            self.reSaveFromXlsToXlsx(self.nameOfFile)
-            extension = os.path.splitext(self.nameOfFile)[1] # reinitialize extension
+            self.reSaveFromXlsToXlsx(self.fileNameWithPath)
+            extension = os.path.splitext(self.fileNameWithPath)[1] # reinitialize extension
         if extension == ".xlsx":
-            self.wb = openpyxl.load_workbook(self.nameOfFile, data_only=self.data_only)
+            self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only)
             self.ws = self.wb[self.wb.sheetnames[0]]
-            self.vv = 2
         return True
 
     def reSaveFromXlsToXlsx(self, name: str):
@@ -41,11 +40,23 @@ class ExcelBook:
         newName += str(".xlsx")
         excelApp = win32com.client.Dispatch("Excel.Application")
         excelApp.Visible = False
-        wb = excelApp.Workbooks.Open(os.path.abspath(name))
+
+        try:
+            wb = excelApp.Workbooks.Open(os.path.abspath(name))
+        except:
+            excelApp.Quit()
+            print("Программа не может открыть файл " + name)
+            raise FileNotFoundError
+
         xlsx = 51 # Code for xslx format
-        wb.SaveAs(os.path.abspath(newName), FileFormat=xlsx)
-        self.nameOfFile = newName
-        excelApp.Quit()
+        try:
+            wb.SaveAs(os.path.abspath(newName), FileFormat=xlsx)
+        except:
+            excelApp.Quit()
+            print("Программа не может сохранить файл " + newName)
+            raise WindowsError
+        
+        self.fileNameWithPath = newName
         return
 
     def save(self, name: str):
@@ -103,8 +114,8 @@ class ExcelBook:
         return
 
     def findCellByStr(self, value, range: str = None):
-        """Finds first cell by searchin in whole sheet 
-        the target value
+        """Finds first cell by searchin in whole sheet or in 
+        some range the target value
 
         Keyword argument:
         value -- searching value (str, int, ...)
