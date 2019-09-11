@@ -53,10 +53,10 @@ class ExcelBook:
         xlsx = 51 # Code for xslx format
         try:
             wb.SaveAs(os.path.abspath(newName), FileFormat=xlsx)
-        except:
             excelApp.Quit()
+        except:
             print("Программа не может сохранить файл " + newName)
-            #raise WindowsError
+            raise WindowsError
         
         self.fileNameWithPath = newName
         return

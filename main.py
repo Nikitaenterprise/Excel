@@ -10,3 +10,4 @@ if __name__ == "__main__":
                             r"FiscalPlan\ТЕЦ.xls"
                             )
     excelBook.run()
+    excelBook.deleteFiles()

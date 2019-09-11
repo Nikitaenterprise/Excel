@@ -25,8 +25,32 @@ class FiscalPlan:
         return
 
     def deleteFiles(self):
-        os.remove(self.TEZ.fileNameWithPath)
+        """Deletes all created files with .xlsx extension
+        """
+        self.closeFiles()
+        fileNameWithPathWithoutExtensionTEZ = os.path.splitext(self.TEZ.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionPAT = os.path.splitext(self.PAT.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionSBUT = os.path.splitext(self.SBUT.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionTodayCash = os.path.splitext(self.todayCash.fileNameWithPath)[0]
+        os.remove(fileNameWithPathWithoutExtensionTEZ + ".xlsx")
+        os.remove(fileNameWithPathWithoutExtensionPAT + ".xlsx")
+        os.remove(fileNameWithPathWithoutExtensionSBUT + ".xlsx")
+        os.remove(fileNameWithPathWithoutExtensionTodayCash + ".xlsx")
+        return
 
+    def end(self):
+        self.closeFiles()
+        return
+
+    def closeFiles(self):
+        """Closes files without saving
+        """
+        self.PAT.close()
+        self.SBUT.close()
+        self.TEZ.close()
+        self.todayCash.close()
+        return
+    
     def populationAndReligion(self):
         """Finds sum of cash from population and religion
         """
@@ -94,7 +118,8 @@ class FiscalPlan:
         return teploenergyCash + kyivEnergoNotEeCash
 
     def directContractIndustryEE(self):
-        """
+        """Finds sum of cash from direct contract with
+        industries (EE) and TEZ companies
         """
         try:
             self.TEZ.readExcelFile()
@@ -127,15 +152,24 @@ class FiscalPlan:
                                 row=industryEeRow).value                    
                 else:
                     # Search the ТЕЦ.xlsx file for companies overlaping
-                    # and if so, cash of this companies would be added 
-                    if self.TEZ.findCellByStr(str(categoryOrCompanyName), "D").value != None:
+                    # and if so, cash of this companies would be added
+                    try:
+                        # Get cell from ТЕЦ.xlsx with company name that is equal to 
+                        # company name in НадходженняНаКР_.xlsx
+                        cell = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
+                        if cell == None:
+                            raise AttributeError(cell)
+
+                        cellValue = cell.value
+                    except AttributeError:
+                        # If cell have None type then there is no such company in 
+                        # ТЕЦ.xlsx and thats why cellValue should be equal to 0
+                        cellValue = 0
+
+                    if cellValue != 0:
                         TEZCash += self.todayCash.ws.cell(
                                 column=industryEeColumnWithCash, 
                                 row=industryEeRow).value
-                    else:
-                        print("hi") 
-                print(str(industryEeRow) + str(categoryOrCompanyName) + str(contractName))
-                
         except:
             print("Нет категории: Промисловість за прямими договорами (ЕЕ)")
             industryEeCash = 0
@@ -143,16 +177,18 @@ class FiscalPlan:
 
         try:
             # Check is this vatiable is created
+            # in teploenergy()
             kyivEnergoEeContractCash
         except:
             print("Нет категории: Енергетичні підприємства м.Києва (ЕЕ)")
             kyivEnergoEeContractCash = 0
 
-        
         return industryEeCash + TEZCash + kyivEnergoEeContractCash
 
     def directContractIndustryPR(self):
-        """
+        """Finds cash from direct contract with
+        industries (PR) without cash from TEZ companies and
+        SBUT companies and PAT companies
         """
         try:
             self.PAT.readExcelFile()
@@ -188,16 +224,21 @@ class FiscalPlan:
                     # Всі Категорії. (без спожив. за )_ЗБУТ.xlsx, 
                     # Всі Категорії. (без спожив. за )_ПАТ.xlsx 
                     # files for companies overlaping and if so, 
-                    # cash of this companies wouldn`t be calculated 
-                    cellValueInTEZ = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
-                    cellValueInPAT = self.PAT.findCellByStr(str(categoryOrCompanyName), "C")
-                    cellValueInSBUT = self.SBUT.findCellByStr(str(categoryOrCompanyName), "C")
-                    if cellValueInTEZ == categoryOrCompanyName or cellValueInPAT == categoryOrCompanyName or cellValueInSBUT == categoryOrCompanyName:
+                    # cash of this companies wouldn`t be calculated
+                    try:
+                        cellTEZ = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
+                        cellPAT = self.PAT.findCellByStr(str(categoryOrCompanyName), "C")
+                        cellSBUT = self.SBUT.findCellByStr(str(categoryOrCompanyName), "C")
+                        if cellTEZ != None or cellPAT != None or cellSBUT != None:
+                            continue
+                        # if cellTEZ == None or cellPAT == None or cellSBUT == None:
+                        #     raise AttributeError()
+                    except AttributeError:
                         continue
-                    else:
-                        industryPrCash += self.todayCash.ws.cell(
-                                column=industryPrColumn, 
-                                row=industryPrRow).value                    
+                        
+                    industryPrCash += self.todayCash.ws.cell(
+                            column=industryPrColumn, 
+                            row=industryPrRow).value                    
         except:
             print("Нет категории: Промисловість за прямими договорами (ПР)")
             industryPrCash = 0
