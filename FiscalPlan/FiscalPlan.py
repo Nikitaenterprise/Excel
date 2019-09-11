@@ -12,16 +12,16 @@ class FiscalPlan:
                 PATExcel: str, SBUTExcel: str, TEZExcel: str):
         self.fiscalPlan = ExcelBook(fiscalPlanExcel, read=False)
         self.todayCash = ExcelBook(todayCashExcel, read=False)
-        self.PAT = ExcelBook(PATExcel, read=False)
-        self.SBUT = ExcelBook(SBUTExcel, read=False)
-        self.TEZ = ExcelBook(TEZExcel, read=False)
+        self.PAT = ExcelBook(PATExcel, read=False, keep_vba=True)
+        self.SBUT = ExcelBook(SBUTExcel, read=False, keep_vba=True)
+        self.TEZ = ExcelBook(TEZExcel, read=False, worksheet=2)
     
     def run(self):
         self.todayCash.readExcelFile()
-        print(self.populationAndReligion())
-        print(self.teploenergy())
-        print(self.directContractIndustry())
-
+        print("1: " + str(self.populationAndReligion()))
+        print("2: " + str(self.teploenergy()))
+        print("3: " + str(self.directContractIndustryEE()))
+        print("4: " + str(self.directContractIndustryPR()))
         return
 
     def deleteFiles(self):
@@ -82,7 +82,7 @@ class FiscalPlan:
                                 row=kyivEnergoNotEeRow).value
                 cashValue = self.todayCash.ws.cell(
                                 column=kyivEnergoNotEeColumn, 
-                                row=kyivEnergoNotEeRow)
+                                row=kyivEnergoNotEeRow).value
                 if "ЕЕ" in contractName:
                     self.kyivEnergoEeContractCash = cashValue
                 elif "ЕЕ" not in contractName:
@@ -93,7 +93,7 @@ class FiscalPlan:
 
         return teploenergyCash + kyivEnergoNotEeCash
 
-    def directContractIndustry(self):
+    def directContractIndustryEE(self):
         """
         """
         try:
@@ -102,19 +102,19 @@ class FiscalPlan:
             # Column C contain names and categories
             industryEeRow = self.todayCash.findCellByStr("2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
-            industryEeColumn = openpyxl.utils.column_index_from_string(str("J"))
+            industryEeColumnWithCash = openpyxl.utils.column_index_from_string(str("J"))
             # Column E contain names of contracts wich were concluded with companies
             industryEeColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
+            # Column C contain names and categories
+            industryEeColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(str("C"))
 
             industryEeCash = 0
             TEZCash = 0
-            i = 1
             while True:
-                industryEeRow += i
+                industryEeRow += 1
                 categoryOrCompanyName = self.todayCash.ws.cell(
-                                column=industryEeColumn, 
+                                column=industryEeColumnWithNameOfCompanyOrCategory, 
                                 row=industryEeRow).value
-
                 if categoryOrCompanyName == "Всього по теплоенергетиці":
                     break
 
@@ -123,17 +123,19 @@ class FiscalPlan:
                                 row=industryEeRow).value
                 if "ЕЕ" in contractName:
                     industryEeCash += self.todayCash.ws.cell(
-                                column=industryEeColumn, 
-                                row=industryEeRow)                    
-
-                # Search the ТЕЦ.xlsx file for companies overlaping
-                # and if so, cash of this companies would be added 
-                cellValue = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
-                if cellValue != None:
-                    TEZCash += self.todayCash.ws.cell(
-                                column=industryEeColumn, 
-                                row=industryEeRow)
-                i += 1
+                                column=industryEeColumnWithCash, 
+                                row=industryEeRow).value                    
+                else:
+                    # Search the ТЕЦ.xlsx file for companies overlaping
+                    # and if so, cash of this companies would be added 
+                    if self.TEZ.findCellByStr(str(categoryOrCompanyName), "D").value != None:
+                        TEZCash += self.todayCash.ws.cell(
+                                column=industryEeColumnWithCash, 
+                                row=industryEeRow).value
+                    else:
+                        print("hi") 
+                print(str(industryEeRow) + str(categoryOrCompanyName) + str(contractName))
+                
         except:
             print("Нет категории: Промисловість за прямими договорами (ЕЕ)")
             industryEeCash = 0
@@ -148,6 +150,61 @@ class FiscalPlan:
 
         
         return industryEeCash + TEZCash + kyivEnergoEeContractCash
+
+    def directContractIndustryPR(self):
+        """
+        """
+        try:
+            self.PAT.readExcelFile()
+            self.PAT.unmerge()
+            self.SBUT.readExcelFile()
+            self.SBUT.unmerge()
+
+            # Column C contain names and categories
+            industryPrRow = self.todayCash.findCellByStr("2.2. Промисловість за прямими договорами", "C").row
+            # Column J contain cash
+            industryPrColumn = openpyxl.utils.column_index_from_string(str("J"))
+            # Column E contain names of contracts wich were concluded with companies
+            industryPrColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
+            # Column C contain names and categories
+            industryPrColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(str("C"))
+
+            industryPrCash = 0
+            while True:
+                industryPrRow += 1
+                categoryOrCompanyName = self.todayCash.ws.cell(
+                                column=industryPrColumnWithNameOfCompanyOrCategory, 
+                                row=industryPrRow).value
+
+                if categoryOrCompanyName == "Всього по теплоенергетиці":
+                    break
+
+                contractName = self.todayCash.ws.cell(
+                                column=industryPrColumnWithNameOfContracts, 
+                                row=industryPrRow).value
+                if "ПР" in contractName:
+                    # Search in:
+                    # ТЕЦ.xlsx, 
+                    # Всі Категорії. (без спожив. за )_ЗБУТ.xlsx, 
+                    # Всі Категорії. (без спожив. за )_ПАТ.xlsx 
+                    # files for companies overlaping and if so, 
+                    # cash of this companies wouldn`t be calculated 
+                    cellValueInTEZ = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
+                    cellValueInPAT = self.PAT.findCellByStr(str(categoryOrCompanyName), "C")
+                    cellValueInSBUT = self.SBUT.findCellByStr(str(categoryOrCompanyName), "C")
+                    if cellValueInTEZ == categoryOrCompanyName or cellValueInPAT == categoryOrCompanyName or cellValueInSBUT == categoryOrCompanyName:
+                        continue
+                    else:
+                        industryPrCash += self.todayCash.ws.cell(
+                                column=industryPrColumn, 
+                                row=industryPrRow).value                    
+        except:
+            print("Нет категории: Промисловість за прямими договорами (ПР)")
+            industryPrCash = 0
+
+
+        return industryPrCash
+            
 
 if __name__ == "__main__":
     print("I`m FiscalPlan.py file")

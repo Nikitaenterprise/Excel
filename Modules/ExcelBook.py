@@ -7,9 +7,11 @@ import win32com
 class ExcelBook:
 
 
-    def __init__(self, name: str, data_only=True, read=True, worksheet: int=0):
+    def __init__(self, name: str, data_only=True, read=True, worksheet: int=0, keep_vba=True):
         self.fileNameWithPath = name
         self.data_only = data_only
+        self.worksheetNumberInBook = worksheet
+        self.keep_vba = keep_vba
         if read == True:
             self.readExcelFile()
 
@@ -25,8 +27,8 @@ class ExcelBook:
             self.reSaveFromXlsToXlsx(self.fileNameWithPath)
             extension = os.path.splitext(self.fileNameWithPath)[1] # reinitialize extension
         if extension == ".xlsx":
-            self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only)
-            self.ws = self.wb[self.wb.sheetnames[0]]
+            self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
+            self.ws = self.wb[self.wb.sheetnames[self.worksheetNumberInBook]]
         return True
 
     def reSaveFromXlsToXlsx(self, name: str):
@@ -54,7 +56,7 @@ class ExcelBook:
         except:
             excelApp.Quit()
             print("Программа не может сохранить файл " + newName)
-            raise WindowsError
+            #raise WindowsError
         
         self.fileNameWithPath = newName
         return
