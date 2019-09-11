@@ -1,4 +1,5 @@
 import os
+import datetime
 
 import openpyxl
 import win32com.client
@@ -7,6 +8,8 @@ from Modules.ExcelBook import ExcelBook
 #from Excel.Modules.Header import Header
 
 class FiscalPlan:
+
+    # TODO Узнать что за эенргогенерирующие компании
     
     def __init__(self, fiscalPlanExcel: str, todayCashExcel: str, 
                 PATExcel: str, SBUTExcel: str, TEZExcel: str):
@@ -15,6 +18,9 @@ class FiscalPlan:
         self.PAT = ExcelBook(PATExcel, read=False, keep_vba=True)
         self.SBUT = ExcelBook(SBUTExcel, read=False, keep_vba=True)
         self.TEZ = ExcelBook(TEZExcel, read=False, worksheet=2)
+
+        self.day = datetime.datetime.today.day()
+        self.dayOfTheWeek = datetime.datetime.today.weekday()
     
     def run(self):
         self.todayCash.readExcelFile()
@@ -243,8 +249,30 @@ class FiscalPlan:
             print("Нет категории: Промисловість за прямими договорами (ПР)")
             industryPrCash = 0
 
-
+        # TODO Энергогенерирующие предприятия (ПР)
         return industryPrCash
+
+    def addToSummaryFile(self):
+        self.fiscalPlan.readExcelFile()
+        rowWithDates = 5
+        columnWithDates = openpyxl.utils.column_index_from_string(str("C"))
+        while True:
+            try:
+                cell.value = self.fiscalPlan.ws.cell(column=columnWithDates, row=rowWithDates).value
+            except AttributeError:
+                print("Проблема с файлом " + self.fiscalPlan.fileNameWithPath)
+            isThereAFactCell = False
+            if "факт" in cell.value:
+                isThereAFactCell = True
+            isThereAPlanCell = False
+            if "план" in cell.value:
+                isThereAPlanCell = True
+            if isThereAFactCell == True and isThereAPlanCell == True:
+                columnWithDates += 1
+                continue
+            elif isThereAFactCell == True and isThereAPlanCell == False:
+                
+
             
 
 if __name__ == "__main__":
