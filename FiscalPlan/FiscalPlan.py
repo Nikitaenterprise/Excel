@@ -1,15 +1,17 @@
 import os
 import datetime
+from enum import Enum
+
 
 import openpyxl
 import win32com.client
 
+
 from Modules.ExcelBook import ExcelBook
-#from Excel.Modules.Header import Header
 
-class FiscalPlan:
+class FiscalPlan():
 
-    # TODO Узнать что за эенргогенерирующие компании
+    # TODO Нафтогаз трейдинг
     
     def __init__(self, fiscalPlanExcel: str, todayCashExcel: str, 
                 PATExcel: str, SBUTExcel: str, TEZExcel: str):
@@ -24,10 +26,10 @@ class FiscalPlan:
     
     def run(self):
         self.todayCash.readExcelFile()
-        print("1: " + str(self.populationAndReligion()))
-        print("2: " + str(self.teploenergy()))
-        print("3: " + str(self.directContractIndustryEE()))
-        print("4: " + str(self.directContractIndustryPR()))
+        print("1: " + str(self.populationAndReligion()/1000000))
+        print("2: " + str(self.teploenergy()/1000000))
+        print("3: " + str(self.directContractIndustryEE()/1000000))
+        print("4: " + str(self.directContractIndustryPR()/1000000))
         return
 
     def deleteFiles(self):
@@ -56,13 +58,23 @@ class FiscalPlan:
         self.TEZ.close()
         self.todayCash.close()
         return
+
+    class ColumnsNames(Enum):
+        COMPANY = 0
+        CATEGORY = 0
+        CONTRACT = 1
+        CASH = 2
+
+    def initColumnIndecesForCashBook(self):
+        
+        return
     
     def populationAndReligion(self):
         """Finds sum of cash from population and religion
         """
         try:
             # Column C contain names and categories
-            populationRow = self.todayCash.findCellByStr("1.2. Населення", "C").row
+            populationRow = self.todayCash.getFirstCellByCriteria("1.2. Населення", "C").row
             # Column J contain cash
             populationColumn = openpyxl.utils.column_index_from_string(str("J"))
             populationCash = self.todayCash.ws.cell(column=populationColumn, row=populationRow).value
@@ -72,7 +84,7 @@ class FiscalPlan:
 
         try:
             # Column C contain names and categories
-            religionRow = self.todayCash.findCellByStr("Релігійні організації", "C").row
+            religionRow = self.todayCash.getFirstCellByCriteria("Релігійні організації", "C").row
             # Column J contain cash
             religionColumn = populationColumn # the same column
             religionCash = self.todayCash.ws.cell(column=religionColumn, row=religionRow).value
@@ -87,7 +99,7 @@ class FiscalPlan:
         """
         try:
             # Column C contain names and categories
-            teploenergyRow = self.todayCash.findCellByStr("3.2. Теплоенергетика за прямими договорами", "C").row
+            teploenergyRow = self.todayCash.getFirstCellByCriteria("3.2. Теплоенергетика за прямими договорами", "C").row
             # Column J contain cash
             teploenergyColumn = openpyxl.utils.column_index_from_string(str("J"))
             teploenergyCash = self.todayCash.ws.cell(column=teploenergyColumn, row=teploenergyRow).value
@@ -97,7 +109,7 @@ class FiscalPlan:
 
         try:
             # Column C contain names and categories
-            kyivEnergoNotEeRow = self.todayCash.findCellByStr("Енергетичні підприємства м.Києва", "C").row
+            kyivEnergoNotEeRow = self.todayCash.getFirstCellByCriteria("Енергетичні підприємства м.Києва", "C").row
             # Column J contain cash
             kyivEnergoNotEeColumn = teploenergyColumn # the same column
             kyivEnergoNotEeCash = 0
@@ -131,7 +143,7 @@ class FiscalPlan:
             self.TEZ.readExcelFile()
             self.TEZ.unmerge()
             # Column C contain names and categories
-            industryEeRow = self.todayCash.findCellByStr("2.2. Промисловість за прямими договорами", "C").row
+            industryEeRow = self.todayCash.getFirstCellByCriteria("2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
             industryEeColumnWithCash = openpyxl.utils.column_index_from_string(str("J"))
             # Column E contain names of contracts wich were concluded with companies
@@ -162,7 +174,7 @@ class FiscalPlan:
                     try:
                         # Get cell from ТЕЦ.xlsx with company name that is equal to 
                         # company name in НадходженняНаКР_.xlsx
-                        cell = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
+                        cell = self.TEZ.getFirstCellByCriteria(str(categoryOrCompanyName), "D")
                         if cell == None:
                             raise AttributeError(cell)
 
@@ -203,7 +215,7 @@ class FiscalPlan:
             self.SBUT.unmerge()
 
             # Column C contain names and categories
-            industryPrRow = self.todayCash.findCellByStr("2.2. Промисловість за прямими договорами", "C").row
+            industryPrRow = self.todayCash.getFirstCellByCriteria("2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
             industryPrColumn = openpyxl.utils.column_index_from_string(str("J"))
             # Column E contain names of contracts wich were concluded with companies
@@ -232,9 +244,9 @@ class FiscalPlan:
                     # files for companies overlaping and if so, 
                     # cash of this companies wouldn`t be calculated
                     try:
-                        cellTEZ = self.TEZ.findCellByStr(str(categoryOrCompanyName), "D")
-                        cellPAT = self.PAT.findCellByStr(str(categoryOrCompanyName), "C")
-                        cellSBUT = self.SBUT.findCellByStr(str(categoryOrCompanyName), "C")
+                        cellTEZ = self.TEZ.getFirstCellByCriteria(str(categoryOrCompanyName), "D")
+                        cellPAT = self.PAT.getFirstCellByCriteria(str(categoryOrCompanyName), "C")
+                        cellSBUT = self.SBUT.getFirstCellByCriteria(str(categoryOrCompanyName), "C")
                         if cellTEZ != None or cellPAT != None or cellSBUT != None:
                             continue
                         # if cellTEZ == None or cellPAT == None or cellSBUT == None:
@@ -256,7 +268,7 @@ class FiscalPlan:
             # Column E contain names of contracts wich were concluded with companies
             energoGenerationColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
             # Column C contain company name or category
-            energoGenerationRow = self.todayCash.findCellByStr("Енергогенеруючі компанії", "C").row
+            energoGenerationRow = self.todayCash.getFirstCellByCriteria("Енергогенеруючі компанії", "C").row
             
             while True:
                 energoGenerationRow += 1
@@ -299,9 +311,7 @@ class FiscalPlan:
                 columnWithDates += 1
                 continue
             #elif isThereAFactCell == True and isThereAPlanCell == False:
-                
 
-            
 
 if __name__ == "__main__":
     print("I`m FiscalPlan.py file")

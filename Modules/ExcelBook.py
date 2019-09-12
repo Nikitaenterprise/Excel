@@ -3,9 +3,7 @@ import os
 import openpyxl
 import win32com
 
-
-class ExcelBook:
-
+class ExcelBook():
 
     def __init__(self, name: str, data_only=True, read=True, worksheet: int=0, keep_vba=True):
         self.fileNameWithPath = name
@@ -73,17 +71,10 @@ class ExcelBook:
         return
     
     def close(self):
-        """Closes file without saving"""
+        """Closes file without saving
+        """
         self.wb.close()
         return 
-
-    def generator(self, range: str):
-        """Generator through range in sheet.
-        Returns cell
-        """
-        for cells in self.ws[range]:
-            for cell in cells:
-                yield cell
 
     def setCellsInColumnByRowCoord(self, row: int, column: str, value):
         """Finds values in one column by row coordinate
@@ -115,30 +106,43 @@ class ExcelBook:
                     cell.value = value
         return
 
-    def findCellByStr(self, value, range: str = None):
+    def getFirstCellByCriteria(self, criteria, range: str = None):
         """Finds first cell by searchin in whole sheet or in 
-        some range the target value
+        some range the target criteria. Similar to Excel 
+        function VLOOKUP (ВПР)
 
-        Keyword argument:
+        Keyword arguments:
         value -- searching value (str, int, ...)
         range -- search range (I22:J22, or I), by default set to None
+                    so it search in whole sheet
         """
         if range == None:
             diapason = self.ws
-        if range != None:
+            for cells in diapason:
+                for cell in cells:
+                    if cell.value == criteria:
+                        return cell
+        elif range != None:
             diapason = self.ws[range]
-
-        for cell in diapason:
-            if cell.value == value:
-                return cell
+            if  range.isdigit() == True:
+                for cells in diapason:
+                    for cell in cells:
+                        if cell.value == criteria:
+                            return cell
+            elif range.isdigit() == False:
+                for cell in diapason:
+                    if cell.value == criteria:
+                        return cell
         return None
 
-    def getListOfCellsWithCriteria(self, range: str, criteria):
-        """Returns list of cells with values equal to criteria
+    def getListOfCellsByCriteria(self, criteria, range: str):
+        """Finds list of cells with values equal to criteria by
+        searching in some range or in whole sheet
 
-        Keyword argument:
-        range -- search range (I22:J22, I, ...)
+        Keyword arguments:
         criteria -- search criteria in cells values
+        range -- search range (I22:J22, I, ...), by default set to None
+                    so it search in whole sheet
         """
         listOfCells = []
 
@@ -203,6 +207,61 @@ class ExcelBook:
             rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
             self.merge(rangeStr)
         return
+
+    
+    
+    # def addHeader(self, range: str)
+    #     """Adds header class into this class
+
+    #     Keyword arguments:
+    #     range -- header diapasone (I22:J22, I)
+    #     """
+    #     self.header = Header()
+    #     return
+# class Header():
+
+#     def __init__(self, headerRange: str):
+#         self.header = headerRange
+#         split = headerRange.split(":")
+        
+#         try:
+#             if len(split) < 2:
+#                 raise Exception()
+#         except Exception:
+#             print("Header can`t be 1 cell " + headerRange)
+
+#         self.diapasone = self.excelWorksheet.ws[self.header]
+#         self.leftTopCoordinate = headerRange.split(":")[0]
+#         self.rightBotCoordinate = headerRange.split(":")[1]
+#         self.leftTopRow = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[0]
+#         self.leftTopColumn = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[1]
+#         self.rightBotRow = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[0]
+#         self.rightBotColumn = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[1]
+
+#     def getHeadersOfAllColumns(self):
+#         """
+#         """
+#         listOfHeaders = [[]]
+#         counter = 0
+#         for cells in self.diapasone:
+#             for cell in cells:
+#                 if cell.value != None:
+#                     listOfHeaders[counter].append(cell.value)
+#                     listOfHeaders[counter].append(cell.column)
+#                     listOfHeaders[counter].append(cell.row)
+#                     counter += 1
+
+#     def findCellByStr(self, value: str):
+#         """Finds first cell by searchin in the header 
+#         the target value. Returns a list [row, column]
+
+#         Keyword argument:
+#         value -- searching string
+#         """
+#         for cells in self.ws[self.header]:
+#             for cell in cells:
+#                 if cell.value == value:
+#                     return [cell.row, cell.column]
 
 
 if __name__ == "__main__":
