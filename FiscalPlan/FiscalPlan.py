@@ -19,8 +19,8 @@ class FiscalPlan:
         self.SBUT = ExcelBook(SBUTExcel, read=False, keep_vba=True)
         self.TEZ = ExcelBook(TEZExcel, read=False, worksheet=2)
 
-        self.day = datetime.datetime.today.day()
-        self.dayOfTheWeek = datetime.datetime.today.weekday()
+        # self.day = datetime.datetime.today.day
+        # self.dayOfTheWeek = datetime.datetime.today.weekday
     
     def run(self):
         self.todayCash.readExcelFile()
@@ -248,9 +248,37 @@ class FiscalPlan:
         except:
             print("Нет категории: Промисловість за прямими договорами (ПР)")
             industryPrCash = 0
+        try:
+            # Column J contain cash
+            energoGenerationColumn = openpyxl.utils.column_index_from_string(str("J"))
+            # Column C contain company name or category
+            energoGenerationColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(str("C"))
+            # Column E contain names of contracts wich were concluded with companies
+            energoGenerationColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
+            # Column C contain company name or category
+            energoGenerationRow = self.todayCash.findCellByStr("Енергогенеруючі компанії", "C").row
+            
+            while True:
+                energoGenerationRow += 1
+                categoryOrCompanyName = self.todayCash.ws.cell(
+                                column=energoGenerationColumnWithNameOfCompanyOrCategory, 
+                                row=energoGenerationRow).value
+                if categoryOrCompanyName == "Релігійні організації":
+                    break
+                
+                contractName = self.todayCash.ws.cell(
+                                column=energoGenerationColumnWithNameOfContracts, 
+                                row=energoGenerationRow).value
+                if "ПР" in contractName:
+                    energoGenerationCash += self.todayCash.ws.cell(
+                                column=energoGenerationColumn, row=energoGenerationRow)
+        except:
+            print("Нет категории: Енергогенеруючі компанії (ПР)")
+            energoGenerationCash = 0
+
 
         # TODO Энергогенерирующие предприятия (ПР)
-        return industryPrCash
+        return industryPrCash + energoGenerationCash
 
     def addToSummaryFile(self):
         self.fiscalPlan.readExcelFile()
@@ -258,19 +286,19 @@ class FiscalPlan:
         columnWithDates = openpyxl.utils.column_index_from_string(str("C"))
         while True:
             try:
-                cell.value = self.fiscalPlan.ws.cell(column=columnWithDates, row=rowWithDates).value
+                cellValue = self.fiscalPlan.ws.cell(column=columnWithDates, row=rowWithDates).value
             except AttributeError:
                 print("Проблема с файлом " + self.fiscalPlan.fileNameWithPath)
             isThereAFactCell = False
-            if "факт" in cell.value:
+            if "факт" in cellValue:
                 isThereAFactCell = True
             isThereAPlanCell = False
-            if "план" in cell.value:
+            if "план" in cellValue:
                 isThereAPlanCell = True
             if isThereAFactCell == True and isThereAPlanCell == True:
                 columnWithDates += 1
                 continue
-            elif isThereAFactCell == True and isThereAPlanCell == False:
+            #elif isThereAFactCell == True and isThereAPlanCell == False:
                 
 
             
