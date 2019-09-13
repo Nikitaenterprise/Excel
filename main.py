@@ -10,6 +10,5 @@ if __name__ == "__main__":
     #                         r"FiscalPlan\ТЕЦ.xls"
     #                         )
     excelBook = FiscalPlan(r"FiscalPlan")
-    #excelBook.ppp()
-    excelBook.run()
-    #excelBook.deleteFiles()
+    excelBook.ppp()
+    #excelBook.run()

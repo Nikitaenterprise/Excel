@@ -14,8 +14,35 @@ class FiscalPlan:
     def __init__(self, dir: str):
         self.day = datetime.datetime.today().day
         self.weekday = datetime.datetime.today().weekday()
-        self.scanDirectory(dir)
+        self.checkIsDirectoryIsReady(dir)
     
+    def checkIsDirectoryIsReady(self, path: str):
+        numberOfFiles = self.scanDirectory(path)
+        # Check the dir for needed files
+        while True:
+            if numberOfFiles == 6:
+                break
+            if numberOfFiles > 6:
+                print("Слишком много экселевских файлов в папке")
+                print("Должно быть ровно 6")
+                print("Программа пробует удалить ненужные")
+                self.deleteFiles(False)
+            numberOfFiles = self.scanDirectory(path)
+
+        try:
+            self.fiscalPlan
+            self.SBUT
+            self.PAT
+            self.todayCash
+            self.lastYearCash
+            self.TEZ
+        except AttributeError:
+            print("Не хватает файлов для работы. Проверьте директорию " + str(path))
+            print(self.instructionMessage())
+            input()
+            exit()
+        
+
     def scanDirectory(self, path: str):
         """Scans the directory with os.walk() for excel files
         and set class excel book variables for folowing work
@@ -48,25 +75,7 @@ class FiscalPlan:
                                 self.todayCash = ExcelBook(path+"\\"+file, read=False)
                     elif "ТЕЦ" in file:
                         self.TEZ = ExcelBook(path+"\\"+file, read=False, worksheet=2)
-        try:
-            self.fiscalPlan
-            self.SBUT
-            self.PAT
-            self.todayCash
-            self.lastYearCash
-            self.TEZ
-        except AttributeError:
-            print("Не хватает файлов для работы. Проверьте директорию " + str(path))
-            print(self.instructionMessage())
-            input()
-            exit()
-        if numberOfFiles > 6:
-            print("Слишком много экселевских файлов в папке")
-            print("Должно быть ровно 6")
-            print(self.instructionMessage())
-            input()
-            exit()
-        return
+        return numberOfFiles
 
     def instructionMessage(self):
         msg = """Файлы, нужные для работы: 
@@ -100,12 +109,20 @@ class FiscalPlan:
         print("2: " + str(self.teploenergy(self.lastYearCash)/1000000))
         print("3: " + str(self.directContractIndustryEE(self.lastYearCash)/1000000))
         print("4: " + str(self.directContractIndustryPR(self.lastYearCash)/1000000))
+
+        self.deleteFiles()
         return
 
-    def deleteFiles(self):
+    def deleteFiles(self, programmIsDone=True):
         """Deletes all created files with .xlsx extension
         """
-        self.closeFiles()
+        # If programm has daone its work then close files
+        if programmIsDone == True:
+            try:
+                self.closeFiles()
+            except:
+                print("Программа не смогла закрыть экселевские файлы")
+
         fileNameWithPathWithoutExtensionTEZ = os.path.splitext(self.TEZ.fileNameWithPath)[0]
         fileNameWithPathWithoutExtensionPAT = os.path.splitext(self.PAT.fileNameWithPath)[0]
         fileNameWithPathWithoutExtensionSBUT = os.path.splitext(self.SBUT.fileNameWithPath)[0]
@@ -113,11 +130,28 @@ class FiscalPlan:
                                                         self.todayCash.fileNameWithPath)[0]
         fileNameWithPathWithoutExtensionLastYearCash = os.path.splitext(
                                                         self.lastYearCash.fileNameWithPath)[0]
-        os.remove(fileNameWithPathWithoutExtensionTEZ + ".xlsx")
-        os.remove(fileNameWithPathWithoutExtensionPAT + ".xlsx")
-        os.remove(fileNameWithPathWithoutExtensionSBUT + ".xlsx")
-        os.remove(fileNameWithPathWithoutExtensionTodayCash + ".xlsx")
-        os.remove(fileNameWithPathWithoutExtensionLastYearCash + ".xlsx")
+        
+        numberOfDeletedFiles = 0
+        try:
+            os.remove(fileNameWithPathWithoutExtensionTEZ + ".xlsx")
+        except FileNotFoundError:
+            numberOfDeletedFiles += 1
+        try:
+            os.remove(fileNameWithPathWithoutExtensionPAT + ".xlsx")
+        except FileNotFoundError: 
+           numberOfDeletedFiles += 1
+        try:
+            os.remove(fileNameWithPathWithoutExtensionSBUT + ".xlsx")
+        except FileNotFoundError:
+            numberOfDeletedFiles += 1
+        try:
+            os.remove(fileNameWithPathWithoutExtensionTodayCash + ".xlsx")
+        except FileNotFoundError:
+            numberOfDeletedFiles += 1
+        try:
+            os.remove(fileNameWithPathWithoutExtensionLastYearCash + ".xlsx")
+        except FileNotFoundError:
+            numberOfDeletedFiles += 1
         return
 
     def end(self):
@@ -378,12 +412,11 @@ class FiscalPlan:
     def addToSummaryFile(self):
         self.fiscalPlan.readExcelFile()
         rowWithDates = 5
-        columnWithDates = openpyxl.utils.column_index_from_string(str("C"))
+        columnWithDates = openpyxl.utils.column_index_from_string(str("B"))
+        listOfHeaders = getHeadersOfAllColumns()
         while True:
-            try:
-                cellValue = self.fiscalPlan.ws.cell(column=columnWithDates, row=rowWithDates).value
-            except AttributeError:
-                print("Проблема с файлом " + self.fiscalPlan.fileNameWithPath)
+            cellValue = self.fiscalPlan.ws.cell(column=columnWithDates, row=rowWithDates).value
+            
             isThereAFactCell = False
             if "факт" in cellValue:
                 isThereAFactCell = True
@@ -395,7 +428,25 @@ class FiscalPlan:
                 continue
             #elif isThereAFactCell == True and isThereAPlanCell == False:
     def ppp(self):
-        self.fiscalPlan.readFileWithPyWin()
+
+        self.fiscalPlan.readExcelFile()
+        rowWithDates = 5
+        columnWithDates = openpyxl.utils.column_index_from_string(str("B"))
+        self.fiscalPlan.initHeader("B4:AH5")
+        listOfHeaders = self.fiscalPlan.getHeadersOfAllColumns()
+
+
+
+        excelApp, wb = self.fiscalPlan.readFileWithPyWin()
+        
+        #ws = wb.Worksheets("вересень")
+        ws = wb.ActiveSheet
+        coord = openpyxl.utils.coordinate_to_tuple("H6")
+        print(ws.Cells(coord[0], coord[1]).Value)
+        range = ws.Range("I1:I10")
+        range.EntireColumn.Insert()
+
+        excelApp.Quit()
 
 
 if __name__ == "__main__":

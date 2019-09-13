@@ -45,13 +45,13 @@ class ExcelBook():
             excelApp = win32com.client.Dispatch("Excel.Application")
             excelApp.Visible = False
 
-            #try:
-            wb = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
-            # except:
-            excelApp.Quit()
-            #     print("Программа не может открыть файл " + self.fileNameWithPath)
-            #     raise FileNotFoundError
-        return wb
+            try:
+                wb = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
+            except:
+                excelApp.Quit()
+                print("Программа не может открыть файл " + self.fileNameWithPath)
+                raise FileNotFoundError
+        return excelApp, wb
 
     def reSaveFromXlsToXlsx(self, name: str):
         """Opens file in .xls format and saves it 
@@ -232,19 +232,7 @@ class ExcelBook():
             self.merge(rangeStr)
         return
 
-    
-    
-    # def addHeader(self, range: str)
-    #     """Adds header class into this class
-
-    #     Keyword arguments:
-    #     range -- header diapasone (I22:J22, I)
-    #     """
-    #     self.header = Header()
-    #     return
-class Header():
-
-    def __init__(self, headerRange: str):
+    def initHeader(self, headerRange: str):
         self.header = headerRange
         split = headerRange.split(":")
         
@@ -254,7 +242,7 @@ class Header():
         except Exception:
             print("Header can`t be 1 cell " + headerRange)
 
-        self.diapasone = self.excelWorksheet.ws[self.header]
+        self.headerDiapasone = self.ws[self.header]
         self.leftTopCoordinate = headerRange.split(":")[0]
         self.rightBotCoordinate = headerRange.split(":")[1]
         self.leftTopRow = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[0]
@@ -265,27 +253,16 @@ class Header():
     def getHeadersOfAllColumns(self):
         """
         """
-        listOfHeaders = [[]]
+        listOfHeaders = []
         counter = 0
-        for cells in self.diapasone:
+        for cells in self.headerDiapasone:
             for cell in cells:
                 if cell.value != None:
-                    listOfHeaders[counter].append(cell.value)
-                    listOfHeaders[counter].append(cell.column)
-                    listOfHeaders[counter].append(cell.row)
+                    subList = [cell.value, cell.column, cell.row]
+                    listOfHeaders.append(subList)
+                    print(listOfHeaders[counter])
                     counter += 1
-
-    def findCellByStr(self, value: str):
-        """Finds first cell by searchin in the header 
-        the target value. Returns a list [row, column]
-
-        Keyword argument:
-        value -- searching string
-        """
-        for cells in self.ws[self.header]:
-            for cell in cells:
-                if cell.value == value:
-                    return [cell.row, cell.column]
+        return listOfHeaders
 
 if __name__ == "__main__":
-    print("I`m ExcelBook.py file")
+    print("I`m excel.py file")
