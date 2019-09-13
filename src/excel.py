@@ -1,7 +1,15 @@
 import os
 
+
 import openpyxl
 import win32com
+
+
+def hasNumbers(inputString: str):
+        """Checks string for containing numbers
+        returns True if string has at least one digit
+        """
+        return any(char.isdigit() for char in inputString)
 
 class ExcelBook():
 
@@ -28,6 +36,22 @@ class ExcelBook():
             self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
             self.ws = self.wb[self.wb.sheetnames[self.worksheetNumberInBook]]
         return True
+
+    def readFileWithPyWin(self):
+        """
+        """
+        extension = os.path.splitext(self.fileNameWithPath)[1] # may be .xls or .xlsx
+        if extension == ".xls" or extension == ".xlsx":
+            excelApp = win32com.client.Dispatch("Excel.Application")
+            excelApp.Visible = False
+
+            #try:
+            wb = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
+            # except:
+            excelApp.Quit()
+            #     print("Программа не может открыть файл " + self.fileNameWithPath)
+            #     raise FileNotFoundError
+        return wb
 
     def reSaveFromXlsToXlsx(self, name: str):
         """Opens file in .xls format and saves it 
@@ -124,12 +148,12 @@ class ExcelBook():
                         return cell
         elif range != None:
             diapason = self.ws[range]
-            if  range.isdigit() == True:
+            if  hasNumbers(range) == True:
                 for cells in diapason:
                     for cell in cells:
                         if cell.value == criteria:
                             return cell
-            elif range.isdigit() == False:
+            elif hasNumbers(range) == False:
                 for cell in diapason:
                     if cell.value == criteria:
                         return cell
@@ -146,12 +170,12 @@ class ExcelBook():
         """
         listOfCells = []
 
-        if  range.isdigit() == True:
+        if  hasNumbers(range) == True:
             for cells in self.ws[range]:
                 for cell in cells:
                     if cell.value == criteria:
                         listOfCells.append(cell)
-        elif range.isdigit() == False:
+        elif hasNumbers(range) == False:
             for cell in self.ws[range]:
                 if cell.value == criteria:
                     listOfCells.append(cell)
@@ -218,51 +242,50 @@ class ExcelBook():
     #     """
     #     self.header = Header()
     #     return
-# class Header():
+class Header():
 
-#     def __init__(self, headerRange: str):
-#         self.header = headerRange
-#         split = headerRange.split(":")
+    def __init__(self, headerRange: str):
+        self.header = headerRange
+        split = headerRange.split(":")
         
-#         try:
-#             if len(split) < 2:
-#                 raise Exception()
-#         except Exception:
-#             print("Header can`t be 1 cell " + headerRange)
+        try:
+            if len(split) < 2:
+                raise Exception()
+        except Exception:
+            print("Header can`t be 1 cell " + headerRange)
 
-#         self.diapasone = self.excelWorksheet.ws[self.header]
-#         self.leftTopCoordinate = headerRange.split(":")[0]
-#         self.rightBotCoordinate = headerRange.split(":")[1]
-#         self.leftTopRow = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[0]
-#         self.leftTopColumn = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[1]
-#         self.rightBotRow = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[0]
-#         self.rightBotColumn = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[1]
+        self.diapasone = self.excelWorksheet.ws[self.header]
+        self.leftTopCoordinate = headerRange.split(":")[0]
+        self.rightBotCoordinate = headerRange.split(":")[1]
+        self.leftTopRow = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[0]
+        self.leftTopColumn = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[1]
+        self.rightBotRow = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[0]
+        self.rightBotColumn = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[1]
 
-#     def getHeadersOfAllColumns(self):
-#         """
-#         """
-#         listOfHeaders = [[]]
-#         counter = 0
-#         for cells in self.diapasone:
-#             for cell in cells:
-#                 if cell.value != None:
-#                     listOfHeaders[counter].append(cell.value)
-#                     listOfHeaders[counter].append(cell.column)
-#                     listOfHeaders[counter].append(cell.row)
-#                     counter += 1
+    def getHeadersOfAllColumns(self):
+        """
+        """
+        listOfHeaders = [[]]
+        counter = 0
+        for cells in self.diapasone:
+            for cell in cells:
+                if cell.value != None:
+                    listOfHeaders[counter].append(cell.value)
+                    listOfHeaders[counter].append(cell.column)
+                    listOfHeaders[counter].append(cell.row)
+                    counter += 1
 
-#     def findCellByStr(self, value: str):
-#         """Finds first cell by searchin in the header 
-#         the target value. Returns a list [row, column]
+    def findCellByStr(self, value: str):
+        """Finds first cell by searchin in the header 
+        the target value. Returns a list [row, column]
 
-#         Keyword argument:
-#         value -- searching string
-#         """
-#         for cells in self.ws[self.header]:
-#             for cell in cells:
-#                 if cell.value == value:
-#                     return [cell.row, cell.column]
-
+        Keyword argument:
+        value -- searching string
+        """
+        for cells in self.ws[self.header]:
+            for cell in cells:
+                if cell.value == value:
+                    return [cell.row, cell.column]
 
 if __name__ == "__main__":
     print("I`m ExcelBook.py file")
