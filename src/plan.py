@@ -24,7 +24,7 @@ class FiscalPlan:
                 break
             if numberOfFiles > 6:
                 print("Слишком много экселевских файлов в папке")
-                print("Должно быть ровно 6")
+                print("Должно быть ровно" + str(numberOfFiles))
                 print("Программа пробует удалить ненужные")
                 self.deleteFiles(False)
             numberOfFiles = self.scanDirectory(path)

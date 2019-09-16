@@ -21,20 +21,31 @@ class ExcelBook():
         if read == True:
             self.readExcelFile()
 
-    def readExcelFile(self):
+    def readExcelFile(self, how="openpyxl"):
         """Reads file after creation of class instance by default.
         If this function wasn`t called after initialization of class instance
         (for example if you dont want to allocate a lot of memory by opening
         many excel books, but you want to initialize a class instances)
         then it can be called after.
         """
-        extension = os.path.splitext(self.fileNameWithPath)[1] # may be .xls or .xlsx
-        if extension == ".xls":
-            self.reSaveFromXlsToXlsx(self.fileNameWithPath)
-            extension = os.path.splitext(self.fileNameWithPath)[1] # reinitialize extension
-        if extension == ".xlsx":
-            self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
-            self.ws = self.wb[self.wb.sheetnames[self.worksheetNumberInBook]]
+        if how == "openpyxl":
+            extension = os.path.splitext(self.fileNameWithPath)[1] # may be .xls or .xlsx
+            if extension == ".xls":
+                self.reSaveFromXlsToXlsx(self.fileNameWithPath)
+                #self.readExcelFile(how="pywin")
+                extension = os.path.splitext(self.fileNameWithPath)[1] # reinitialize extension
+            if extension == ".xlsx":
+                self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
+                self.ws = self.wb[self.wb.sheetnames[self.worksheetNumberInBook]]
+        elif how == "pywin":
+            self.excelApp = win32com.client.Dispatch("Excel.Application")
+            self.excelApp.Visible = False
+            try:
+                self.wbPW = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
+            except:
+                self.excelApp.Quit()
+                print("Программа не может открыть файл " + self.fileNameWithPath)
+                raise FileNotFoundError
         return True
 
     def readFileWithPyWin(self):
@@ -71,16 +82,32 @@ class ExcelBook():
             excelApp.Quit()
             print("Программа не может открыть файл " + name)
             raise FileNotFoundError
+        
+        self.saveAsXlsx(newName, wb, excelApp)
 
-        xlsx = 51 # Code for xslx format
+        self.fileNameWithPath = newName
+        return
+
+    def saveAsXlsxOrXls(self, name: str, wb, excelApp, fileFormat="xlsx"):
+        """Saves file in xlsx or xls format
+        """
+        if fileFormat == "xlsx":
+            # Code for xslx format
+            fileFormat = 51 
+        elif fileFormat == "xls":
+            # Code for xls format
+            fileFormat = 51
+
         try:
-            wb.SaveAs(os.path.abspath(newName), FileFormat=xlsx)
+            wb.SaveAs(os.path.abspath(name), FileFormat=fileFormat)
             excelApp.Quit()
+        except AttributeError:
+            print("You are not using this function right")
+            print("Use it only with pyWin excel workbook")
+            raise WindowsError
         except:
             print("Программа не может сохранить файл " + newName)
             raise WindowsError
-        
-        self.fileNameWithPath = newName
         return
 
     def save(self, name: str):
@@ -90,15 +117,42 @@ class ExcelBook():
         Keyword arguments:
         name -- name of saved file
         """
-        self.wb.save(name)
-        self.wb.close()
+        try:
+            self.wb.save(name)
+            self.close()
+        except:
+            print("Программа не может сохранить файл " + name)
+            raise WindowsError
+
         return
     
     def close(self):
         """Closes file without saving
+        For saving file use save()
         """
         self.wb.close()
         return 
+
+    def incertColumnWithPyWin(self, column: str, wb):
+        """Incerts column using pyWin. 
+        Function incerts column to the right at first worksheet
+
+        Keyword arguments:
+        column -- name of column near what the column would be inserted
+        """
+        ws = wb.ActiveSheet
+        # select column as range object
+        if column.isdigit():
+            openpyxl.utils.get_column_letter(column)
+            newColumn = openpyxl.utils.get_column_letter(column)
+            rangeObj = ws.Range(newColumn+str(1)+str(":")+newColumn+str(2))
+        else:
+            rangeObj = ws.Range(column+str(1)+str(":")+column+str(2))
+
+        rangeObj.EntireColumn.Insert()
+        self.saveAsXlsx(self.fileNameWithPath, wb, excelApp)
+
+
 
     def setCellsInColumnByRowCoord(self, row: int, column: str, value):
         """Finds values in one column by row coordinate
