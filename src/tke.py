@@ -5,14 +5,14 @@ sys.path.append("..")
 import openpyxl
 import win32com.client
 
-from ExcelBook import ExcelBook
-from Header import Header
+from Modules.ExcelBook import ExcelBook
+from Modules.Header import Header
 
 
 class TKE:
 
     def __init__(self, wbName: str):
-        self.wb = ExcelBook(wbName, data_only=True)
+        self.wb = ExcelBook(wbName)
         self.header = Header(wbName, "A1:BU9")
         self.numberOfRows = self.wb.ws.max_row
 
@@ -59,7 +59,7 @@ class TKE:
         rangeObj.EntireColumn.Insert()
         del rangeObj
 
-        wbFromYesterday = ExcelBook("./second.xlsx", data_only=True)
+        wbFromYesterday = ExcelBook("./second.xlsx")
 
         excelYesterday = win32com.client.Dispatch("Excel.Application")
         excelYesterday.Visible = False
@@ -80,25 +80,25 @@ class TKE:
         if self.numberOfRows == wbFromYesterday.ws.max_row:                    #TODO make the right check
             rangeIter = "AS1" + ":" + "BU" + str(self.numberOfRows)
             self.wb.ws.move_range(rangeIter, rows=0, cols=1)                
-            for cell in wbFromYesterday.ws["AN"]:
-                if cell.value == "" or cell.value == None:
-                    self.wb.ws.cell(row = cell.row, 
-                                column = columnNumber,
-                                ).fill = fillBlue
-                else:
-                    self.wb.ws.cell(row = cell.row, 
-                                    column = columnNumber, 
-                                    value = cell.value
-                                    )
-                    self.wb.ws.cell(row = cell.row, 
-                                    column = columnNumber,
-                                    ).font = font
-                    self.wb.ws.cell(row = cell.row, 
-                                    column = columnNumber,
-                                    ).border = border
-                    self.wb.ws.cell(row = cell.row, 
-                                    column = columnNumber,
-                                    ).fill = fillColor
+            # for cell in wbFromYesterday.ws["AN"]:
+            #     if cell.value == "" or cell.value == None:
+            #         self.wb.ws.cell(row = cell.row, 
+            #                     column = columnNumber,
+            #                     ).fill = fillBlue
+            #     else:
+            #         self.wb.ws.cell(row = cell.row, 
+            #                         column = columnNumber, 
+            #                         value = cell.value
+            #                         )
+            #         self.wb.ws.cell(row = cell.row, 
+            #                         column = columnNumber,
+            #                         ).font = font
+            #         self.wb.ws.cell(row = cell.row, 
+            #                         column = columnNumber,
+            #                         ).border = border
+            #         self.wb.ws.cell(row = cell.row, 
+            #                         column = columnNumber,
+            #                         ).fill = fillColor
         else:
             raise Exception("Different number of rows in both docs\n. The first has: {}".format(self.wb.ws.max_row))
         
@@ -160,3 +160,9 @@ class TKE:
                 if self.listOfHiddenColumns[column] == True:
                     self.wb.ws.column_dimensions[openpyxl.utils.get_column_letter(column)].hidden = True
         return
+
+        
+first = TKE("./first.xlsx")
+first.start()  
+first.hideColumns()
+first.save("./out.xlsx")

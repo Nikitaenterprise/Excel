@@ -1,6 +1,11 @@
-from Excel import TKE
+﻿from src.plan import FiscalPlan
 
-first = TKE("./first.xlsx")
-first.start()  
-first.hideColumns()
-first.save("./out.xlsx")
+
+if __name__ == "__main__":
+    print("I`m main file")
+
+    excelBook = FiscalPlan(r"FiscalPlan")
+    #excelBook.ppp()
+    excelBook.run()
+
+    #tke = TKE()
