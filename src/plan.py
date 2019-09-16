@@ -14,9 +14,9 @@ class FiscalPlan:
     def __init__(self, dir: str):
         self.day = datetime.datetime.today().day
         self.weekday = datetime.datetime.today().weekday()
-        self.checkIsDirectoryIsReady(dir)
+        self.checkIfDirectoryIsReady(dir)
     
-    def checkIsDirectoryIsReady(self, path: str):
+    def checkIfDirectoryIsReady(self, path: str):
         numberOfFiles = self.scanDirectory(path)
         # Check the dir for needed files
         while True:
@@ -54,27 +54,27 @@ class FiscalPlan:
             for file in f:
                 if ".xls" in file or ".xlsx" in file:
                     numberOfFiles += 1
-                    print(file)
+                    pathToFile = path+"\\"+file
                     if "Прогнозне надходження" in file:
-                        self.fiscalPlan = ExcelBook(path+"\\"+file, read=False)
+                        self.fiscalPlan = ExcelBook(pathToFile, read=False)
                     elif "ЗБУТ" in file:
-                        self.SBUT = ExcelBook(path+"\\"+file, read=False, keep_vba=True)
+                        self.SBUT = ExcelBook(pathToFile, read=False, keep_vba=True)
                     elif "ПАТ" in file:
-                        self.PAT = ExcelBook(path+"\\"+file, read=False, keep_vba=True)
+                        self.PAT = ExcelBook(pathToFile, read=False, keep_vba=True)
                     elif "НаКР" in file:
                         # Check for date in filename
                         if hasNumbers(file):
                             # Searching for last year money
                             if "-" in file:
-                                self.lastYearCash = ExcelBook(path+"\\"+file, read=False)
+                                self.lastYearCash = ExcelBook(pathToFile, read=False)
                             # Searching for yesterday money excel file
                             elif str(self.day - 1) in file:
-                                self.todayCash = ExcelBook(path+"\\"+file, read=False)
+                                self.todayCash = ExcelBook(pathToFile, read=False)
                             else:
                                 print("Будьте осторожны, программа использует файл с деньгами с неправильной датой")
-                                self.todayCash = ExcelBook(path+"\\"+file, read=False)
+                                self.todayCash = ExcelBook(pathToFile, read=False)
                     elif "ТЕЦ" in file:
-                        self.TEZ = ExcelBook(path+"\\"+file, read=False, worksheet=2)
+                        self.TEZ = ExcelBook(pathToFile, read=False, worksheet=2)
         return numberOfFiles
 
     def instructionMessage(self):
