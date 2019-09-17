@@ -12,14 +12,14 @@ from src.manager import *
 
 
 class FiscalPlan:
-    
+
     def __init__(self, dir: str):
         self.day = datetime.datetime.today().day
         self.weekday = datetime.datetime.today().weekday()
         self.mng = Manager()
         self.mng.setWorkDir(dir)
         self.checkIfDirectoryIsReady(dir)
-    
+
     def checkIfDirectoryIsReady(self, path: str):
         numberOfFiles = self.scanDirectory(path)
         # Check the dir for needed files
@@ -45,7 +45,6 @@ class FiscalPlan:
             print(self.instructionMessage())
             input()
             exit()
-        
 
     def scanDirectory(self, path: str):
         """Scans the directory with os.walk() for excel files
@@ -62,23 +61,30 @@ class FiscalPlan:
                     if "Прогнозне надходження" in file:
                         self.fiscalPlan = ExcelBook(pathToFile, read=False)
                     elif "ЗБУТ" in file:
-                        self.SBUT = ExcelBook(pathToFile, read=False, keep_vba=True)
+                        self.SBUT = ExcelBook(
+                            pathToFile, read=False, keep_vba=True)
                     elif "ПАТ" in file:
-                        self.PAT = ExcelBook(pathToFile, read=False, keep_vba=True)
+                        self.PAT = ExcelBook(
+                            pathToFile, read=False, keep_vba=True)
                     elif "НаКР" in file:
                         # Check for date in filename
                         if hasNumbers(file):
                             # Searching for last year money
                             if "-" in file:
-                                self.lastYearCash = ExcelBook(pathToFile, read=False)
+                                self.lastYearCash = ExcelBook(
+                                    pathToFile, read=False)
                             # Searching for yesterday money excel file
                             elif str(self.day - 1) in file:
-                                self.todayCash = ExcelBook(pathToFile, read=False)
+                                self.todayCash = ExcelBook(
+                                    pathToFile, read=False)
                             else:
-                                print("Будьте осторожны, программа использует файл с деньгами с неправильной датой")
-                                self.todayCash = ExcelBook(pathToFile, read=False)
+                                print(
+                                    "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
+                                self.todayCash = ExcelBook(
+                                    pathToFile, read=False)
                     elif "ТЕЦ" in file:
-                        self.TEZ = ExcelBook(pathToFile, read=False, worksheet=2)
+                        self.TEZ = ExcelBook(
+                            pathToFile, read=False, worksheet=2)
         return numberOfFiles
 
     def instructionMessage(self):
@@ -127,14 +133,17 @@ class FiscalPlan:
             except:
                 print("Программа не смогла закрыть экселевские файлы")
 
-        fileNameWithPathWithoutExtensionTEZ = os.path.splitext(self.TEZ.fileNameWithPath)[0]
-        fileNameWithPathWithoutExtensionPAT = os.path.splitext(self.PAT.fileNameWithPath)[0]
-        fileNameWithPathWithoutExtensionSBUT = os.path.splitext(self.SBUT.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionTEZ = os.path.splitext(
+            self.TEZ.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionPAT = os.path.splitext(
+            self.PAT.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionSBUT = os.path.splitext(
+            self.SBUT.fileNameWithPath)[0]
         fileNameWithPathWithoutExtensionTodayCash = os.path.splitext(
-                                                        self.todayCash.fileNameWithPath)[0]
+            self.todayCash.fileNameWithPath)[0]
         fileNameWithPathWithoutExtensionLastYearCash = os.path.splitext(
-                                                        self.lastYearCash.fileNameWithPath)[0]
-        
+            self.lastYearCash.fileNameWithPath)[0]
+
         numberOfDeletedFiles = 0
         try:
             os.remove(fileNameWithPathWithoutExtensionTEZ + ".xlsx")
@@ -142,8 +151,8 @@ class FiscalPlan:
             numberOfDeletedFiles += 1
         try:
             os.remove(fileNameWithPathWithoutExtensionPAT + ".xlsx")
-        except FileNotFoundError: 
-           numberOfDeletedFiles += 1
+        except FileNotFoundError:
+            numberOfDeletedFiles += 1
         try:
             os.remove(fileNameWithPathWithoutExtensionSBUT + ".xlsx")
         except FileNotFoundError:
@@ -179,28 +188,33 @@ class FiscalPlan:
         CASH = 2
 
     def initColumnIndecesForCashBook(self):
-        
+
         return
-    
+
     def populationAndReligion(self, cashWB: ExcelBook):
         """Finds sum of cash from population and religion
         """
         try:
             # Column C contain names and categories
-            populationRow = cashWB.getFirstCellByCriteria("1.2. Населення", "C").row
+            populationRow = cashWB.getFirstCellByCriteria(
+                "1.2. Населення", "C").row
             # Column J contain cash
-            populationColumn = openpyxl.utils.column_index_from_string(str("J"))
-            populationCash = cashWB.ws.cell(column=populationColumn, row=populationRow).value
+            populationColumn = openpyxl.utils.column_index_from_string(
+                str("J"))
+            populationCash = cashWB.ws.cell(
+                column=populationColumn, row=populationRow).value
         except:
             print("Нет категории: Населення")
             populationCash = 0
 
         try:
             # Column C contain names and categories
-            religionRow = cashWB.getFirstCellByCriteria("Релігійні організації", "C").row
+            religionRow = cashWB.getFirstCellByCriteria(
+                "Релігійні організації", "C").row
             # Column J contain cash
-            religionColumn = populationColumn # the same column
-            religionCash = cashWB.ws.cell(column=religionColumn, row=religionRow).value
+            religionColumn = populationColumn  # the same column
+            religionCash = cashWB.ws.cell(
+                column=religionColumn, row=religionRow).value
         except:
             print("Нет категории: Релігійні організації")
             religionCash = 0
@@ -212,32 +226,37 @@ class FiscalPlan:
         """
         try:
             # Column C contain names and categories
-            teploenergyRow = cashWB.getFirstCellByCriteria("3.2. Теплоенергетика за прямими договорами", "C").row
+            teploenergyRow = cashWB.getFirstCellByCriteria(
+                "3.2. Теплоенергетика за прямими договорами", "C").row
             # Column J contain cash
-            teploenergyColumn = openpyxl.utils.column_index_from_string(str("J"))
-            teploenergyCash = cashWB.ws.cell(column=teploenergyColumn, row=teploenergyRow).value
+            teploenergyColumn = openpyxl.utils.column_index_from_string(
+                str("J"))
+            teploenergyCash = cashWB.ws.cell(
+                column=teploenergyColumn, row=teploenergyRow).value
         except:
             print("Нет категории: Теплоенергетика за прямими договорами")
             teploenergyCash = 0
 
         try:
             # Column C contain names and categories
-            kyivEnergoNotEeRow = cashWB.getFirstCellByCriteria("Енергетичні підприємства м.Києва", "C").row
+            kyivEnergoNotEeRow = cashWB.getFirstCellByCriteria(
+                "Енергетичні підприємства м.Києва", "C").row
             # Column J contain cash
-            kyivEnergoNotEeColumn = teploenergyColumn # the same column
+            kyivEnergoNotEeColumn = teploenergyColumn  # the same column
             kyivEnergoNotEeCash = 0
-            
-            # Column E contain names of contracts wich were concluded with companies 
-            kyivEnergoNotEeColumnWithNameOfContract = openpyxl.utils.column_index_from_string(str("E"))
+
+            # Column E contain names of contracts wich were concluded with companies
+            kyivEnergoNotEeColumnWithNameOfContract = openpyxl.utils.column_index_from_string(
+                str("E"))
             # Here, the contracts wich not contain EE are calculated
             for i in range(2, 6):
                 kyivEnergoNotEeRow += i
                 contractName = cashWB.ws.cell(
-                                column=kyivEnergoNotEeColumnWithNameOfContract, 
-                                row=kyivEnergoNotEeRow).value
+                    column=kyivEnergoNotEeColumnWithNameOfContract,
+                    row=kyivEnergoNotEeRow).value
                 cashValue = cashWB.ws.cell(
-                                column=kyivEnergoNotEeColumn, 
-                                row=kyivEnergoNotEeRow).value
+                    column=kyivEnergoNotEeColumn,
+                    row=kyivEnergoNotEeRow).value
                 if "ЕЕ" in contractName:
                     self.kyivEnergoEeContractCash = cashValue
                 elif "ЕЕ" not in contractName:
@@ -256,51 +275,56 @@ class FiscalPlan:
             self.TEZ.readExcelFile()
             self.TEZ.unmerge()
             # Column C contain names and categories
-            industryEeRow = cashWB.getFirstCellByCriteria("2.2. Промисловість за прямими договорами", "C").row
+            industryEeRow = cashWB.getFirstCellByCriteria(
+                "2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
-            industryEeColumnWithCash = openpyxl.utils.column_index_from_string(str("J"))
+            industryEeColumnWithCash = openpyxl.utils.column_index_from_string(
+                str("J"))
             # Column E contain names of contracts wich were concluded with companies
-            industryEeColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
+            industryEeColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(
+                str("E"))
             # Column C contain names and categories
-            industryEeColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(str("C"))
+            industryEeColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
+                str("C"))
 
             industryEeCash = 0
             TEZCash = 0
             while True:
                 industryEeRow += 1
                 categoryOrCompanyName = cashWB.ws.cell(
-                                column=industryEeColumnWithNameOfCompanyOrCategory, 
-                                row=industryEeRow).value
+                    column=industryEeColumnWithNameOfCompanyOrCategory,
+                    row=industryEeRow).value
                 if categoryOrCompanyName == "Всього по теплоенергетиці":
                     break
 
                 contractName = cashWB.ws.cell(
-                                column=industryEeColumnWithNameOfContracts, 
-                                row=industryEeRow).value
+                    column=industryEeColumnWithNameOfContracts,
+                    row=industryEeRow).value
                 if "ЕЕ" in contractName:
                     industryEeCash += cashWB.ws.cell(
-                                column=industryEeColumnWithCash, 
-                                row=industryEeRow).value                    
+                        column=industryEeColumnWithCash,
+                        row=industryEeRow).value
                 else:
                     # Search the ТЕЦ.xlsx file for companies overlaping
                     # and if so, cash of this companies would be added
                     try:
-                        # Get cell from ТЕЦ.xlsx with company name that is equal to 
+                        # Get cell from ТЕЦ.xlsx with company name that is equal to
                         # company name in НадходженняНаКР_.xlsx
-                        cell = self.TEZ.getFirstCellByCriteria(str(categoryOrCompanyName), "D")
+                        cell = self.TEZ.getFirstCellByCriteria(
+                            str(categoryOrCompanyName), "D")
                         if cell == None:
                             raise AttributeError(cell)
 
                         cellValue = cell.value
                     except AttributeError:
-                        # If cell have None type then there is no such company in 
+                        # If cell have None type then there is no such company in
                         # ТЕЦ.xlsx and thats why cellValue should be equal to 0
                         cellValue = 0
 
                     if cellValue != 0:
                         TEZCash += cashWB.ws.cell(
-                                column=industryEeColumnWithCash, 
-                                row=industryEeRow).value
+                            column=industryEeColumnWithCash,
+                            row=industryEeRow).value
         except:
             print("Нет категории: Промисловість за прямими договорами (ЕЕ)")
             industryEeCash = 0
@@ -328,54 +352,61 @@ class FiscalPlan:
             self.SBUT.unmerge()
 
             # Column C contain names and categories
-            industryPrRow = cashWB.getFirstCellByCriteria("2.2. Промисловість за прямими договорами", "C").row
+            industryPrRow = cashWB.getFirstCellByCriteria(
+                "2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
-            industryPrColumn = openpyxl.utils.column_index_from_string(str("J"))
+            industryPrColumn = openpyxl.utils.column_index_from_string(
+                str("J"))
             # Column E contain names of contracts wich were concluded with companies
-            industryPrColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
+            industryPrColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(
+                str("E"))
             # Column C contain names and categories
-            industryPrColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(str("C"))
+            industryPrColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
+                str("C"))
 
             industryPrCash = 0
             naftogazTradingCash = 0
             while True:
                 industryPrRow += 1
                 categoryOrCompanyName = cashWB.ws.cell(
-                                column=industryPrColumnWithNameOfCompanyOrCategory, 
-                                row=industryPrRow).value
+                    column=industryPrColumnWithNameOfCompanyOrCategory,
+                    row=industryPrRow).value
 
                 if categoryOrCompanyName == "Всього по теплоенергетиці":
                     break
 
                 contractName = cashWB.ws.cell(
-                                column=industryPrColumnWithNameOfContracts, 
-                                row=industryPrRow).value
+                    column=industryPrColumnWithNameOfContracts,
+                    row=industryPrRow).value
                 if "ПР" in contractName:
                     # Search in:
-                    # ТЕЦ.xlsx, 
-                    # Всі Категорії. (без спожив. за )_ЗБУТ.xlsx, 
-                    # Всі Категорії. (без спожив. за )_ПАТ.xlsx 
-                    # files for companies overlaping and if so, 
+                    # ТЕЦ.xlsx,
+                    # Всі Категорії. (без спожив. за )_ЗБУТ.xlsx,
+                    # Всі Категорії. (без спожив. за )_ПАТ.xlsx
+                    # files for companies overlaping and if so,
                     # cash of this companies wouldn`t be calculated
                     try:
-                        cellTEZ = self.TEZ.getFirstCellByCriteria(str(categoryOrCompanyName), "D")
-                        cellPAT = self.PAT.getFirstCellByCriteria(str(categoryOrCompanyName), "C")
-                        cellSBUT = self.SBUT.getFirstCellByCriteria(str(categoryOrCompanyName), "C")
+                        cellTEZ = self.TEZ.getFirstCellByCriteria(
+                            str(categoryOrCompanyName), "D")
+                        cellPAT = self.PAT.getFirstCellByCriteria(
+                            str(categoryOrCompanyName), "C")
+                        cellSBUT = self.SBUT.getFirstCellByCriteria(
+                            str(categoryOrCompanyName), "C")
                         if cellTEZ != None or cellPAT != None or cellSBUT != None:
                             continue
                         # if cellTEZ == None or cellPAT == None or cellSBUT == None:
                         #     raise AttributeError()
                     except AttributeError:
                         continue
-                        
+
                     industryPrCash += cashWB.ws.cell(
-                            column=industryPrColumn, 
-                            row=industryPrRow).value  
+                        column=industryPrColumn,
+                        row=industryPrRow).value
 
                 if "НАФТОГАЗ ТРЕЙДИНГ" in categoryOrCompanyName:
                     naftogazTradingCash += cashWB.ws.cell(
-                            column=industryPrColumn, 
-                            row=industryPrRow).value 
+                        column=industryPrColumn,
+                        row=industryPrRow).value
         except:
             print("Нет категории: Промисловість за прямими договорами (ПР)")
             industryPrCash = 0
@@ -383,34 +414,38 @@ class FiscalPlan:
 
         try:
             # Column J contain cash
-            energoGenerationColumn = openpyxl.utils.column_index_from_string(str("J"))
+            energoGenerationColumn = openpyxl.utils.column_index_from_string(
+                str("J"))
             # Column C contain company name or category
-            energoGenerationColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(str("C"))
+            energoGenerationColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
+                str("C"))
             # Column E contain names of contracts wich were concluded with companies
-            energoGenerationColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(str("E"))
+            energoGenerationColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(
+                str("E"))
             # Column C contain company name or category
-            energoGenerationRow = cashWB.getFirstCellByCriteria("Енергогенеруючі компанії", "C").row
-            
+            energoGenerationRow = cashWB.getFirstCellByCriteria(
+                "Енергогенеруючі компанії", "C").row
+
             while True:
                 energoGenerationRow += 1
                 categoryOrCompanyName = cashWB.ws.cell(
-                                column=energoGenerationColumnWithNameOfCompanyOrCategory, 
-                                row=energoGenerationRow).value
+                    column=energoGenerationColumnWithNameOfCompanyOrCategory,
+                    row=energoGenerationRow).value
                 if categoryOrCompanyName == "Релігійні організації":
                     break
-                
+
                 contractName = cashWB.ws.cell(
-                                column=energoGenerationColumnWithNameOfContracts, 
-                                row=energoGenerationRow).value
+                    column=energoGenerationColumnWithNameOfContracts,
+                    row=energoGenerationRow).value
                 if "ПР" in contractName:
                     energoGenerationCash += cashWB.ws.cell(
-                                column=energoGenerationColumn, row=energoGenerationRow)
+                        column=energoGenerationColumn, row=energoGenerationRow)
         except:
             print("Нет категории: Енергогенеруючі компанії (ПР)")
             energoGenerationCash = 0
 
-
-        print('Деньги от ТОВ "ГАЗОПОСТАЧАЛЬНА КОМПАНІЯ "НАФТОГАЗ ТРЕЙДИНГ" ' + str(naftogazTradingCash/1000000))
+        print('Деньги от ТОВ "ГАЗОПОСТАЧАЛЬНА КОМПАНІЯ "НАФТОГАЗ ТРЕЙДИНГ" ' +
+              str(naftogazTradingCash/1000000))
         return industryPrCash + energoGenerationCash
 
     def addToSummaryFile(self):
@@ -419,8 +454,9 @@ class FiscalPlan:
         columnWithDates = openpyxl.utils.column_index_from_string(str("B"))
         listOfHeaders = getHeadersOfAllColumns()
         while True:
-            cellValue = self.fiscalPlan.ws.cell(column=columnWithDates, row=rowWithDates).value
-            
+            cellValue = self.fiscalPlan.ws.cell(
+                column=columnWithDates, row=rowWithDates).value
+
             isThereAFactCell = False
             if "факт" in cellValue:
                 isThereAFactCell = True
@@ -430,7 +466,8 @@ class FiscalPlan:
             if isThereAFactCell == True and isThereAPlanCell == True:
                 columnWithDates += 1
                 continue
-            #elif isThereAFactCell == True and isThereAPlanCell == False:
+            # elif isThereAFactCell == True and isThereAPlanCell == False:
+
     def ppp(self):
 
         self.fiscalPlan.readExcelFile()
@@ -439,10 +476,8 @@ class FiscalPlan:
         self.fiscalPlan.initHeader("B4:AH5")
         listOfHeaders = self.fiscalPlan.getHeadersOfAllColumns()
 
-
-
         excelApp, wb = self.fiscalPlan.readFileWithPyWin()
-        
+
         #ws = wb.Worksheets("вересень")
         ws = wb.ActiveSheet
         coord = openpyxl.utils.coordinate_to_tuple("H6")
@@ -455,4 +490,4 @@ class FiscalPlan:
 
 if __name__ == "__main__":
     print("I`m FiscalPlan.py file")
-    #run tests
+    # run tests

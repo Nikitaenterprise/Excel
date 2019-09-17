@@ -7,12 +7,11 @@ if __name__ == "__main__":
     print("I`m main file")
 
     excelBook = FiscalPlan(r"FiscalPlan")
-    #excelBook.ppp()
+    # excelBook.ppp()
     excelBook.run()
 
     # tke = TKE(r"TKE")
     # tke.run()
-
 
     # wb = openpyxl.load_workbook(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\111.xlsx")
     # ws = wb["1"]

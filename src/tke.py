@@ -34,7 +34,6 @@ class TKE:
             print(self.instructionMessage())
             input()
             exit()
-        
 
     def scanDirectory(self, path: str):
         """Scans the directory with os.walk() for excel files
@@ -50,13 +49,17 @@ class TKE:
                     pathToFile = path+"\\"+file
                     if "90%ТКЕ" in file:
                         if hasNumbers(file):
-                            if str(datetime.datetime.today().day) in file: 
-                                self.todayTKE = ExcelBook(pathToFile, read=False)   
+                            if str(datetime.datetime.today().day) in file:
+                                self.todayTKE = ExcelBook(
+                                    pathToFile, read=False)
                             elif str(datetime.datetime.today().day - 1) in file:
-                                self.yesterdayTKE = ExcelBook(pathToFile, read=False)
+                                self.yesterdayTKE = ExcelBook(
+                                    pathToFile, read=False)
                             else:
-                                print("Будьте осторожны, программа использует файл с деньгами с неправильной датой")
-                                self.yesterdayTKE = ExcelBook(pathToFile, read=False)
+                                print(
+                                    "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
+                                self.yesterdayTKE = ExcelBook(
+                                    pathToFile, read=False)
         return numberOfFiles
 
     def instructionMessage(self):
@@ -83,9 +86,11 @@ class TKE:
             except:
                 print("Программа не смогла закрыть экселевские файлы")
 
-        fileNameWithPathWithoutExtensionTodayTKE = os.path.splitext(self.todayTKE.fileNameWithPath)[0]
-        fileNameWithPathWithoutExtensionYesterdayTKE = os.path.splitext(self.yesterdayTKE.fileNameWithPath)[0]
-        
+        fileNameWithPathWithoutExtensionTodayTKE = os.path.splitext(
+            self.todayTKE.fileNameWithPath)[0]
+        fileNameWithPathWithoutExtensionYesterdayTKE = os.path.splitext(
+            self.yesterdayTKE.fileNameWithPath)[0]
+
         numberOfDeletedFiles = 0
         try:
             os.remove(fileNameWithPathWithoutExtensionTodayTKE + ".xlsx")
@@ -93,7 +98,7 @@ class TKE:
             numberOfDeletedFiles += 1
         try:
             os.remove(fileNameWithPathWithoutExtensionYesterdayTKE + ".xlsx")
-        except FileNotFoundError: 
+        except FileNotFoundError:
             numberOfDeletedFiles += 1
         return
 
@@ -106,14 +111,16 @@ class TKE:
         self.todayTKE.incertColumnWithPyWin("AS")
         excelAppYesterday, wbYesterday = self.yesterdayTKE.readFileWithPyWin()
         excelAppToday, wbToday = self.todayTKE.readFileWithPyWin()
-        
+
         excelYesterday = win32com.client.Dispatch("Excel.Application")
         excelYesterday.Visible = False
-        yesterdayTkePyWin = excelYesterday.Workbooks.Open(self.yesterdayTKE.fileNameWithPath)
+        yesterdayTkePyWin = excelYesterday.Workbooks.Open(
+            self.yesterdayTKE.fileNameWithPath)
         sheetYesterday = workbookYesterday.Worksheets(1)
-        #sheetYesterday.Range("AS1:AS"+str(self.yesterdayTKE.ws.max_row)).Unmerge()
-        #sheet.Range("AS1:AS"+str(numberOfRows)).Unmerge()
-        yesterdayColumn = sheetYesterday.Range("AS1:AS"+str(self.yesterdayTKE.ws.max_row)).Copy()
+        # sheetYesterday.Range("AS1:AS"+str(self.yesterdayTKE.ws.max_row)).Unmerge()
+        # sheet.Range("AS1:AS"+str(numberOfRows)).Unmerge()
+        yesterdayColumn = sheetYesterday.Range(
+            "AS1:AS"+str(self.yesterdayTKE.ws.max_row)).Copy()
         sheet.Paste(sheet.Range("AS1:AS"+str(numberOfRows)))
         workbookYesterday.Close()
 
@@ -124,22 +131,23 @@ class TKE:
         for cells in self.todayTKE.ws[rangeIter]:
             for cell in cells:
                 if cell.value != "" and cell.value != None:
-                    self.todayTKE.ws[str("AM")+str(cell.row)] = str("договір є")
+                    self.todayTKE.ws[str("AM")+str(cell.row)
+                                     ] = str("договір є")
                     # This check needs for empty cell not to be filled
-                    if self.todayTKE.ws[str("AT")+str(cell.row)] != "":            
+                    if self.todayTKE.ws[str("AT")+str(cell.row)] != "":
                         self.todayTKE.ws[str("AT")+str(cell.row)] = 1
 
-        #Opens ysterday workbook and copies one specific column to current 
-        #workbook shifting other columns
-        #fillColor = openpyxl.styles.PatternFill(start_color="cdffcd",
+        # Opens ysterday workbook and copies one specific column to current
+        # workbook shifting other columns
+        # fillColor = openpyxl.styles.PatternFill(start_color="cdffcd",
         #                                        fill_type="solid"
         #                                        ) #Set fill color green
-        #fillBlue = openpyxl.styles.PatternFill(start_color="9acdff",
+        # fillBlue = openpyxl.styles.PatternFill(start_color="9acdff",
         #                                        fill_type="solid"
         #                                        ) #Set fill color blue
 
-        #font = openpyxl.styles.Font(name="Arial",sz=9)      # Set font
-        #border = openpyxl.styles.Border(left=openpyxl.styles.Side(border_style="thin",
+        # font = openpyxl.styles.Font(name="Arial",sz=9)      # Set font
+        # border = openpyxl.styles.Border(left=openpyxl.styles.Side(border_style="thin",
         #                                color='000000'),
         #                                right=openpyxl.styles.Side(border_style="thin",
         #                                color='000000'),
@@ -148,7 +156,7 @@ class TKE:
         #                                bottom=openpyxl.styles.Side(border_style="thin",
         #                                color='000000')
         #                                )                       # Set border
-        
+
         # excel = win32com.client.Dispatch("Excel.Application")
         # excel.Visible = False
         # workbook = excel.Workbooks.Open("C:\Code\Python\Excel\ggg.xlsx")
@@ -161,11 +169,14 @@ class TKE:
 
         excelYesterday = win32com.client.Dispatch("Excel.Application")
         excelYesterday.Visible = False
-        workbookYesterday = excelYesterday.Workbooks.Open("C:\Code\Python\Excel\second.xlsx") # Right path
+        workbookYesterday = excelYesterday.Workbooks.Open(
+            "C:\Code\Python\Excel\second.xlsx")  # Right path
         sheetYesterday = workbookYesterday.Worksheets(1)
-        sheetYesterday.Range("AN1:AN"+str(wbFromYesterday.ws.max_row)).Unmerge()
+        sheetYesterday.Range(
+            "AN1:AN"+str(wbFromYesterday.ws.max_row)).Unmerge()
         sheet.Range("AS1:AS"+str(numberOfRows)).Unmerge()
-        rangeObjYesterday = sheetYesterday.Range("AN1:AN"+str(wbFromYesterday.ws.max_row)).Copy()
+        rangeObjYesterday = sheetYesterday.Range(
+            "AN1:AN"+str(wbFromYesterday.ws.max_row)).Copy()
         sheet.Paste(sheet.Range("AS1:AS"+str(numberOfRows)))
         workbookYesterday.Close()
         workbook.Save()
@@ -173,65 +184,71 @@ class TKE:
         excelYesterday.Quit()
         excel.Quit()
 
-
         columnNumber = openpyxl.utils.column_index_from_string("AS")
-        if numberOfRows == wbFromYesterday.ws.max_row:                    #TODO make the right check
+        if numberOfRows == wbFromYesterday.ws.max_row:  # TODO make the right check
             rangeIter = "AS1" + ":" + "BU" + str(numberOfRows)
-            self.todayTKE.ws.move_range(rangeIter, rows=0, cols=1)                
+            self.todayTKE.ws.move_range(rangeIter, rows=0, cols=1)
             # for cell in wbFromYesterday.ws["AN"]:
             #     if cell.value == "" or cell.value == None:
-            #         self.todayTKE.ws.cell(row = cell.row, 
+            #         self.todayTKE.ws.cell(row = cell.row,
             #                     column = columnNumber,
             #                     ).fill = fillBlue
             #     else:
-            #         self.todayTKE.ws.cell(row = cell.row, 
-            #                         column = columnNumber, 
+            #         self.todayTKE.ws.cell(row = cell.row,
+            #                         column = columnNumber,
             #                         value = cell.value
             #                         )
-            #         self.todayTKE.ws.cell(row = cell.row, 
+            #         self.todayTKE.ws.cell(row = cell.row,
             #                         column = columnNumber,
             #                         ).font = font
-            #         self.todayTKE.ws.cell(row = cell.row, 
+            #         self.todayTKE.ws.cell(row = cell.row,
             #                         column = columnNumber,
             #                         ).border = border
-            #         self.todayTKE.ws.cell(row = cell.row, 
+            #         self.todayTKE.ws.cell(row = cell.row,
             #                         column = columnNumber,
             #                         ).fill = fillColor
         else:
-            raise Exception("Different number of rows in both docs\n. The first has: {}".format(self.todayTKE.ws.max_row))
-        
+            raise Exception("Different number of rows in both docs\n. The first has: {}".format(
+                self.todayTKE.ws.max_row))
+
         # Copy names of hidden columns
         self.listOfHiddenColumns = []
         for column in range(1, wbFromYesterday.ws.max_column):
-            self.listOfHiddenColumns.append(wbFromYesterday.ws.column_dimensions[openpyxl.utils.get_column_letter(column)].hidden)
-        
+            self.listOfHiddenColumns.append(
+                wbFromYesterday.ws.column_dimensions[openpyxl.utils.get_column_letter(column)].hidden)
+
         listOfRangedCells = wbFromYesterday.ws.merged_cells.ranges
         wbFromYesterday.close()
 
-        #Transfer data from 'поточний лимит' to 'попередний лимит'
+        # Transfer data from 'поточний лимит' to 'попередний лимит'
         rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
         rangeIter2 = "BB10" + ":" + "BH" + str(numberOfRows)
         for cells1, cells2 in zip(self.todayTKE.ws[rangeIter1], self.todayTKE.ws[rangeIter2]):
             for cell1, cell2 in zip(cells1, cells2):
                 if cell1.row == cell2.row:
-                    self.todayTKE.ws.cell(column=cell2.column, row=cell2.row, value=cell1.value)
-        
-        #Multiply cells in column 'план на декаду' by 3
+                    self.todayTKE.ws.cell(
+                        column=cell2.column, row=cell2.row, value=cell1.value)
+
+        # Multiply cells in column 'план на декаду' by 3
         rangeIter = "AU10" + ":" + "BA" + str(numberOfRows)
         for cells in self.todayTKE.ws[rangeIter]:
             for cell in cells:
                 if cell.value != None:
-                    self.todayTKE.ws.cell(column=cell.column, row=cell.row, value=cell.value*3)
-        
-        #Set 'план э' to those rows wich have 0`s in both columns with conditions
-        list1 = self.todayTKE.getListOfCellsWithCriteria("AS", 0)             # Check the range
-        list2 = self.todayTKE.getListOfCellsWithCriteria("AT", 0)             # Check the range
-        
+                    self.todayTKE.ws.cell(
+                        column=cell.column, row=cell.row, value=cell.value*3)
+
+        # Set 'план э' to those rows wich have 0`s in both columns with conditions
+        list1 = self.todayTKE.getListOfCellsWithCriteria(
+            "AS", 0)             # Check the range
+        list2 = self.todayTKE.getListOfCellsWithCriteria(
+            "AT", 0)             # Check the range
+
         for cell1 in list1:
             if cell1.value == 0:
                 for cell2 in list2:
                     if cell2.value == 0 and cell1.row == cell2.row:
-                        self.todayTKE.ws[str("AU")+str(cell1.row)] = str("план є")
+                        self.todayTKE.ws[str(
+                            "AU")+str(cell1.row)] = str("план є")
                         self.todayTKE.ws[str("AV")+str(cell1.row)] = ""
                         self.todayTKE.ws[str("AW")+str(cell1.row)] = ""
                         self.todayTKE.ws[str("AX")+str(cell1.row)] = ""
@@ -242,25 +259,27 @@ class TKE:
         # Find the difference between columns with 'план на декаду' and 'поточний лимит'
         for row in range(10, numberOfRows):
             if self.todayTKE.ws[str("AU")+str(row)].value != "план є" and self.todayTKE.ws[str("AU")+str(row)].value != None:
-                dx = self.todayTKE.ws[str("BO")+str(row)].value-self.todayTKE.ws[str("AU")+str(row)].value
+                dx = self.todayTKE.ws[str(
+                    "BO")+str(row)].value-self.todayTKE.ws[str("AU")+str(row)].value
                 if dx > 1E-4 or dx < -1E-4:                                                         # Check range!!!
                     self.todayTKE.ws.cell(column=openpyxl.utils.column_index_from_string(str("BW")),
-                                    row=row,
-                                    value=dx
-                                    )
+                                          row=row,
+                                          value=dx
+                                          )
 
-        #self.todayTKE.unmerge()
+        # self.todayTKE.unmerge()
         return
 
     def hideColumns(self):
         for column in range(1, self.todayTKE.ws.max_column):
             if column < len(self.listOfHiddenColumns):
                 if self.listOfHiddenColumns[column] == True:
-                    self.todayTKE.ws.column_dimensions[openpyxl.utils.get_column_letter(column)].hidden = True
+                    self.todayTKE.ws.column_dimensions[openpyxl.utils.get_column_letter(
+                        column)].hidden = True
         return
 
-        
+
 # first = TKE("./first.xlsx")
-# first.start()  
+# first.start()
 # first.hideColumns()
 # first.save("./out.xlsx")

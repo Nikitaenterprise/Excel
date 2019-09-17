@@ -3,13 +3,14 @@ import os
 import openpyxl
 import win32com.client
 
+
 class File:
 
     def __init__(self, pathToFile: str, fileName: str):
         self.pathToFile = pathToFile
         self.fileName = fileName
         self.isOpened = False
-    
+
     def open(self):
         pass
 
@@ -30,7 +31,8 @@ class PyWin(File):
             self.excelApp = win32com.client.Dispatch("Excel.Application")
             self.excelApp.Visible = False
             try:
-                self.wb = self.excelApp.Workbooks.Open(self.pathToFile+"\\"+self.fileName)
+                self.wb = self.excelApp.Workbooks.Open(
+                    self.pathToFile+"\\"+self.fileName)
                 self.isOpened = True
             except:
                 self.isOpened = False
@@ -41,7 +43,7 @@ class PyWin(File):
     def getWb(self):
         if self.isOpened == True:
             return self.wb
-    
+
     def getApp(self):
         if self.isOpened == True:
             return self.excelApp
@@ -50,13 +52,13 @@ class PyWin(File):
         if self.isOpened == True:
             self.wb.Close()
             self.excelApp.Quit()
-            self.isOpened = False 
+            self.isOpened = False
 
     def save(self, path: str, name: str, extension=".xlsx"):
         if self.isOpened == True:
             if extension == ".xlsx":
                 # Code for xslx format
-                fileFormat = 51 
+                fileFormat = 51
             elif extension == ".xls":
                 # Code for xls format
                 fileFormat = 56
@@ -67,8 +69,8 @@ class OpenPyXl(File):
     def open(self, data_only=False, keep_vba=False):
         if self.isOpened == False:
             try:
-                self.wb = openpyxl.load_workbook(self.pathToFile+self.fileName, 
-                                        data_only=data_only, keep_vba=keep_vba)
+                self.wb = openpyxl.load_workbook(self.pathToFile+self.fileName,
+                                                 data_only=data_only, keep_vba=keep_vba)
                 self.isOpened = True
             except:
                 self.isOpened = False
@@ -80,13 +82,14 @@ class OpenPyXl(File):
             return self.wb
 
     def close(self):
-        if self.isOpened == True: 
+        if self.isOpened == True:
             self.wb.close()
             self.isOpened = False
-    
+
     def save(self, path: str, name: str, extension=".xlsx"):
         if self.isOpened == True:
             self.wb.save(path+name)
+
 
 class Manager:
 
@@ -95,11 +98,11 @@ class Manager:
 
     def setWorkDir(self, pathToWorkDir: str):
         self.pathToWorkDir = pathToWorkDir
-        
+
     def addFileByPath(self, pathToFile: str, fileName: str):
         if ".xlsx" in fileName:
             self.files.append(OpenPyXl(pathToFile, fileName))
-        elif ".xls" in fileName: 
+        elif ".xls" in fileName:
             self.files.append(PyWin(pathToFile, fileName))
 
     def addFile(self, file: File):
@@ -121,7 +124,7 @@ class Manager:
     def removeFile(self, thatFile: File):
         try:
             #print("removeFile:", str(thatFile))
-            #print(self.files)
+            # print(self.files)
             self.files.remove(thatFile)
             thatFile.close()
             thatFile.__del__()
@@ -130,6 +133,7 @@ class Manager:
 
     def getNumberOfFiles(self):
         return len(self.files)
+
 
 def saveFileAsXlsx(manager: Manager, file: File):
     newFileName = file.fileName.split(".")[0]
@@ -140,7 +144,7 @@ def saveFileAsXlsx(manager: Manager, file: File):
 
 
 if __name__ == "__main__":
-    
+
     mng = Manager()
     mng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
     mng.addFilesInDir()
@@ -156,7 +160,7 @@ if __name__ == "__main__":
             if file.fileName == neededFileName:
                 #print("i`m here")
                 #print("if statement:", neededFileName, str(file))
-                #mng.removeFile(file)
+                # mng.removeFile(file)
                 tmpMng.addFile(file)
 
     # mng = tmpMng
