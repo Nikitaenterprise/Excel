@@ -96,7 +96,7 @@ class ExcelBook():
             fileFormat = 51 
         elif fileFormat == "xls":
             # Code for xls format
-            fileFormat = 51
+            fileFormat = 56
 
         try:
             wb.SaveAs(os.path.abspath(name), FileFormat=fileFormat)
