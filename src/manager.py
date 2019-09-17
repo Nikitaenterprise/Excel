@@ -131,85 +131,45 @@ class Manager:
     def getNumberOfFiles(self):
         return len(self.files)
 
-def openFile(file: File):
-    #extension = os.path.splitext(file.fileName)[1] # may be .xls or .xlsx
-    extension = file.fileName.split(".")[1]
-    extension = "." + extension
-
-    if extension == ".xls":
-        # excelApp = win32com.client.Dispatch("Excel.Application")
-        # excelApp.Visible = False
-
-        # try:
-        #     wb = excelApp.Workbooks.Open(os.path.abspath(name))
-        # except:
-        #     excelApp.Quit()
-        #     print("Программа не может открыть файл " + name)
-        #     raise FileNotFoundError
-            
-        self.saveAsXlsx(newName, wb, excelApp)
-
-        self.fileNameWithPath = newName
-            
-        extension = os.path.splitext(self.fileNameWithPath)[1] # reinitialize extension
-    if extension == ".xlsx":
-        self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
-        self.ws = self.wb[self.wb.sheetnames[self.worksheetNumberInBook]]
-    elif how == "pywin":
-        self.excelApp = win32com.client.Dispatch("Excel.Application")
-        self.excelApp.Visible = False
-        try:
-            self.wbPW = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
-        except:
-            self.excelApp.Quit()
-            print("Программа не может открыть файл " + self.fileNameWithPath)
-            raise FileNotFoundError
-
 def saveFileAsXlsx(manager: Manager, file: File):
     newFileName = file.fileName.split(".")[0]
     file.open()
     file.save(file.pathToFile, newFileName, ".xlsx")
     file.close()
     manager.addFileByPath(file.pathToFile, str(newFileName)+".xlsx")
-    print("ebalo")
-    for f in manager.files:
-        print(f.fileName)
-    print("ebalo2")
-
-mng = Manager()
-mng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
-mng.addFilesInDir()
-
-tmpMng = Manager()
-tmpMng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
-
-neededFileNames = ["222.xlsx", "111.xls"]
-for neededFileName in neededFileNames:
-    for file in mng.files:
-        #print("main loop:", file.fileName, str(file))
-        #print(file.fileName, neededFileName)
-        if file.fileName == neededFileName:
-            #print("i`m here")
-            #print("if statement:", neededFileName, str(file))
-            #mng.removeFile(file)
-            tmpMng.addFile(file)
-
-mng = tmpMng
-del tmpMng
-
-for file in mng.files:
-    print(file.fileName)
-print("privet ebalo")
-saveFileAsXlsx(mng, mng[1])
-
-for file in mng.files:
-    print(file.fileName)
-
-mng[2].open()
-wb=mng[2].getWb()
-print(wb["1"].cell(row=2, column=1).value)
 
 
-
-
+if __name__ == "__main__":
     
+    mng = Manager()
+    mng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
+    mng.addFilesInDir()
+
+    tmpMng = Manager()
+    tmpMng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
+
+    neededFileNames = ["222.xlsx", "111.xls"]
+    for neededFileName in neededFileNames:
+        for file in mng.files:
+            #print("main loop:", file.fileName, str(file))
+            #print(file.fileName, neededFileName)
+            if file.fileName == neededFileName:
+                #print("i`m here")
+                #print("if statement:", neededFileName, str(file))
+                #mng.removeFile(file)
+                tmpMng.addFile(file)
+
+    # mng = tmpMng
+    # del tmpMng
+
+    # for file in mng.files:
+    #     print(file.fileName)
+    #print("privet ebalo")
+    # saveFileAsXlsx(mng, mng[1])
+
+    # for file in mng.files:
+    #     print(file.fileName)
+
+    # mng[2].open()
+    # wb=mng[2].getWb()
+    # print(wb["1"].cell(row=2, column=1).value)

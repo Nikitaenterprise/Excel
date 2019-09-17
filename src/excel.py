@@ -5,6 +5,9 @@ import openpyxl
 import win32com
 
 
+from src.manager import *
+
+
 def hasNumbers(inputString: str):
         """Checks string for containing numbers
         returns True if string has at least one digit

@@ -7,13 +7,17 @@ import openpyxl
 import win32com.client
 
 
-from src.excel import ExcelBook, hasNumbers
+from src.excel import *
+from src.manager import *
+
 
 class FiscalPlan:
     
     def __init__(self, dir: str):
         self.day = datetime.datetime.today().day
         self.weekday = datetime.datetime.today().weekday()
+        self.mng = Manager()
+        self.mng.setWorkDir(dir)
         self.checkIfDirectoryIsReady(dir)
     
     def checkIfDirectoryIsReady(self, path: str):
