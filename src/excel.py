@@ -9,14 +9,15 @@ from src.manager import *
 
 
 def hasNumbers(inputString: str):
-        """Checks string for containing numbers
-        returns True if string has at least one digit
-        """
-        return any(char.isdigit() for char in inputString)
+    """Checks string for containing numbers
+    returns True if string has at least one digit
+    """
+    return any(char.isdigit() for char in inputString)
+
 
 class ExcelBook():
 
-    def __init__(self, name: str, data_only=True, read=True, worksheet: int=0, keep_vba=True):
+    def __init__(self, name: str, data_only=True, read=True, worksheet: int = 0, keep_vba=True):
         self.fileNameWithPath = name
         self.data_only = data_only
         self.worksheetNumberInBook = worksheet
@@ -32,19 +33,23 @@ class ExcelBook():
         then it can be called after.
         """
         if how == "openpyxl":
-            extension = os.path.splitext(self.fileNameWithPath)[1] # may be .xls or .xlsx
+            extension = os.path.splitext(self.fileNameWithPath)[
+                1]  # may be .xls or .xlsx
             if extension == ".xls":
                 self.reSaveFromXlsToXlsx(self.fileNameWithPath)
-                #self.readExcelFile(how="pywin")
-                extension = os.path.splitext(self.fileNameWithPath)[1] # reinitialize extension
+                # self.readExcelFile(how="pywin")
+                extension = os.path.splitext(self.fileNameWithPath)[
+                    1]  # reinitialize extension
             if extension == ".xlsx":
-                self.wb = openpyxl.load_workbook(self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
+                self.wb = openpyxl.load_workbook(
+                    self.fileNameWithPath, data_only=self.data_only, keep_vba=self.keep_vba)
                 self.ws = self.wb[self.wb.sheetnames[self.worksheetNumberInBook]]
         elif how == "pywin":
             self.excelApp = win32com.client.Dispatch("Excel.Application")
             self.excelApp.Visible = False
             try:
-                self.wbPW = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
+                self.wbPW = excelApp.Workbooks.Open(
+                    os.path.abspath(self.fileNameWithPath))
             except:
                 self.excelApp.Quit()
                 print("Программа не может открыть файл " + self.fileNameWithPath)
@@ -54,13 +59,15 @@ class ExcelBook():
     def readFileWithPyWin(self):
         """
         """
-        extension = os.path.splitext(self.fileNameWithPath)[1] # may be .xls or .xlsx
+        extension = os.path.splitext(self.fileNameWithPath)[
+            1]  # may be .xls or .xlsx
         if extension == ".xls" or extension == ".xlsx":
             excelApp = win32com.client.Dispatch("Excel.Application")
             excelApp.Visible = False
 
             try:
-                wb = excelApp.Workbooks.Open(os.path.abspath(self.fileNameWithPath))
+                wb = excelApp.Workbooks.Open(
+                    os.path.abspath(self.fileNameWithPath))
             except:
                 excelApp.Quit()
                 print("Программа не может открыть файл " + self.fileNameWithPath)
@@ -70,7 +77,7 @@ class ExcelBook():
     def reSaveFromXlsToXlsx(self, name: str):
         """Opens file in .xls format and saves it 
         in .xlsx format using pyWin32
-        
+
         Keyword arguments:
         name -- name of file that will be changed
         """
@@ -85,7 +92,7 @@ class ExcelBook():
             excelApp.Quit()
             print("Программа не может открыть файл " + name)
             raise FileNotFoundError
-        
+
         self.saveAsXlsx(newName, wb, excelApp)
 
         self.fileNameWithPath = newName
@@ -96,7 +103,7 @@ class ExcelBook():
         """
         if fileFormat == "xlsx":
             # Code for xslx format
-            fileFormat = 51 
+            fileFormat = 51
         elif fileFormat == "xls":
             # Code for xls format
             fileFormat = 56
@@ -128,13 +135,13 @@ class ExcelBook():
             raise WindowsError
 
         return
-    
+
     def close(self):
         """Closes file without saving
         For saving file use save()
         """
         self.wb.close()
-        return 
+        return
 
     def incertColumnWithPyWin(self, column: str, wb):
         """Incerts column using pyWin. 
@@ -154,8 +161,6 @@ class ExcelBook():
 
         rangeObj.EntireColumn.Insert()
         self.saveAsXlsx(self.fileNameWithPath, wb, excelApp)
-
-
 
     def setCellsInColumnByRowCoord(self, row: int, column: str, value):
         """Finds values in one column by row coordinate
@@ -205,7 +210,7 @@ class ExcelBook():
                         return cell
         elif range != None:
             diapason = self.ws[range]
-            if  hasNumbers(range) == True:
+            if hasNumbers(range) == True:
                 for cells in diapason:
                     for cell in cells:
                         if cell.value == criteria:
@@ -227,7 +232,7 @@ class ExcelBook():
         """
         listOfCells = []
 
-        if  hasNumbers(range) == True:
+        if hasNumbers(range) == True:
             for cells in self.ws[range]:
                 for cell in cells:
                     if cell.value == criteria:
@@ -261,12 +266,11 @@ class ExcelBook():
             maxCol = rangeList[2]
             maxRow = rangeList[3]
             self.ws.unmerge_cells(start_row=minRow,
-                                start_column=minCol,
-                                end_row=maxRow,
-                                end_column=maxCol
-                                )
+                                  start_column=minCol,
+                                  end_row=maxRow,
+                                  end_column=maxCol
+                                  )
         return
-
 
     def merge(self, range: str):
         start = range.split(":")[0]
@@ -285,14 +289,15 @@ class ExcelBook():
     def mergeByTuple(self, rangeList: list):
         for range in rangeList:
             coord = list(range.bounds)
-            rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
+            rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(
+                coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
             self.merge(rangeStr)
         return
 
     def initHeader(self, headerRange: str):
         self.header = headerRange
         split = headerRange.split(":")
-        
+
         try:
             if len(split) < 2:
                 raise Exception()
@@ -302,10 +307,14 @@ class ExcelBook():
         self.headerDiapasone = self.ws[self.header]
         self.leftTopCoordinate = headerRange.split(":")[0]
         self.rightBotCoordinate = headerRange.split(":")[1]
-        self.leftTopRow = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[0]
-        self.leftTopColumn = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[1]
-        self.rightBotRow = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[0]
-        self.rightBotColumn = openpyxl.utils.coordinate_to_tuple(self.rightBotCoordinate)[1]
+        self.leftTopRow = openpyxl.utils.coordinate_to_tuple(self.leftTopCoordinate)[
+            0]
+        self.leftTopColumn = openpyxl.utils.coordinate_to_tuple(
+            self.leftTopCoordinate)[1]
+        self.rightBotRow = openpyxl.utils.coordinate_to_tuple(
+            self.rightBotCoordinate)[0]
+        self.rightBotColumn = openpyxl.utils.coordinate_to_tuple(
+            self.rightBotCoordinate)[1]
 
     def getHeadersOfAllColumns(self):
         """
@@ -320,6 +329,7 @@ class ExcelBook():
                     print(listOfHeaders[counter])
                     counter += 1
         return listOfHeaders
+
 
 if __name__ == "__main__":
     print("I`m excel.py file")
