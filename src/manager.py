@@ -4,6 +4,13 @@ import openpyxl
 import win32com.client
 
 
+def hasNumbers(inputString: str):
+    """Checks string for containing numbers
+    returns True if string has at least one digit
+    """
+    return any(char.isdigit() for char in inputString)
+
+
 class File:
 
     def __init__(self, pathToFile: str, fileName: str):
@@ -25,7 +32,9 @@ class File:
 
     def getWb(self):
         pass
-
+    
+    def getWs(self):
+        pass
 
 class PyWin(File):
 
@@ -47,6 +56,13 @@ class PyWin(File):
         if self.isOpened == True:
             return self.wb
 
+    def getWs(self, wsName="", isActiveSheet=False):
+        if self.isOpened == True:
+            if isActiveSheet == False:
+                return self.wb.Worksheets(wsName)
+            elif isActiveSheet == True:
+                return self.wb.ActiveSheet 
+
     def getApp(self):
         if self.isOpened == True:
             return self.excelApp
@@ -67,12 +83,30 @@ class PyWin(File):
                 fileFormat = 56
             self.wb.SaveAs(path + "\\" + name + extension, FileFormat=fileFormat)
 
+    def incertColumn(self, column: str):
+        """Incerts column using pyWin. 
+        Function incerts column to the right at first worksheet
+
+        Keyword arguments:
+        column -- name of column near what the column would be inserted
+        """
+        ws = self.getWs(isActiveSheet=True)
+        # select column as range object
+        if column.isdigit():
+            openpyxl.utils.get_column_letter(column)
+            newColumn = openpyxl.utils.get_column_letter(column)
+            rangeObj = ws.Range(newColumn+str(1)+str(":")+newColumn+str(2))
+        else:
+            rangeObj = ws.Range(column+str(1)+str(":")+column+str(2))
+
+        rangeObj.EntireColumn.Insert()
+        self.save(self.pathToFile, self.fileName)
 
 class OpenPyXl(File):
-    def open(self, data_only=False, keep_vba=False):
+    def open(self, data_only=True, keep_vba=False):
         if self.isOpened == False:
             try:
-                self.wb = openpyxl.load_workbook(self.pathToFile+self.fileName,
+                self.wb = openpyxl.load_workbook(self.pathToFile + "\\" + self.fileName,
                                                  data_only=data_only, keep_vba=keep_vba)
                 self.isOpened = True
             except:
@@ -84,6 +118,17 @@ class OpenPyXl(File):
         if self.isOpened == True:
             return self.wb
 
+    def getWs(self, wsName="", isActiveSheet=False):
+        if self.isOpened == True:
+            if isActiveSheet == True or wsName == 0 or wsName == "":
+                return self.wb[self.getWsNames()[0]]
+            elif isActiveSheet == False:
+                return self.wb[wsName]
+
+    def getWsNames(self):
+        if self.isOpened == True:
+            return self.wb.sheetnames
+
     def close(self):
         if self.isOpened == True:
             self.wb.close()
@@ -92,6 +137,123 @@ class OpenPyXl(File):
     def save(self, path: str, name: str, extension=".xlsx"):
         if self.isOpened == True:
             self.wb.save(path+name)
+
+    def setCellsInColumnByRowCoord(self, row: int, column: str, value, wsName=""):
+        """Finds values in one column by row coordinate
+        and then set value of that cell
+
+        Keyword arguments:
+        row -- row number
+        column -- column in which the searh would happend
+        value -- this would be set to the cell
+        """
+        for cells in self.getWs(wsName)[column]:
+            for cell in cells:
+                if cell.row == row:
+                    cell.value = value
+        return
+
+    def setCellsInRowByColumnCoord(self, row: int, column: str, value, wsName=""):
+        """Finds values in one row by column coordinate
+        and then set value of that cell
+
+        Keyword arguments:
+        row -- row number
+        column -- column in which the searh would happend
+        value -- this would be set to the cell
+        """
+        for cells in self.getWs(wsName)[str(row)]:
+            for cell in cells:
+                if cell.column == openpyxl.utils.column_index_from_string(column):
+                    cell.value = value
+        return
+
+    def getFirstCellByCriteria(self, criteria, range: str = None, wsName=""):
+        """Finds first cell by searchin in whole sheet or in 
+        some range the target criteria. Similar to Excel 
+        function VLOOKUP (ВПР)
+
+        Keyword arguments:
+        value -- searching value (str, int, ...)
+        range -- search range (I22:J22, or I), by default set to None
+                    so it search in whole sheet
+        """
+        if range == None:
+            diapason = self.getWs(wsName)
+            for cells in diapason:
+                for cell in cells:
+                    if cell.value == criteria:
+                        return cell
+        elif range != None:
+            diapason = self.getWs(wsName)[range]
+            if hasNumbers(range) == True:
+                for cells in diapason:
+                    for cell in cells:
+                        if cell.value == criteria:
+                            return cell
+            elif hasNumbers(range) == False:
+                for cell in diapason:
+                    if cell.value == criteria:
+                        return cell
+        return None
+
+    def getListOfCellsByCriteria(self, criteria, range: str, wsName=""):
+        """Finds list of cells with values equal to criteria by
+        searching in some range or in whole sheet
+
+        Keyword arguments:
+        criteria -- search criteria in cells values
+        range -- search range (I22:J22, I, ...), by default set to None
+                    so it search in whole sheet
+        """
+        listOfCells = []
+
+        if hasNumbers(range) == True:
+            for cells in self.getWs(wsName)[range]:
+                for cell in cells:
+                    if cell.value == criteria:
+                        listOfCells.append(cell)
+        elif hasNumbers(range) == False:
+            for cell in self.getWs(wsName)[range]:
+                if cell.value == criteria:
+                    listOfCells.append(cell)
+        return listOfCells
+
+    def unmerge(self, wsName=""):
+        for range in self.getWs(wsName).merged_cells.ranges:
+            rangeList = list(range.bounds)
+            minCol = rangeList[0]
+            minRow = rangeList[1]
+            maxCol = rangeList[2]
+            maxRow = rangeList[3]
+            self.getWs(wsName).unmerge_cells(start_row=minRow,
+                                    start_column=minCol,
+                                    end_row=maxRow,
+                                    end_column=maxCol
+                                    )
+        return
+
+    def merge(self, range: str, wsName=""):
+        start = range.split(":")[0]
+        end = range.split(":")[1]
+        minRow = openpyxl.utils.coordinate_to_tuple(start)[0]
+        minCol = openpyxl.utils.coordinate_to_tuple(start)[1]
+        maxRow = openpyxl.utils.coordinate_to_tuple(end)[0]
+        maxCol = openpyxl.utils.coordinate_to_tuple(end)[1]
+        self.getWs(wsName).merge_cells(start_row=minRow,
+                            start_column=minCol,
+                            end_row=maxRow,
+                            end_column=maxCol
+                            )
+        return
+
+    def mergeByTuple(self, rangeList: list, wsName=""):
+        for range in rangeList:
+            coord = list(range.bounds)
+            rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(
+                coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
+            self.merge(rangeStr)
+        return
 
 
 class Manager:
@@ -168,6 +330,15 @@ class Manager:
         for file in self.files:
             if file.wasCalled == False:
                 self.deleteFile(file)
+
+    def deleteClosedFiles(self):
+        forDelete = []
+        for file in self.files:
+            if file.isOpened == False:
+                forDelete.append(file)
+
+        for file in forDelete:
+            self.deleteFile(file)
 
     def allFromXlsToXlsx(self):
         forRemove = []

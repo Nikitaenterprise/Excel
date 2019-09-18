@@ -5,8 +5,6 @@ from copy import copy
 import openpyxl
 import win32com.client
 
-from src.excel import ExcelBook, hasNumbers
-
 
 class TKE:
 

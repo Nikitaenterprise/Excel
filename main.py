@@ -1,5 +1,5 @@
 ﻿from src.plan import FiscalPlan
-from src.tke import TKE
+#from src.tke import TKE
 
 import openpyxl
 
