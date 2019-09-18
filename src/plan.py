@@ -14,13 +14,40 @@ from src.manager import *
 class FiscalPlan:
 
     def __init__(self, dir: str):
-        self.day = datetime.datetime.today().day
-        self.weekday = datetime.datetime.today().weekday()
         self.mng = Manager()
-        self.mng.setWorkDir(dir)
         self.checkIfDirectoryIsReady(dir)
 
     def checkIfDirectoryIsReady(self, path: str):
+        self.mng.setWorkDir(os.path.abspath(path))
+        self.mng.addFilesInDir()
+        numberOfFiles2 = self.mng.getNumberOfFiles()
+        
+        self.fiscalPlan = self.mng.getFile("Прогнозне надходження", extension=".xlsx")
+        self.SBUT = self.mng.getFile("ЗБУТ")
+        self.PAT = self.mng.getFile("ПАТ")
+        self.TEZ = self.mng.getFile("ТЕЦ")
+
+        cash = []
+        cash.append(self.mng.getFile("НаКР"))
+        cash.append(self.mng.getFile("НаКР"))
+        for cashFile in cash:
+            fileName = cashFile.fileName
+            if hasNumbers(fileName):
+                day = datetime.datetime.today().day
+                # Searching for last year money
+                if "-" in fileName:
+                    self.lastYearCash = cashFile
+                # Searching for yesterday money excel file
+                elif str(day - 1) in fileName:
+                    self.todayCash = cashFile
+                else:
+                    print(
+                        "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
+                    self.todayCash = cashFile
+        del cash
+        self.lastYearCash
+        self.mng.deleteUnCalledFiles()
+
         numberOfFiles = self.scanDirectory(path)
         # Check the dir for needed files
         while True:
@@ -69,12 +96,14 @@ class FiscalPlan:
                     elif "НаКР" in file:
                         # Check for date in filename
                         if hasNumbers(file):
+                            day = datetime.datetime.today().day
+                            weekday = datetime.datetime.today().weekday()
                             # Searching for last year money
                             if "-" in file:
                                 self.lastYearCash = ExcelBook(
                                     pathToFile, read=False)
                             # Searching for yesterday money excel file
-                            elif str(self.day - 1) in file:
+                            elif str(day - 1) in file:
                                 self.todayCash = ExcelBook(
                                     pathToFile, read=False)
                             else:

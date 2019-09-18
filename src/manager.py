@@ -9,7 +9,9 @@ class File:
     def __init__(self, pathToFile: str, fileName: str):
         self.pathToFile = pathToFile
         self.fileName = fileName
+        self.fileExtension = os.path.splitext(self.pathToFile + "\\" + self.fileName)[1]
         self.isOpened = False
+        self.wasCalled = False
 
     def open(self):
         pass
@@ -127,13 +129,44 @@ class Manager:
             # print(self.files)
             self.files.remove(thatFile)
             thatFile.close()
-            thatFile.__del__()
         except ValueError:
             print("Couldn`t remove file " + thatFile.fileName)
+
+    def deleteFile(self, thatFile: File, extension=".xlsx"):
+        self.removeFile(thatFile)
+        fullName = thatFile.pathToFile + "\\"
+        fullName += thatFile.fileName.split(".")[0] + "."
+        fullName += extension.split(".")[1]
+        os.remove(fullName)
 
     def getNumberOfFiles(self):
         return len(self.files)
 
+    def printAllFiles(self):
+        print("\n\n")
+        print(self)
+        for file in self.files:
+            print(file.fileName, file)
+        print("\n\n")
+
+    def getFile(self, partOfNameOfFile, extension=".xls"):
+        for file in self.files:
+            if partOfNameOfFile in file.fileName:
+                if extension == file.fileExtension:
+                    if file.wasCalled == False:
+                        file.wasCalled = True
+                        return file
+        return None
+
+    def removeUnCalledFiles(self):
+        for file in self.files:
+            if file.wasCalled == False:
+                self.removeFile(file)
+
+    def deleteUnCalledFiles(self):
+        for file in self.files:
+            if file.wasCalled == False:
+                self.deleteFile(file)
 
 def saveFileAsXlsx(manager: Manager, file: File):
     newFileName = file.fileName.split(".")[0]
