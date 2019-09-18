@@ -21,51 +21,66 @@ class FiscalPlan:
         self.mng.setWorkDir(os.path.abspath(path))
         self.mng.addFilesInDir()
         
-        self.fiscalPlan = self.mng.getFile("Прогнозне надходження", extension=".xlsx")
-        self.SBUT = self.mng.getFile("ЗБУТ")
-        self.PAT = self.mng.getFile("ПАТ")
-        self.TEZ = self.mng.getFile("ТЕЦ")
+        self.mng.getFile("Прогнозне надходження", extension=".xlsx")
+        self.mng.getFile("ЗБУТ")
+        self.mng.getFile("ПАТ")
+        self.mng.getFile("ТЕЦ")
+        self.mng.getFile("НаКР")
+        self.mng.getFile("НаКР")
 
-        cash = []
-        cash.append(self.mng.getFile("НаКР"))
-        cash.append(self.mng.getFile("НаКР"))
-        for cashFile in cash:
-
-            try:
-                fileName = cashFile.fileName
-            except (AttributeError, OSError) as ex:
-                print("Проблема с файлом НаКР, возможно, он отсутствует")
-                raise WindowsError
-
-            if hasNumbers(fileName):
-                day = datetime.datetime.today().day
-                # Searching for last year money
-                if "-" in fileName:
-                    self.lastYearCash = cashFile
-                # Searching for yesterday money excel file
-                elif str(day - 1) in fileName:
-                    self.todayCash = cashFile
-                else:
-                    print(
-                        "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
-                    self.todayCash = cashFile
-        del cash
-        self.mng.deleteUnCalledFiles()     
-        self.mng.printAllFiles()           
+        self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
         self.mng.printAllFiles()
+
         try:
-            self.fiscalPlan
-            self.SBUT
-            self.PAT
-            self.todayCash
-            self.lastYearCash
-            self.TEZ
+            self.fiscalPlan = self.mng.getFile("Прогнозне надходження", extension=".xlsx")
+            self.SBUT = self.mng.getFile("ЗБУТ", extension=".xlsx")
+            self.PAT = self.mng.getFile("ПАТ", extension=".xlsx")
+            self.TEZ = self.mng.getFile("ТЕЦ", extension=".xlsx")
+            
+            cash = []
+            cash.append(self.mng.getFile("НаКР", extension=".xlsx"))
+            cash.append(self.mng.getFile("НаКР", extension=".xlsx"))
+            for cashFile in cash:
+
+                try:
+                    fileName = cashFile.fileName
+                except (AttributeError, OSError) as ex:
+                    print("Проблема с файлом НаКР, возможно, он отсутствует")
+                    raise WindowsError
+
+                if hasNumbers(fileName):
+                    day = datetime.datetime.today().day
+                    # Searching for last year money
+                    if "-" in fileName:
+                        self.lastYearCash = cashFile
+                    # Searching for yesterday money excel file
+                    elif str(day - 1) in fileName:
+                        self.todayCash = cashFile
+                    else:
+                        print(
+                            "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
+                        self.todayCash = cashFile
+            del cash
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
             print(self.instructionMessage())
             input()
             exit()
+
+        self.mng.printAllFiles()
+        # try:
+        #     self.fiscalPlan 
+        #     self.SBUT
+        #     self.PAT
+        #     self.todayCash
+        #     self.lastYearCash
+        #     self.TEZ
+        # except AttributeError:
+        #     print("Не хватает файлов для работы. Проверьте директорию " + str(path))
+        #     print(self.instructionMessage())
+        #     input()
+        #     exit()
 
     def scanDirectory(self, path: str):
         """Scans the directory with os.walk() for excel files
@@ -131,13 +146,13 @@ class FiscalPlan:
         return msg
 
     def run(self):
-        self.todayCash.readExcelFile()
+        self.todayCash.open()
         print("1: " + str(self.populationAndReligion(self.todayCash)/1000000))
         print("2: " + str(self.teploenergy(self.todayCash)/1000000))
         print("3: " + str(self.directContractIndustryEE(self.todayCash)/1000000))
         print("4: " + str(self.directContractIndustryPR(self.todayCash)/1000000))
 
-        self.lastYearCash.readExcelFile()
+        self.lastYearCash.open()
         print("1: " + str(self.populationAndReligion(self.lastYearCash)/1000000))
         print("2: " + str(self.teploenergy(self.lastYearCash)/1000000))
         print("3: " + str(self.directContractIndustryEE(self.lastYearCash)/1000000))
@@ -202,16 +217,6 @@ class FiscalPlan:
         self.TEZ.close()
         self.todayCash.close()
         self.lastYearCash.close()
-        return
-
-    class ColumnsNames(Enum):
-        COMPANY = 0
-        CATEGORY = 0
-        CONTRACT = 1
-        CASH = 2
-
-    def initColumnIndecesForCashBook(self):
-
         return
 
     def populationAndReligion(self, cashWB: ExcelBook):

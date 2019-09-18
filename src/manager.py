@@ -170,22 +170,22 @@ class Manager:
                 self.deleteFile(file)
 
     def allFromXlsToXlsx(self):
-        #for file in self.files:
-        for i in range(0, len(self.files)):
-            print(self.files[i].fileName)
-            if self.files[i].fileExtension == ".xls":
-                saveFileAsXlsx(self, self.files[i])
-        self.printAllFiles()
+        forRemove = []
         for file in self.files:
-            if file.wasCalled == False:
-                self.removeFile(file)
+            print(file.fileName)
+            if file.fileExtension == ".xls":
+                saveFileAsXlsx(self, file)
+                file.wasCalled = False
+                forRemove.append(file)
+    
+        for file in forRemove:
+            self.removeFile(file)
 
 
 def saveFileAsXlsx(manager: Manager, file: File):
     file.open()
     file.save(file.pathToFile, file.fileNameWithoutExtension, ".xlsx")
     file.close()
-    file.wasCalled = False
     newFileName = file.fileNameWithoutExtension+".xlsx"
     manager.addFileByPath(file.pathToFile, newFileName)
 
