@@ -20,7 +20,6 @@ class FiscalPlan:
     def checkIfDirectoryIsReady(self, path: str):
         self.mng.setWorkDir(os.path.abspath(path))
         self.mng.addFilesInDir()
-        numberOfFiles2 = self.mng.getNumberOfFiles()
         
         self.fiscalPlan = self.mng.getFile("Прогнозне надходження", extension=".xlsx")
         self.SBUT = self.mng.getFile("ЗБУТ")
@@ -31,7 +30,13 @@ class FiscalPlan:
         cash.append(self.mng.getFile("НаКР"))
         cash.append(self.mng.getFile("НаКР"))
         for cashFile in cash:
-            fileName = cashFile.fileName
+
+            try:
+                fileName = cashFile.fileName
+            except (AttributeError, OSError) as ex:
+                print("Проблема с файлом НаКР, возможно, он отсутствует")
+                raise WindowsError
+
             if hasNumbers(fileName):
                 day = datetime.datetime.today().day
                 # Searching for last year money
@@ -45,21 +50,10 @@ class FiscalPlan:
                         "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
                     self.todayCash = cashFile
         del cash
-        self.lastYearCash
-        self.mng.deleteUnCalledFiles()
-
-        numberOfFiles = self.scanDirectory(path)
-        # Check the dir for needed files
-        while True:
-            if numberOfFiles == 6:
-                break
-            if numberOfFiles > 6:
-                print("Слишком много экселевских файлов в папке")
-                print("Должно быть ровно" + str(numberOfFiles))
-                print("Программа пробует удалить ненужные")
-                self.deleteFiles(False)
-            numberOfFiles = self.scanDirectory(path)
-
+        self.mng.deleteUnCalledFiles()     
+        self.mng.printAllFiles()           
+        self.mng.allFromXlsToXlsx()
+        self.mng.printAllFiles()
         try:
             self.fiscalPlan
             self.SBUT

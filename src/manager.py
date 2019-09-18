@@ -9,7 +9,8 @@ class File:
     def __init__(self, pathToFile: str, fileName: str):
         self.pathToFile = pathToFile
         self.fileName = fileName
-        self.fileExtension = os.path.splitext(self.pathToFile + "\\" + self.fileName)[1]
+        self.fileExtension = os.path.splitext(self.fileName)[1]
+        self.fileNameWithoutExtension = os.path.splitext(self.fileName)[0]
         self.isOpened = False
         self.wasCalled = False
 
@@ -64,7 +65,7 @@ class PyWin(File):
             elif extension == ".xls":
                 # Code for xls format
                 fileFormat = 56
-            self.wb.SaveAs(path+name, FileFormat=fileFormat)
+            self.wb.SaveAs(path + "\\" + name + extension, FileFormat=fileFormat)
 
 
 class OpenPyXl(File):
@@ -127,16 +128,16 @@ class Manager:
         try:
             #print("removeFile:", str(thatFile))
             # print(self.files)
-            self.files.remove(thatFile)
             thatFile.close()
+            self.files.remove(thatFile)
         except ValueError:
             print("Couldn`t remove file " + thatFile.fileName)
 
     def deleteFile(self, thatFile: File, extension=".xlsx"):
         self.removeFile(thatFile)
         fullName = thatFile.pathToFile + "\\"
-        fullName += thatFile.fileName.split(".")[0] + "."
-        fullName += extension.split(".")[1]
+        fullName += thatFile.fileNameWithoutExtension
+        fullName += thatFile.fileExtension
         os.remove(fullName)
 
     def getNumberOfFiles(self):
@@ -168,12 +169,26 @@ class Manager:
             if file.wasCalled == False:
                 self.deleteFile(file)
 
+    def allFromXlsToXlsx(self):
+        #for file in self.files:
+        for i in range(0, len(self.files)):
+            print(self.files[i].fileName)
+            if self.files[i].fileExtension == ".xls":
+                saveFileAsXlsx(self, self.files[i])
+        self.printAllFiles()
+        for file in self.files:
+            if file.wasCalled == False:
+                self.removeFile(file)
+
+
 def saveFileAsXlsx(manager: Manager, file: File):
-    newFileName = file.fileName.split(".")[0]
     file.open()
-    file.save(file.pathToFile, newFileName, ".xlsx")
+    file.save(file.pathToFile, file.fileNameWithoutExtension, ".xlsx")
     file.close()
-    manager.addFileByPath(file.pathToFile, str(newFileName)+".xlsx")
+    file.wasCalled = False
+    newFileName = file.fileNameWithoutExtension+".xlsx"
+    manager.addFileByPath(file.pathToFile, newFileName)
+
 
 
 if __name__ == "__main__":
