@@ -298,12 +298,11 @@ class Manager:
 
     def removeFile(self, thatFile: File):
         try:
-            #print("removeFile:", str(thatFile))
-            # print(self.files)
             thatFile.close()
             self.files.remove(thatFile)
         except ValueError:
             print("Couldn`t remove file " + thatFile.fileName)
+        # It`s not an error. It`s pylint problem
         except pythoncom.com_error:
             print("Couldn`t close file")
             self.files.remove(thatFile)

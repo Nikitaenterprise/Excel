@@ -68,13 +68,14 @@ class TKE:
         self.mng.deleteClosedFiles()
         return
 
-    def CopyColumn(self):
+    def copyColumn(self):
 
         # TODO: Make check for number of rows
+        tmpTodayTKE = self.todayTKE
+        tmpYesterdayTKE = self.yesterdayTKE
 
         self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, self.todayTKE.fileName, defaultParser=False, openBy=1)
         self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileName, defaultParser=False, openBy=1)
-        self.mng.printAllFiles()
         self.todayTKE.open()
         self.yesterdayTKE.open()
 
@@ -87,20 +88,24 @@ class TKE:
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
 
-        
         self.todayTKE.save(self.todayTKE.pathToFile, self.todayTKE.fileNameWithoutExtension)
         self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileNameWithoutExtension)
         self.todayTKE.close()
         self.mng.removeUnCalledFiles()
-        self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, self.todayTKE.fileName)
-        self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileName)
-
+        #self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, self.todayTKE.fileName)
+        #self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileName)
+        self.todayTKE = tmpTodayTKE
+        self.yesterdayTKE = tmpYesterdayTKE
+        self.mng.printAllFiles()
+        
     def run(self):
         """
         """
         #self.yesterdayTKE.open()
-        self.CopyColumn()
-        self.todayTKE.open()
+        self.copyColumn()
+        
+        todayTkeWithFormulas = self.mng.getFile("Новый отчет", extension='.xlsx').open(data_only=False)
+        self.todayTKE.open(data_only=False)
         todayWs = self.todayTKE.getWs("Sheet1")
         numberOfRows = todayWs.max_row
         # Set 1 and 'договир э' to those companies who have a restructurization contract
@@ -146,7 +151,7 @@ class TKE:
             if todayWs[str("AU")+str(row)].value != "план є" and todayWs[str("AU")+str(row)].value != None:
                 dx = todayWs[str(
                     "BO")+str(row)].value-todayWs[str("AU")+str(row)].value
-                if dx > 1e-1 or dx < -1e-4:                                                         # Check range!!!
+                if dx > 1e-6 or dx < -1e-6:
                     todayWs.cell(column=openpyxl.utils.column_index_from_string(str("BW")),
                                           row=row,
                                           value=dx
