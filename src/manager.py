@@ -2,6 +2,7 @@ import os
 
 import openpyxl
 import win32com.client
+import pythoncom
 
 
 def hasNumbers(inputString: str):
@@ -44,7 +45,7 @@ class PyWin(File):
             self.excelApp.Visible = False
             try:
                 self.wb = self.excelApp.Workbooks.Open(
-                    self.pathToFile+"\\"+self.fileName)
+                    self.pathToFile + "\\" + self.fileName)
                 self.isOpened = True
             except:
                 self.isOpened = False
@@ -82,7 +83,9 @@ class PyWin(File):
                 # Code for xls format
                 fileFormat = 56
             self.wb.SaveAs(path + "\\" + name + extension, FileFormat=fileFormat)
-
+            return True
+        return False
+        
     def incertColumn(self, column: str):
         """Incerts column using pyWin. 
         Function incerts column to the right at first worksheet
@@ -100,7 +103,7 @@ class PyWin(File):
             rangeObj = ws.Range(column+str(1)+str(":")+column+str(2))
 
         rangeObj.EntireColumn.Insert()
-        self.save(self.pathToFile, self.fileName)
+        #self.save(self.pathToFile, self.fileName)
 
 class OpenPyXl(File):
     def open(self, data_only=True, keep_vba=False):
@@ -136,7 +139,7 @@ class OpenPyXl(File):
 
     def save(self, path: str, name: str, extension=".xlsx"):
         if self.isOpened == True:
-            self.wb.save(path+name)
+            self.wb.save(path + "\\" + name + extension)
 
     def setCellsInColumnByRowCoord(self, row: int, column: str, value, wsName=""):
         """Finds values in one column by row coordinate
@@ -264,11 +267,18 @@ class Manager:
     def setWorkDir(self, pathToWorkDir: str):
         self.pathToWorkDir = pathToWorkDir
 
-    def addFileByPath(self, pathToFile: str, fileName: str):
-        if ".xlsx" in fileName:
-            self.files.append(OpenPyXl(pathToFile, fileName))
-        elif ".xls" in fileName:
-            self.files.append(PyWin(pathToFile, fileName))
+    def addFileByPath(self, pathToFile: str, fileName: str, defaultParser=True, openBy=0):
+        if defaultParser == True:
+            if ".xlsx" in fileName:
+                self.files.append(OpenPyXl(pathToFile, fileName))
+            elif ".xls" in fileName:
+                self.files.append(PyWin(pathToFile, fileName))
+        elif defaultParser == False:
+            if openBy == 0:
+                self.files.append(OpenPyXl(pathToFile, fileName))
+            elif openBy == 1:
+                self.files.append(PyWin(pathToFile, fileName))
+        return self.files[len(self.files)-1]
 
     def addFile(self, file: File):
         self.files.append(file)
@@ -294,6 +304,10 @@ class Manager:
             self.files.remove(thatFile)
         except ValueError:
             print("Couldn`t remove file " + thatFile.fileName)
+        except pythoncom.com_error:
+            print("Couldn`t close file")
+            self.files.remove(thatFile)
+        
 
     def deleteFile(self, thatFile: File, extension=".xlsx"):
         self.removeFile(thatFile)
@@ -306,11 +320,14 @@ class Manager:
         return len(self.files)
 
     def printAllFiles(self):
-        print("\n\n")
-        print(self)
+        print("\n#----------#")
+        print("self =", self)
         for file in self.files:
-            print(file.fileName, file)
-        print("\n\n")
+            print("\tfile:")
+            print("\t\t", file.fileName)
+            print("\t\t", file.wasCalled)
+            print("\t\t", file)
+        print("#----------#\n")
 
     def getFile(self, partOfNameOfFile, extension=".xls"):
         for file in self.files:
@@ -322,14 +339,22 @@ class Manager:
         return None
 
     def removeUnCalledFiles(self):
+        toRemove = []
         for file in self.files:
             if file.wasCalled == False:
-                self.removeFile(file)
+                toRemove.append(file)
+                
+        for file in toRemove:
+            self.removeFile(file)
 
     def deleteUnCalledFiles(self):
+        toDelete = []
         for file in self.files:
             if file.wasCalled == False:
-                self.deleteFile(file)
+                toDelete.append(file)
+        
+        for file in toDelete:
+            self.deleteFile(file)
 
     def deleteClosedFiles(self):
         forDelete = []

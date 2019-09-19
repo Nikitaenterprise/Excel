@@ -1,6 +1,5 @@
 import os
 import datetime
-from enum import Enum
 
 
 import openpyxl
@@ -14,6 +13,7 @@ class FiscalPlan:
 
     def __init__(self, dir: str):
         self.mng = Manager()
+        self.numberOfFilesToStart = 6
         self.checkIfDirectoryIsReady(dir)
 
     def checkIfDirectoryIsReady(self, path: str):
@@ -60,19 +60,12 @@ class FiscalPlan:
                             "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
                         self.todayCash = cashFile
 
-                if self.mng.getNumberOfFiles() != 6:
+                if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
                     raise AttributeError
 
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
-            print(self.instructionMessage())
-            input()
-            exit()
-
-        self.mng.printAllFiles()
-
-    def instructionMessage(self):
-        msg = """Файлы, нужные для работы: 
+            msg = """Файлы, нужные для работы: 
             1. _Прогнозне надходження коштів ... 
             2. Всі Категорії. (без спожив. за ...)_ЗБУТ
             3. Всі Категорії. (без спожив. за ...)_ПАТ
@@ -89,7 +82,11 @@ class FiscalPlan:
             После исправления запустите программу заново. Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
-        return msg
+            print(msg)
+            input()
+            exit()
+
+        self.mng.printAllFiles()
 
     def deleteFiles(self, programmIsDone=True):
         """Deletes all created files with .xlsx extension
