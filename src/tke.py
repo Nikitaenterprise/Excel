@@ -68,6 +68,88 @@ class TKE:
         self.mng.deleteClosedFiles()
         return
 
+    
+        
+    def run(self):
+        """
+        """
+        #self.yesterdayTKE.open()
+        self.copyColumn()
+
+        #Read from/write to block
+        # Write to
+        self.todayTKE.open(data_only=False)
+        fileNameForRead = "forRead"
+        self.todayTKE.save(self.todayTKE.pathToFile, fileNameForRead)
+        todayWs = self.todayTKE.getWs("Sheet1")
+
+        # Read from
+        fileNameForRead+=".xlsx"
+        todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, fileNameForRead)
+        todayTkeWithData.open(data_only=True)
+        todayTkeWithData.save(self.todayTKE.pathToFile, "rgrrrrr") #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        todayWsData = todayTkeWithData.getWs("Sheet1")
+        self.mng.printAllFiles()
+
+        numberOfRows = todayWs.max_row
+        # Set 1 and 'договир э' to those companies who have a restructurization contract
+        self.restructurization1730.open()
+        rangeIter = "O12" + ":" + "O" + str(numberOfRows)
+        for cells in todayWsData[rangeIter]:
+            for cell in cells:
+                if cell.value != "" and cell.value != None:
+                    summary = self.restructurization(todayWsData, cell.column, cell.row)
+                    if summary != None:
+                        todayWs[str("AM")+str(cell.row)
+                                     ] = summary
+                    elif summary == None:
+                        todayWs[str("AM")+str(cell.row)
+                                     ] = str("договір є")
+                    # This check needs for empty cell not to be filled
+                    if todayWsData[str("AT")+str(cell.row)] != "":
+                        todayWs[str("AT")+str(cell.row)] = 1
+        # Transfer data from 'поточний лимит' to 'попередний лимит'
+        rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
+        rangeIter2 = "BB10" + ":" + "BH" + str(numberOfRows)
+        for cells1, cells2 in zip(todayWsData[rangeIter1], todayWsData[rangeIter2]):
+            for cell1, cell2 in zip(cells1, cells2):
+                if cell1.row == cell2.row:
+                    todayWs.cell(
+                        column=cell2.column, row=cell2.row, value=cell1.value)
+
+        # Set 'план э' to those rows wich have 0`s in both columns with conditions
+        # Check the range
+        list1 = todayTkeWithData.getListOfCellsByCriteria(0, "AS")  
+        list2 = todayTkeWithData.getListOfCellsByCriteria(0, "AT")
+
+        for cell1 in list1:
+            if cell1.value == 0:
+                for cell2 in list2:
+                    if cell2.value == 0 and cell1.row == cell2.row:
+                        todayWs[str("AU")+str(cell1.row)] = str("план є")
+                        todayWs[str("AV")+str(cell1.row)] = ""
+                        todayWs[str("AW")+str(cell1.row)] = ""
+                        todayWs[str("AX")+str(cell1.row)] = ""
+                        todayWs[str("AY")+str(cell1.row)] = ""
+                        todayWs[str("AZ")+str(cell1.row)] = ""
+                        todayWs[str("BA")+str(cell1.row)] = ""
+
+        # Find the difference between columns with 'план на декаду' and 'поточний лимит'
+        for row in range(10, numberOfRows):
+            if todayWsData[str("AU")+str(row)].value != "план є" and todayWsData[str("AU")+str(row)].value != None:
+                dx = todayWsData[str("BO")+str(row)].value-todayWsData[str("AU")+str(row)].value
+                if dx > 1e-6 or dx < -1e-6:
+                    todayWs.cell(column=openpyxl.utils.column_index_from_string(str("BW")),
+                                          row=row,
+                                          value=dx
+                                          )
+
+        self.kyivEnergoMoney(todayTkeWithData)
+
+        self.todayTKE.save(self.todayTKE.pathToFile, "nn")
+        # self.todayTKE.unmerge()
+        return
+
     def copyColumn(self):
 
         # TODO: Make check for number of rows
@@ -96,70 +178,75 @@ class TKE:
         #self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileName)
         self.todayTKE = tmpTodayTKE
         self.yesterdayTKE = tmpYesterdayTKE
-        self.mng.printAllFiles()
-        
-    def run(self):
-        """
-        """
-        #self.yesterdayTKE.open()
-        self.copyColumn()
-        
-        todayTkeWithFormulas = self.mng.getFile("Новый отчет", extension='.xlsx').open(data_only=False)
-        self.todayTKE.open(data_only=False)
-        todayWs = self.todayTKE.getWs("Sheet1")
-        numberOfRows = todayWs.max_row
-        # Set 1 and 'договир э' to those companies who have a restructurization contract
-        rangeIter = "O12" + ":" + "O" + str(numberOfRows)
-        for cells in todayWs[rangeIter]:
-            for cell in cells:
-                if cell.value != "" and cell.value != None:
-                    todayWs[str("AM")+str(cell.row)
-                                     ] = str("договір є")
-                    # This check needs for empty cell not to be filled
-                    if todayWs[str("AT")+str(cell.row)] != "":
-                        todayWs[str("AT")+str(cell.row)] = 1
 
-        # Transfer data from 'поточний лимит' to 'попередний лимит'
-        rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
-        rangeIter2 = "BB10" + ":" + "BH" + str(numberOfRows)
-        for cells1, cells2 in zip(todayWs[rangeIter1], todayWs[rangeIter2]):
-            for cell1, cell2 in zip(cells1, cells2):
-                if cell1.row == cell2.row:
-                    todayWs.cell(
-                        column=cell2.column, row=cell2.row, value=cell1.value)
-
-        # Set 'план э' to those rows wich have 0`s in both columns with conditions
-        # Check the range
-        list1 = self.todayTKE.getListOfCellsByCriteria(0, "AS")  
-        list2 = self.todayTKE.getListOfCellsByCriteria(0, "AT")
-
-        for cell1 in list1:
-            if cell1.value == 0:
-                for cell2 in list2:
-                    if cell2.value == 0 and cell1.row == cell2.row:
-                        todayWs[str(
-                            "AU")+str(cell1.row)] = str("план є")
-                        todayWs[str("AV")+str(cell1.row)] = ""
-                        todayWs[str("AW")+str(cell1.row)] = ""
-                        todayWs[str("AX")+str(cell1.row)] = ""
-                        todayWs[str("AY")+str(cell1.row)] = ""
-                        todayWs[str("AZ")+str(cell1.row)] = ""
-                        todayWs[str("BA")+str(cell1.row)] = ""
-
-        # Find the difference between columns with 'план на декаду' and 'поточний лимит'
-        for row in range(10, numberOfRows):
-            if todayWs[str("AU")+str(row)].value != "план є" and todayWs[str("AU")+str(row)].value != None:
-                dx = todayWs[str(
-                    "BO")+str(row)].value-todayWs[str("AU")+str(row)].value
-                if dx > 1e-6 or dx < -1e-6:
-                    todayWs.cell(column=openpyxl.utils.column_index_from_string(str("BW")),
-                                          row=row,
-                                          value=dx
-                                          )
-        self.todayTKE.save(self.todayTKE.pathToFile, "nn")
-        # self.todayTKE.unmerge()
         return
 
+    def restructurization(self, ws, column: int, row: int):
+        EDRPOU = ws.cell(column=column+1, row=row).value
+        try:
+            row = self.restructurization1730.getFirstCellByCriteria(EDRPOU, "D").row-1
+        except AttributeError:
+            print("В списках договоров реструктуризации " + \
+                        "1730 не найдено предприятие, с кодом ЕДРПОУ", EDRPOU)
+            return None
+        wsRestr = self.restructurization1730.getWs("Sheet1")
+        overpaymentColumn = openpyxl.utils.column_index_from_string("U")
+        debtColumn = openpyxl.utils.column_index_from_string("V")
+        overpayment = wsRestr.cell(column=overpaymentColumn, row=row).value
+        debt = wsRestr.cell(column=debtColumn, row=row).value
+        summary = overpayment + debt
+        if summary > 0:
+            return summary
+        if summary <= 0:
+            return None
+
+    def kyivEnergoMoney(self, dataFile):
+        try:
+            self.kyivEnergoPas.open()
+            kyivWs = self.kyivEnergoPas.getWs("Sheet1")
+            
+            headerColumn = openpyxl.utils.column_index_from_string(str("A"))
+            contractColumn = openpyxl.utils.column_index_from_string(str("B"))
+            moneyColumn = openpyxl.utils.column_index_from_string(str("I"))
+            
+            listOfHeaders = self.kyivEnergoPas.getListOfCellsByCriteria("Період", "A")
+            row = listOfHeaders[1].row
+            
+            money = 0
+            while True:
+                row += 1
+                header = kyivWs.cell(column=headerColumn, row=row).value
+                if header == "" or header == None:
+                    break
+                if "рік" in header:
+                    contract = kyivWs.cell(column=contractColumn, row=row).value
+                    if "РЗ" not in contract:
+                        money += kyivWs.cell(column=moneyColumn, row=row).value
+            
+            self.kyivEnergoPas.close()
+        except:
+            money = 0
+            print("Проблема с подсчетом оплаты Київтеплоенерго КП ВО")
+        
+        try:
+            kyivEnergoRow = dataFile.getFirstCellByCriteria("Київтеплоенерго " + \
+                            "КП ВО Київради (КМДА)", "R").row
+            ws = self.todayTKE.getWs("Sheet1")
+
+            # Payment column value
+            column=openpyxl.utils.column_index_from_string(str("AQ"))
+            ws.cell(column=column, row=kyivEnergoRow).value = money
+            # For all contracts column value
+            column=openpyxl.utils.column_index_from_string(str("AE"))
+            column1=openpyxl.utils.column_index_from_string(str("AF"))
+            column2=openpyxl.utils.column_index_from_string(str("AD"))
+            ws.cell(column=column, row=kyivEnergoRow).value = \
+                            ws.cell(column=column1, row=kyivEnergoRow).value - \
+                            ws.cell(column=column2, row=kyivEnergoRow).value - money
+        except:
+            print("Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО")
+        
+        return 
     
 
     # def hideColumns(self):

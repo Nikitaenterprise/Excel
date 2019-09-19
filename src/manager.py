@@ -106,11 +106,12 @@ class PyWin(File):
         #self.save(self.pathToFile, self.fileName)
 
 class OpenPyXl(File):
-    def open(self, data_only=True, keep_vba=False):
+    def open(self, data_only=True, keep_vba=False, keep_links=True, read_only=False):
         if self.isOpened == False:
             try:
                 self.wb = openpyxl.load_workbook(self.pathToFile + "\\" + self.fileName,
-                                                 data_only=data_only, keep_vba=keep_vba)
+                                                 data_only=data_only, keep_vba=keep_vba,
+                                                 keep_links=keep_links,read_only=read_only)
                 self.isOpened = True
             except:
                 self.isOpened = False
@@ -182,20 +183,18 @@ class OpenPyXl(File):
                     so it search in whole sheet
         """
         if range == None:
-            diapason = self.getWs(wsName)
-            for cells in diapason:
+            for cells in self.getWs(wsName):
                 for cell in cells:
                     if cell.value == criteria:
                         return cell
         elif range != None:
-            diapason = self.getWs(wsName)[range]
             if hasNumbers(range) == True:
-                for cells in diapason:
+                for cells in self.getWs(wsName)[range]:
                     for cell in cells:
                         if cell.value == criteria:
                             return cell
             elif hasNumbers(range) == False:
-                for cell in diapason:
+                for cell in self.getWs(wsName)[range]:
                     if cell.value == criteria:
                         return cell
         return None
@@ -282,6 +281,7 @@ class Manager:
 
     def addFile(self, file: File):
         self.files.append(file)
+        return self.files[len(self.files)-1]
 
     def addFilesInDir(self):
         for r, d, f in os.walk(self.pathToWorkDir):
