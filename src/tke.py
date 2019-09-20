@@ -2,6 +2,7 @@ import os
 import datetime
 from copy import copy
 
+
 import openpyxl
 import win32com.client
 
@@ -12,12 +13,12 @@ from src.manager import *
 class TKE:
 
     def __init__(self, dir: str):
-        self.mng = Manager()
+        self.mng = Manager(os.path.abspath(dir))
         self.numberOfFilesToStart = 4
         self.checkIfDirectoryIsReady(dir)
 
     def checkIfDirectoryIsReady(self, path: str):
-        self.mng.setWorkDir(os.path.abspath(path))
+
         self.mng.addFilesInDir()
 
         self.mng.getFile("Новый отчет")
@@ -27,7 +28,7 @@ class TKE:
 
         self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
-        self.mng.printAllFiles()
+        #self.mng.printAllFiles()
         
         try:
             self.todayTKE = self.mng.getFile("Новый отчет", extension=".xlsx")
@@ -76,18 +77,20 @@ class TKE:
         #self.yesterdayTKE.open()
         self.copyColumn()
 
+        fileNameForRead = "forRead"
+        self.mng.createDuplicate(self.todayTKE, fileNameForRead)
         #Read from/write to block
         # Write to
         self.todayTKE.open(data_only=False)
-        fileNameForRead = "forRead"
-        self.todayTKE.save(self.todayTKE.pathToFile, fileNameForRead)
+        # self.todayTKE.save(self.todayTKE.pathToFile, fileNameForRead)
         todayWs = self.todayTKE.getWs("Sheet1")
 
         # Read from
         fileNameForRead+=".xlsx"
-        todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, fileNameForRead)
+        todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, 
+                            fileNameForRead, returnFile=True)
         todayTkeWithData.open(data_only=True)
-        todayTkeWithData.save(self.todayTKE.pathToFile, "rgrrrrr") #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # todayTkeWithData.save(self.todayTKE.pathToFile, "rgrrrrr") #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         todayWsData = todayTkeWithData.getWs("Sheet1")
         self.mng.printAllFiles()
 
@@ -99,23 +102,22 @@ class TKE:
             for cell in cells:
                 if cell.value != "" and cell.value != None:
                     summary = self.restructurization(todayWsData, cell.column, cell.row)
+                    column = openpyxl.utils.column_index_from_string("AM")
                     if summary != None:
-                        todayWs[str("AM")+str(cell.row)
-                                     ] = summary
+                        todayWs.cell(column=column, row=cell.row).value = summary
                     elif summary == None:
-                        todayWs[str("AM")+str(cell.row)
-                                     ] = str("договір є")
+                        todayWs.cell(column=column, row=cell.row).value = str("договір є")
                     # This check needs for empty cell not to be filled
-                    if todayWsData[str("AT")+str(cell.row)] != "":
-                        todayWs[str("AT")+str(cell.row)] = 1
+                    column = openpyxl.utils.column_index_from_string("AT")
+                    if todayWsData.cell(column=column, row=cell.row).value != "":
+                        todayWs.cell(column=column, row=cell.row).value = 1
         # Transfer data from 'поточний лимит' to 'попередний лимит'
         rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
         rangeIter2 = "BB10" + ":" + "BH" + str(numberOfRows)
         for cells1, cells2 in zip(todayWsData[rangeIter1], todayWsData[rangeIter2]):
             for cell1, cell2 in zip(cells1, cells2):
                 if cell1.row == cell2.row:
-                    todayWs.cell(
-                        column=cell2.column, row=cell2.row, value=cell1.value)
+                    todayWs.cell(column=cell2.column, row=cell2.row).value = cell1.value
 
         # Set 'план э' to those rows wich have 0`s in both columns with conditions
         # Check the range
@@ -126,23 +128,34 @@ class TKE:
             if cell1.value == 0:
                 for cell2 in list2:
                     if cell2.value == 0 and cell1.row == cell2.row:
-                        todayWs[str("AU")+str(cell1.row)] = str("план є")
-                        todayWs[str("AV")+str(cell1.row)] = ""
-                        todayWs[str("AW")+str(cell1.row)] = ""
-                        todayWs[str("AX")+str(cell1.row)] = ""
-                        todayWs[str("AY")+str(cell1.row)] = ""
-                        todayWs[str("AZ")+str(cell1.row)] = ""
-                        todayWs[str("BA")+str(cell1.row)] = ""
+                        column = openpyxl.utils.column_index_from_string("AU")
+                        cellValueCheck = todayWsData.cell(column=column, row=cell1.row).value
+                        if cellValueCheck == 0 or cellValueCheck == None or cellValueCheck == "":
+                            continue
+                        else:
+                            column = openpyxl.utils.column_index_from_string("AU")
+                            todayWs.cell(column=column, row=cell1.row).value = str("план є")
+                            todayWs.cell(column=column+1, row=cell1.row).value = ""
+                            todayWs.cell(column=column+2, row=cell1.row).value = ""
+                            todayWs.cell(column=column+3, row=cell1.row).value = ""
+                            todayWs.cell(column=column+4, row=cell1.row).value = ""
+                            todayWs.cell(column=column+5, row=cell1.row).value = ""
+                            todayWs.cell(column=column+6, row=cell1.row).value = ""
 
         # Find the difference between columns with 'план на декаду' and 'поточний лимит'
         for row in range(10, numberOfRows):
-            if todayWsData[str("AU")+str(row)].value != "план є" and todayWsData[str("AU")+str(row)].value != None:
-                dx = todayWsData[str("BO")+str(row)].value-todayWsData[str("AU")+str(row)].value
+            column = openpyxl.utils.column_index_from_string("AU")
+            cellValueCheck = todayWsData.cell(column=column, row=row).value
+            if cellValueCheck == "план є" or cellValueCheck == None:
+                continue
+            else:
+                column1 = openpyxl.utils.column_index_from_string("BO")
+                value1 = todayWsData.cell(column=column1, row=row).value
+                value2 = todayWsData.cell(column=column, row=row).value
+                dx = value1 - value2
                 if dx > 1e-6 or dx < -1e-6:
-                    todayWs.cell(column=openpyxl.utils.column_index_from_string(str("BW")),
-                                          row=row,
-                                          value=dx
-                                          )
+                    column = openpyxl.utils.column_index_from_string("BW")
+                    todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
 
@@ -156,8 +169,10 @@ class TKE:
         tmpTodayTKE = self.todayTKE
         tmpYesterdayTKE = self.yesterdayTKE
 
-        self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, self.todayTKE.fileName, defaultParser=False, openBy=1)
-        self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileName, defaultParser=False, openBy=1)
+        self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, 
+                        self.todayTKE.fileName, returnFile=True, defaultParser=False, openBy=1)
+        self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, 
+                        self.yesterdayTKE.fileName, returnFile=True, defaultParser=False, openBy=1)
         self.todayTKE.open()
         self.yesterdayTKE.open()
 

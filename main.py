@@ -2,6 +2,7 @@
 from src.tke import TKE
 
 import openpyxl
+import win32com.client
 
 if __name__ == "__main__":
     print("I`m main file")
@@ -12,6 +13,18 @@ if __name__ == "__main__":
 
     tke = TKE(r"TKE")
     tke.run()
+
+    # excelApp = win32com.client.Dispatch("Excel.Application")
+    # excelApp.Visible = False
+    # wb0 = excelApp.Workbooks.Open(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\TKE\Новый отчет.xls")
+    # wb0.SaveAs(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\TKE\Новый отчет1.xlsx", FileFormat=51)
+
+    # wb = openpyxl.load_workbook(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\TKE\Новый отчет1.xlsx", data_only=False)
+    # wb.save(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\TKE\Новый отчет2.xlsx")
+
+    # wb1 = openpyxl.load_workbook(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\TKE\Новый отчет1.xlsx", data_only=True)
+    # wb1.save(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\TKE\Новый отчет3.xlsx")
+    
 
     # wb = openpyxl.load_workbook(r"C:\Users\LuzhanskyiM-Inet\Development\Excel\111.xlsx")
     # ws = wb["1"]

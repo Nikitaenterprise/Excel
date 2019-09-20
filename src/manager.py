@@ -1,4 +1,5 @@
 import os
+from shutil import copyfile
 
 import openpyxl
 import win32com.client
@@ -110,8 +111,8 @@ class OpenPyXl(File):
         if self.isOpened == False:
             try:
                 self.wb = openpyxl.load_workbook(self.pathToFile + "\\" + self.fileName,
-                                                 data_only=data_only, keep_vba=keep_vba,
-                                                 keep_links=keep_links,read_only=read_only)
+                                                 data_only=data_only)#, keep_vba=keep_vba,
+                                                 #keep_links=keep_links,read_only=read_only)
                 self.isOpened = True
             except:
                 self.isOpened = False
@@ -260,13 +261,11 @@ class OpenPyXl(File):
 
 class Manager:
 
-    def __init__(self):
+    def __init__(self, pathToWorkDir: str):
         self.files = []
-
-    def setWorkDir(self, pathToWorkDir: str):
         self.pathToWorkDir = pathToWorkDir
 
-    def addFileByPath(self, pathToFile: str, fileName: str, defaultParser=True, openBy=0):
+    def addFileByPath(self, pathToFile: str, fileName: str, returnFile=False, defaultParser=True, openBy=0):
         if defaultParser == True:
             if ".xlsx" in fileName:
                 self.files.append(OpenPyXl(pathToFile, fileName))
@@ -277,11 +276,15 @@ class Manager:
                 self.files.append(OpenPyXl(pathToFile, fileName))
             elif openBy == 1:
                 self.files.append(PyWin(pathToFile, fileName))
-        return self.files[len(self.files)-1]
+        if returnFile == True:
+            self.files[len(self.files)-1].wasCalled = True
+            return self.files[len(self.files)-1]
 
-    def addFile(self, file: File):
+    def addFile(self, file, returnFile=False):
         self.files.append(file)
-        return self.files[len(self.files)-1]
+        if returnFile == True:
+            self.files[len(self.files)-1].wasCalled = True
+            return self.files[len(self.files)-1]
 
     def addFilesInDir(self):
         for r, d, f in os.walk(self.pathToWorkDir):
@@ -304,7 +307,7 @@ class Manager:
             print("Couldn`t remove file " + thatFile.fileName)
         # It`s not an error. It`s pylint problem
         except pythoncom.com_error:
-            print("Couldn`t close file")
+            print("Couldn`t close file. COM exception occured")
             self.files.remove(thatFile)
         
 
@@ -369,20 +372,25 @@ class Manager:
         for file in self.files:
             print(file.fileName)
             if file.fileExtension == ".xls":
-                saveFileAsXlsx(self, file)
+                self.saveFileAsXlsx(file)
                 file.wasCalled = False
                 forRemove.append(file)
     
         for file in forRemove:
             self.removeFile(file)
 
+    def saveFileAsXlsx(self, file):
+        file.open()
+        file.save(file.pathToFile, file.fileNameWithoutExtension, ".xlsx")
+        file.close()
+        newFileName = file.fileNameWithoutExtension+".xlsx"
+        self.addFileByPath(file.pathToFile, newFileName)
 
-def saveFileAsXlsx(manager: Manager, file: File):
-    file.open()
-    file.save(file.pathToFile, file.fileNameWithoutExtension, ".xlsx")
-    file.close()
-    newFileName = file.fileNameWithoutExtension+".xlsx"
-    manager.addFileByPath(file.pathToFile, newFileName)
+    def createDuplicate(self, file, duplicateName: str):
+        copyfile(file.pathToFile + "\\" + file.fileName, 
+                file.pathToFile + "\\" + duplicateName + ".xlsx")
+
+        return
 
 
 

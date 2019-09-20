@@ -12,12 +12,11 @@ from src.manager import *
 class FiscalPlan:
 
     def __init__(self, dir: str):
-        self.mng = Manager()
+        self.mng = Manager(os.path.abspath(dir))
         self.numberOfFilesToStart = 6
         self.checkIfDirectoryIsReady(dir)
 
     def checkIfDirectoryIsReady(self, path: str):
-        self.mng.setWorkDir(os.path.abspath(path))
         self.mng.addFilesInDir()
         
         self.fiscalPlan = self.mng.getFile("Прогнозне надходження", extension=".xlsx")
