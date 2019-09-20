@@ -373,6 +373,7 @@ class Manager:
                         if defaultParser False then if
                         openBy == 0 --> openpyxl
                         openBy == 1 --> pyWin
+        """
         if defaultParser == True:
             if ".xlsx" in fileName:
                 self.files.append(OpenPyXl(pathToFile, fileName))
