@@ -290,9 +290,9 @@ class TKE:
             column1=openpyxl.utils.column_index_from_string(str("AF"))
             # Payment column value
             column2=openpyxl.utils.column_index_from_string(str("AQ"))
-            ws.cell(column=column, row=kyivEnergoRow).value = \
-                            ws.cell(column=column1, row=kyivEnergoRow).value - \
-                            ws.cell(column=column2, row=kyivEnergoRow).value
+            ws.cell(column=column, row=smilaRow).value = \
+                            ws.cell(column=column1, row=smilaRow).value - \
+                            ws.cell(column=column2, row=smilaRow).value
         except:
             print("Программа не смогла внести данные о задолженности Смілакомунтеплоенерго КП")
 
