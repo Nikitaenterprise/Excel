@@ -41,6 +41,9 @@ class File:
 class PyWin(File):
 
     def open(self):
+        """Opens file using pyWin. If it fails, then function will
+        kill excel application
+        """
         if self.isOpened == False:
             self.excelApp = win32com.client.Dispatch("Excel.Application")
             self.excelApp.Visible = False
@@ -55,10 +58,20 @@ class PyWin(File):
                 raise FileNotFoundError
 
     def getWb(self):
+        """Returns workbook if file is opened
+        """
         if self.isOpened == True:
             return self.wb
 
     def getWs(self, wsName="", isActiveSheet=False):
+        """Returns worksheet if file is opened
+
+        Keyword arguments:
+        wsName -- name of worksheet.
+        isActibeSheet -- If True then will return first 
+                sheet or active sheet (sheet that waws 
+                opened last time)
+        """
         if self.isOpened == True:
             if isActiveSheet == False:
                 return self.wb.Worksheets(wsName)
@@ -66,16 +79,30 @@ class PyWin(File):
                 return self.wb.ActiveSheet 
 
     def getApp(self):
+        """Returns instance of excel application 
+        (if file was opened) for being able to 
+        close app if needed
+        """
         if self.isOpened == True:
             return self.excelApp
 
     def close(self):
+        """Closes file and killing an excel app
+        """
         if self.isOpened == True:
             self.wb.Close()
             self.excelApp.Quit()
             self.isOpened = False
 
     def save(self, path: str, name: str, extension=".xlsx"):
+        """Saves file at path/name.xls or path/name.xlsx
+
+        Keyword arguments:
+        path -- full path to directory. Like C:\User...
+        name -- name of file without extension
+        extension -- extension of excel file. Can be only .xls
+                or .xlsx
+        """
         if self.isOpened == True:
             if extension == ".xlsx":
                 # Code for xslx format
@@ -92,7 +119,9 @@ class PyWin(File):
         Function incerts column to the right at first worksheet
 
         Keyword arguments:
-        column -- name of column near what the column would be inserted
+        column -- name of the column to the left of which the 
+                new column will be inserted. Could be number 
+                or letter like str(17) or "F"
         """
         ws = self.getWs(isActiveSheet=True)
         # select column as range object
@@ -102,15 +131,15 @@ class PyWin(File):
             rangeObj = ws.Range(newColumn+str(1)+str(":")+newColumn+str(2))
         else:
             rangeObj = ws.Range(column+str(1)+str(":")+column+str(2))
-
         rangeObj.EntireColumn.Insert()
 
     def insertRow(self, row: str):
         """Incerts row using pyWin. 
-        Function incerts row to the top at first worksheet
+        Function incerts new row above the specified 
+                at first worksheet
 
         Keyword arguments:
-        row -- name of row near what the row would be inserted
+        row -- name of row above what the row would be inserted
         """
         ws = self.getWs(isActiveSheet=True)
         # select row as range object
@@ -121,11 +150,16 @@ class PyWin(File):
 
 class OpenPyXl(File):
     def open(self, data_only=True, keep_vba=False, keep_links=True, read_only=False):
+        """Opens file using openpyxl. 
+
+        Keyword arguments:
+        data_only -- if True then only data without formulas
+                would be in excel workbook
+        """
         if self.isOpened == False:
             try:
                 self.wb = openpyxl.load_workbook(self.pathToFile + "\\" + self.fileName,
-                                                 data_only=data_only)#, keep_vba=keep_vba,
-                                                 #keep_links=keep_links,read_only=read_only)
+                                                 data_only=data_only)
                 self.isOpened = True
             except:
                 self.isOpened = False
@@ -133,10 +167,20 @@ class OpenPyXl(File):
                 raise FileNotFoundError
 
     def getWb(self):
+        """Returns workbook if file is opened
+        """
         if self.isOpened == True:
             return self.wb
 
     def getWs(self, wsName="", isActiveSheet=False):
+        """Returns worksheet if file is opened
+
+        Keyword arguments:
+        wsName -- name of worksheet. If 0 or "" then 
+                will return first sheet
+        isActiveSheet -- If True then will return first 
+                sheet
+        """
         if self.isOpened == True:
             if isActiveSheet == True or wsName == 0 or wsName == "":
                 return self.wb[self.getWsNames()[0]]
@@ -144,15 +188,31 @@ class OpenPyXl(File):
                 return self.wb[wsName]
 
     def getWsNames(self):
+        """Returns list of workbook sheetnames
+        if file is opened
+        """
         if self.isOpened == True:
             return self.wb.sheetnames
 
     def close(self):
+        """Closes file if was opened
+        """
         if self.isOpened == True:
             self.wb.close()
             self.isOpened = False
 
     def save(self, path: str, name: str, extension=".xlsx"):
+        """Saves file at path/name.xls or path/name.xlsx
+        If saving with .xls extension then will saves in .xlsx first
+        and then will create temporary instance
+        of pyWin file and  saves it with .xls extension
+
+        Keyword arguments:
+        path -- full path to directory. Like C:\User...
+        name -- name of file without extension
+        extension -- extension of excel file. Can be only .xls
+                or .xlsx
+        """
         if self.isOpened == True:
             if extension == ".xlsx": 
                 self.wb.save(path + "\\" + name + extension)
@@ -171,6 +231,8 @@ class OpenPyXl(File):
         row -- row number
         column -- column in which the searh would happend
         value -- this would be set to the cell
+        wsName -- name of worksheet. If empty then
+                will work with first worksheet
         """
         for cells in self.getWs(wsName)[column]:
             for cell in cells:
@@ -186,6 +248,8 @@ class OpenPyXl(File):
         row -- row number
         column -- column in which the searh would happend
         value -- this would be set to the cell
+        wsName -- name of worksheet. If empty then
+                will work with first worksheet
         """
         for cells in self.getWs(wsName)[str(row)]:
             for cell in cells:
@@ -199,9 +263,11 @@ class OpenPyXl(File):
         function VLOOKUP (ВПР)
 
         Keyword arguments:
-        value -- searching value (str, int, ...)
+        criteria -- searching criteria (str, int, ...)
         range -- search range (I22:J22, or I), by default set to None
                     so it search in whole sheet
+        wsName -- name of worksheet. If empty then
+                will work with first worksheet
         """
         if range == None:
             for cells in self.getWs(wsName):
@@ -228,6 +294,8 @@ class OpenPyXl(File):
         criteria -- search criteria in cells values
         range -- search range (I22:J22, I, ...), by default set to None
                     so it search in whole sheet
+        wsName -- name of worksheet. If empty then
+                will work with first worksheet
         """
         listOfCells = []
 
@@ -243,6 +311,12 @@ class OpenPyXl(File):
         return listOfCells
 
     def unmerge(self, wsName=""):
+        """Unmerges all cells in worksheet
+
+        Keyword arguments:
+        wsName -- name of worksheet. If empty then
+                will work with first worksheet
+        """
         for range in self.getWs(wsName).merged_cells.ranges:
             rangeList = list(range.bounds)
             minCol = rangeList[0]
@@ -257,6 +331,13 @@ class OpenPyXl(File):
         return
 
     def merge(self, range: str, wsName=""):
+        """Merges range of cells
+
+        Keyword arguments:
+        range -- range of cells ("A1:G52")
+        wsName -- name of worksheet. If empty then
+                will work with first worksheet
+        """
         start = range.split(":")[0]
         end = range.split(":")[1]
         minRow = openpyxl.utils.coordinate_to_tuple(start)[0]
@@ -270,15 +351,6 @@ class OpenPyXl(File):
                             )
         return
 
-    def mergeByTuple(self, rangeList: list, wsName=""):
-        for range in rangeList:
-            coord = list(range.bounds)
-            rangeStr = str(openpyxl.utils.get_column_letter(coord[0])) + str(
-                coord[1]) + ":" + str(openpyxl.utils.get_column_letter(coord[2])) + str(coord[3])
-            self.merge(rangeStr)
-        return
-
-
 class Manager:
 
     def __init__(self, pathToWorkDir: str):
@@ -286,6 +358,21 @@ class Manager:
         self.pathToWorkDir = pathToWorkDir
 
     def addFileByPath(self, pathToFile: str, fileName: str, returnFile=False, defaultParser=True, openBy=0):
+        """Adds file in manager class by path to this file
+
+        Keyword argument:
+        pathToFile -- path to directory with file, like C:\User\...
+        fileName -- name of file with extension
+        returnFile -- if True then will return an appended file
+                        if False then wouldn`t
+        defaultParser -- if True then would decide by file extension
+                        what class to use openpyxl or pyWin
+                        if False then it should be specified in openBy 
+                        variable
+        openBy -- if defaultParser is True then would be influence
+                        if defaultParser False then if
+                        openBy == 0 --> openpyxl
+                        openBy == 1 --> pyWin
         if defaultParser == True:
             if ".xlsx" in fileName:
                 self.files.append(OpenPyXl(pathToFile, fileName))

@@ -7,12 +7,11 @@ import win32com.client
 if __name__ == "__main__":
     print("I`m main file")
 
-    #excelBook = FiscalPlan(r"FiscalPlan")
-    # excelBook.ppp()
-    #excelBook.run()
+    excelBook = FiscalPlan(r"FiscalPlan")
+    excelBook.run()
 
-    tke = TKE(r"TKE")
-    tke.run()
+    #tke = TKE(r"TKE")
+    #tke.run()
 
     # excelApp = win32com.client.Dispatch("Excel.Application")
     # excelApp.Visible = False

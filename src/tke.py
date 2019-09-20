@@ -195,7 +195,6 @@ class TKE:
                 self.yesterdayTKE.insertRow(str(row))
                 for column1 in range(1, yestWs.UsedRange.Columns.Count):
                     yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
-                    print(yestWs.Cells(row, column1).Value)
 
         self.todayTKE.insertColumn("AS")
         todayWs.Range("AS1:AS2").EntireColumn.Unmerge()
