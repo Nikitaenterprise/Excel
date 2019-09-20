@@ -28,7 +28,6 @@ class TKE:
 
         self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
-        #self.mng.printAllFiles()
         
         try:
             self.todayTKE = self.mng.getFile("Новый отчет", extension=".xlsx")
@@ -66,23 +65,26 @@ class TKE:
                 self.restructurization1730.close()
             except:
                 print("Программа не смогла закрыть экселевские файлы")
+        self.mng.addFileByPath(self.todayTKE.pathToFile, 
+                            self.generateName() + ".xlsx")
         self.mng.deleteClosedFiles()
         return
 
-    
-        
     def run(self):
-        """
-        """
-        #self.yesterdayTKE.open()
         self.copyColumn()
-
+        self.mainCalculations()
+        name = self.generateName()
+        self.todayTKE.save(self.todayTKE.pathToFile, name, extension=".xls")
+        self.deleteFiles()
+        
+    def mainCalculations(self):
+        """
+        """
         fileNameForRead = "forRead"
         self.mng.createDuplicate(self.todayTKE, fileNameForRead)
         #Read from/write to block
         # Write to
         self.todayTKE.open(data_only=False)
-        # self.todayTKE.save(self.todayTKE.pathToFile, fileNameForRead)
         todayWs = self.todayTKE.getWs("Sheet1")
 
         # Read from
@@ -90,9 +92,7 @@ class TKE:
         todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, 
                             fileNameForRead, returnFile=True)
         todayTkeWithData.open(data_only=True)
-        # todayTkeWithData.save(self.todayTKE.pathToFile, "rgrrrrr") #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         todayWsData = todayTkeWithData.getWs("Sheet1")
-        self.mng.printAllFiles()
 
         numberOfRows = todayWs.max_row
         # Set 1 and 'договир э' to those companies who have a restructurization contract
@@ -111,6 +111,7 @@ class TKE:
                     column = openpyxl.utils.column_index_from_string("AT")
                     if todayWsData.cell(column=column, row=cell.row).value != "":
                         todayWs.cell(column=column, row=cell.row).value = 1
+        
         # Transfer data from 'поточний лимит' to 'попередний лимит'
         rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
         rangeIter2 = "BB10" + ":" + "BH" + str(numberOfRows)
@@ -146,21 +147,28 @@ class TKE:
         for row in range(10, numberOfRows):
             column = openpyxl.utils.column_index_from_string("AU")
             cellValueCheck = todayWsData.cell(column=column, row=row).value
-            if cellValueCheck == "план є" or cellValueCheck == None:
+            if cellValueCheck == None:
                 continue
             else:
-                column1 = openpyxl.utils.column_index_from_string("BO")
-                value1 = todayWsData.cell(column=column1, row=row).value
-                value2 = todayWsData.cell(column=column, row=row).value
-                dx = value1 - value2
-                if dx > 1e-6 or dx < -1e-6:
-                    column = openpyxl.utils.column_index_from_string("BW")
-                    todayWs.cell(column=column, row=row).value = dx
+                columnAS = openpyxl.utils.column_index_from_string("AS")
+                columnAT = openpyxl.utils.column_index_from_string("AT")
+                cellValueCheck1 = todayWsData.cell(column=columnAS, row=row).value
+                cellValueCheck2 = todayWsData.cell(column=columnAT, row=row).value
+                if cellValueCheck1 == 0 and cellValueCheck2 == 0:
+                    continue
+                elif cellValueCheck1 == None and cellValueCheck2 == None:
+                    continue
+                else:
+                    column1 = openpyxl.utils.column_index_from_string("BO")
+                    value1 = todayWsData.cell(column=column1, row=row).value
+                    value2 = todayWsData.cell(column=column, row=row).value
+                    dx = value1 - value2
+                    if dx > 1e-6 or dx < -1e-6:
+                        column = openpyxl.utils.column_index_from_string("BW")
+                        todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
-
-        self.todayTKE.save(self.todayTKE.pathToFile, "nn")
-        # self.todayTKE.unmerge()
+        todayTkeWithData.close()
         return
 
     def copyColumn(self):
@@ -202,7 +210,7 @@ class TKE:
             row = self.restructurization1730.getFirstCellByCriteria(EDRPOU, "D").row-1
         except AttributeError:
             print("В списках договоров реструктуризации " + \
-                        "1730 не найдено предприятие, с кодом ЕДРПОУ", EDRPOU)
+                        "1730 не найдено предприятие с кодом ЕДРПОУ", EDRPOU)
             return None
         wsRestr = self.restructurization1730.getWs("Sheet1")
         overpaymentColumn = openpyxl.utils.column_index_from_string("U")
@@ -262,6 +270,23 @@ class TKE:
             print("Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО")
         
         return 
+
+    def generateName(self):
+        day = datetime.datetime.today().day
+        month = datetime.datetime.today().month
+        year = datetime.datetime.today().year
+        monthInRussian = [r"январь", r"февраль", r"март", 
+                            r"апрель", r"май", r"июнь", 
+                            r"июль", r"август", r"сентябрь", 
+                            r"октябрь", r"ноябрь", r"декабрь"]
+        fileName = "90%ТКЕ_ПСО_" + monthInRussian[month-1]
+        fileName += "(" + str(day) + "."
+        if month < 10:
+            fileName += "0" + str(month) + "."
+        elif month >= 10:
+            fileName += str(month) + "."
+        fileName += str(year) + ")"
+        return fileName
     
 
     # def hideColumns(self):

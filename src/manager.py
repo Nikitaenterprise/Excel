@@ -141,7 +141,14 @@ class OpenPyXl(File):
 
     def save(self, path: str, name: str, extension=".xlsx"):
         if self.isOpened == True:
-            self.wb.save(path + "\\" + name + extension)
+            if extension == ".xlsx": 
+                self.wb.save(path + "\\" + name + extension)
+            elif extension == ".xls":
+                self.wb.save(path + "\\" + name + ".xlsx")
+                pyWinFile = PyWin(self.pathToFile, name + ".xlsx")
+                pyWinFile.open()
+                pyWinFile.save(self.pathToFile, name, extension=extension)
+                pyWinFile.close()
 
     def setCellsInColumnByRowCoord(self, row: int, column: str, value, wsName=""):
         """Finds values in one column by row coordinate
@@ -370,7 +377,7 @@ class Manager:
     def allFromXlsToXlsx(self):
         forRemove = []
         for file in self.files:
-            print(file.fileName)
+            #print(file.fileName)
             if file.fileExtension == ".xls":
                 self.saveFileAsXlsx(file)
                 file.wasCalled = False
