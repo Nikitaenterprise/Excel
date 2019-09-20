@@ -87,7 +87,7 @@ class PyWin(File):
             return True
         return False
         
-    def incertColumn(self, column: str):
+    def insertColumn(self, column: str):
         """Incerts column using pyWin. 
         Function incerts column to the right at first worksheet
 
@@ -104,7 +104,20 @@ class PyWin(File):
             rangeObj = ws.Range(column+str(1)+str(":")+column+str(2))
 
         rangeObj.EntireColumn.Insert()
-        #self.save(self.pathToFile, self.fileName)
+
+    def insertRow(self, row: str):
+        """Incerts row using pyWin. 
+        Function incerts row to the top at first worksheet
+
+        Keyword arguments:
+        row -- name of row near what the row would be inserted
+        """
+        ws = self.getWs(isActiveSheet=True)
+        # select row as range object
+        columnNumber = openpyxl.utils.get_column_letter(
+                            ws.UsedRange.Columns.Count)   
+        rangeObj = ws.Range("A"+row+":"+columnNumber+row)
+        rangeObj.EntireRow.Insert()
 
 class OpenPyXl(File):
     def open(self, data_only=True, keep_vba=False, keep_links=True, read_only=False):

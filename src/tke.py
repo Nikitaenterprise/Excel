@@ -187,7 +187,17 @@ class TKE:
         todayWs = self.todayTKE.getWs("Sheet1")
         yestWs = self.yesterdayTKE.getWs("Sheet1")
 
-        self.todayTKE.incertColumn("AS")
+        column = openpyxl.utils.column_index_from_string("R")
+        for row in range(1, todayWs.UsedRange.Rows.Count):
+            value1 = todayWs.Cells(row, column).Value
+            value2 = yestWs.Cells(row, column).Value
+            if value1 != value2:
+                self.yesterdayTKE.insertRow(str(row))
+                for column1 in range(1, yestWs.UsedRange.Columns.Count):
+                    yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
+                    print(yestWs.Cells(row, column1).Value)
+
+        self.todayTKE.insertColumn("AS")
         todayWs.Range("AS1:AS2").EntireColumn.Unmerge()
         yestWs.Range("AS1:AS2").EntireColumn.Unmerge()
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
@@ -270,6 +280,22 @@ class TKE:
             print("Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО")
         
         return 
+
+    def smilaTeplo(self, dataFile):
+        try:
+            smilaRow = dataFile.getFirstCellByCriteria("Смілакомунтеплоенерго КП", "R").row
+            ws = self.todayTKE.getWs("Sheet1")
+            # For all contracts column value
+            column=openpyxl.utils.column_index_from_string(str("AE"))
+            column1=openpyxl.utils.column_index_from_string(str("AF"))
+            # Payment column value
+            column2=openpyxl.utils.column_index_from_string(str("AQ"))
+            ws.cell(column=column, row=kyivEnergoRow).value = \
+                            ws.cell(column=column1, row=kyivEnergoRow).value - \
+                            ws.cell(column=column2, row=kyivEnergoRow).value
+        except:
+            print("Программа не смогла внести данные о задолженности Смілакомунтеплоенерго КП")
+
 
     def generateName(self):
         day = datetime.datetime.today().day
