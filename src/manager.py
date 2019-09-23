@@ -98,7 +98,8 @@ class PyWin(File):
         """Saves file at path/name.xls or path/name.xlsx
 
         Keyword arguments:
-        path -- full path to directory. Like C:\User...
+        path -- full path to directory. Like C:\\User...(one slash
+                instead of two should be used)
         name -- name of file without extension
         extension -- extension of excel file. Can be only .xls
                 or .xlsx
@@ -208,7 +209,8 @@ class OpenPyXl(File):
         of pyWin file and  saves it with .xls extension
 
         Keyword arguments:
-        path -- full path to directory. Like C:\User...
+        path -- full path to directory. Like C:\\User...(one slash
+                instead of two should be used)
         name -- name of file without extension
         extension -- extension of excel file. Can be only .xls
                 or .xlsx
@@ -361,7 +363,8 @@ class Manager:
         """Adds file in manager class by path to this file
 
         Keyword argument:
-        pathToFile -- path to directory with file, like C:\User\...
+        pathToFile -- path to directory with file, like C:\\User...(one slash
+                        instead of two should be used)
         fileName -- name of file with extension
         returnFile -- if True then will return an appended file
                         if False then wouldn`t
@@ -370,7 +373,7 @@ class Manager:
                         if False then it should be specified in openBy 
                         variable
         openBy -- if defaultParser is True then would be influence
-                        if defaultParser False then if
+                        if defaultParser False then if:
                         openBy == 0 --> openpyxl
                         openBy == 1 --> pyWin
         """
@@ -389,12 +392,23 @@ class Manager:
             return self.files[len(self.files)-1]
 
     def addFile(self, file, returnFile=False):
+        """Adds file to manager
+
+        Keyword parameters:
+        file -- file instance
+        returnFile -- if True then will return this
+                    file fron manager
+        """
         self.files.append(file)
         if returnFile == True:
             self.files[len(self.files)-1].wasCalled = True
             return self.files[len(self.files)-1]
 
     def addFilesInDir(self):
+        """ Adds files in directory that
+        was initialized when class instance was 
+        created
+        """
         for r, d, f in os.walk(self.pathToWorkDir):
             for fileName in f:
                 self.addFileByPath(self.pathToWorkDir, fileName)
@@ -408,6 +422,14 @@ class Manager:
             raise AttributeError
 
     def removeFile(self, thatFile: File):
+        """Removes file from manager
+        Should be used like:
+        manager.removeFile(manager.getFile(fileName))
+
+        Keyword arguments:
+        thatFile -- file instance that should
+                    be removed
+        """
         try:
             thatFile.close()
             self.files.remove(thatFile)
@@ -420,6 +442,14 @@ class Manager:
         
 
     def deleteFile(self, thatFile: File, extension=".xlsx"):
+        """Removes file from manager and 
+        then deletes that file from system
+
+        Keyword arguments:
+        thatFile -- file instance, that would be deleted
+        extension -- extension of file. By default set to
+                        ".xlsx" but can be set to ".xls"
+        """
         self.removeFile(thatFile)
         fullName = thatFile.pathToFile + "\\"
         fullName += thatFile.fileNameWithoutExtension
@@ -427,11 +457,17 @@ class Manager:
         os.remove(fullName)
 
     def getNumberOfFiles(self):
+        """Returns number of file
+        in manager
+        """
         return len(self.files)
 
     def printAllFiles(self):
+        """Prints all files in 
+        manager with file name parameter and wasCalled 
+        parameter and id
+        """
         print("\n#----------#")
-        print("self =", self)
         for file in self.files:
             print("\tfile:")
             print("\t\t", file.fileName)
@@ -440,6 +476,16 @@ class Manager:
         print("#----------#\n")
 
     def getFile(self, partOfNameOfFile, extension=".xls"):
+        """Returns file by part of file 
+        name and its extension
+
+        Keyword arguments:
+        partOfNameOfFile -- part of file name. If a file have
+                a name "IAmTheFile.xls", then partOfNameOfFile
+                could be "TheFile" of "iam", etc.
+        extension -- extension of file. By default set to ".xls"
+                but can be set to ".xlsx"
+        """
         for file in self.files:
             if partOfNameOfFile in file.fileName:
                 if extension == file.fileExtension:
@@ -449,6 +495,9 @@ class Manager:
         return None
 
     def removeUnCalledFiles(self):
+        """Removes files that have wasCalled parameter
+        set to False from manager
+        """
         toRemove = []
         for file in self.files:
             if file.wasCalled == False:
@@ -458,6 +507,10 @@ class Manager:
             self.removeFile(file)
 
     def deleteUnCalledFiles(self):
+        """Removes from manager and then deletes
+        from system files that have wasCalled
+        parameter set to False
+        """ 
         toDelete = []
         for file in self.files:
             if file.wasCalled == False:
@@ -467,6 +520,10 @@ class Manager:
             self.deleteFile(file)
 
     def deleteClosedFiles(self):
+        """Removes from manager and then deletes
+        from system files that have isOpened
+        parameter set to False
+        """
         forDelete = []
         for file in self.files:
             if file.isOpened == False:
@@ -476,63 +533,41 @@ class Manager:
             self.deleteFile(file)
 
     def allFromXlsToXlsx(self):
+        """Resaves all files in manager in .xlsx
+        format if they have .xls extension. After
+        that it removes files with .xls extension
+        from manager
+        """
         forRemove = []
         for file in self.files:
             #print(file.fileName)
             if file.fileExtension == ".xls":
-                self.saveFileAsXlsx(file)
+                file.open()
+                file.save(file.pathToFile, file.fileNameWithoutExtension, ".xlsx")
+                file.close()
+                newFileName = file.fileNameWithoutExtension+".xlsx"
+                self.addFileByPath(file.pathToFile, newFileName)
                 file.wasCalled = False
                 forRemove.append(file)
     
         for file in forRemove:
             self.removeFile(file)
-
-    def saveFileAsXlsx(self, file):
-        file.open()
-        file.save(file.pathToFile, file.fileNameWithoutExtension, ".xlsx")
-        file.close()
-        newFileName = file.fileNameWithoutExtension+".xlsx"
-        self.addFileByPath(file.pathToFile, newFileName)
+        
+        return
 
     def createDuplicate(self, file, duplicateName: str):
+        """Creates duplicate of file in directory
+        Duplicated file will have .xlsx extension
+
+        Keyword arguments:
+        file -- file that would be copied
+        duplicateName -- name of duplicate file
+        """
         copyfile(file.pathToFile + "\\" + file.fileName, 
                 file.pathToFile + "\\" + duplicateName + ".xlsx")
 
         return
 
 
-
 if __name__ == "__main__":
-
-    mng = Manager()
-    mng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
-    mng.addFilesInDir()
-
-    tmpMng = Manager()
-    tmpMng.setWorkDir(r"C:\Users\LuzhanskyiM-Inet\Development\Excel")
-
-    neededFileNames = ["222.xlsx", "111.xls"]
-    for neededFileName in neededFileNames:
-        for file in mng.files:
-            #print("main loop:", file.fileName, str(file))
-            #print(file.fileName, neededFileName)
-            if file.fileName == neededFileName:
-                #print("i`m here")
-                #print("if statement:", neededFileName, str(file))
-                # mng.removeFile(file)
-                tmpMng.addFile(file)
-
-    # mng = tmpMng
-    # del tmpMng
-
-    # for file in mng.files:
-    #     print(file.fileName)
-    #print("privet ebalo")
-    # saveFileAsXlsx(mng, mng[1])
-
-    # for file in mng.files:
-    #     print(file.fileName)
-
-    # mng[2].open()
-    # wb=mng[2].getWb()
-    # print(wb["1"].cell(row=2, column=1).value)
+    print("I`m manager.py file")
