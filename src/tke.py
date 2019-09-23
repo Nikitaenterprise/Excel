@@ -73,6 +73,7 @@ class TKE:
         self.copyColumn()
         self.mainCalculations()
         name = self.generateName()
+        self.hideColumns()
         self.todayTKE.save(self.todayTKE.pathToFile, name, extension=".xls")
         self.deleteFiles()
         
@@ -84,7 +85,7 @@ class TKE:
         # Write to
         self.todayTKE.open(data_only=False)
         todayWs = self.todayTKE.getWs("Sheet1")
-
+        
         # Read from
         fileNameForRead+=".xlsx"
         todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, 
@@ -217,14 +218,13 @@ class TKE:
         # Incerts column left to "AS" column in today TKE and then copies column 
         # "AS" from yesterday TKE and incerts it to created column in today TKE
         self.todayTKE.insertColumn("AS")
-        todayWs.Range("AS1:AS2").EntireColumn.Unmerge()
-        yestWs.Range("AS1:AS2").EntireColumn.Unmerge()
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
         # Saves files with rewriting exsited files in directory
         
         self.todayTKE.save(self.todayTKE.pathToFile, self.todayTKE.fileNameWithoutExtension)
         self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileNameWithoutExtension)
+        # This somehow closes yesterday TKE also
         self.todayTKE.close()
         self.mng.removeUnCalledFiles()
         # Returns tmp files to variables
@@ -342,6 +342,31 @@ class TKE:
         except:
             print("Программа не смогла внести данные о задолженности Гарант Енерго М ПП")
 
+    def hideColumns(self):
+        self.yesterdayTKE.open()
+        # Get list of hidden colulmns
+        listOfHiddenColumns = []
+        for column in range(1, self.yesterdayTKE.getWs().max_column):
+            columnLetter = openpyxl.utils.get_column_letter(column)
+            isHidden = self.yesterdayTKE.getWs().column_dimensions[columnLetter].hidden
+            listOfHiddenColumns.append(isHidden)
+        # Hide columns in today TKE by list
+        for column in range(1, self.todayTKE.getWs().max_column):
+            if column < len(listOfHiddenColumns):
+                if listOfHiddenColumns[column] == True:
+                    columnLetter = openpyxl.utils.get_column_letter(column)
+                    self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
+        # Additional hiding
+        listOfHiddenColumns = ["M", "O", "AW", "AX", "AY", 
+                                "AZ", "BA", "BB", "BC", "BD", 
+                                "BE", "BF", "BG", "BH", "BI",
+                                "BJ", "BK", "BL", "BM", "BN",
+                                "BP", "BQ", "BR", "BS", "BT",
+                                "BU"]
+        for columnLetter in listOfHiddenColumns:
+            self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
+        
+        return
 
     def generateName(self):
         """Generates name for file TKE_ПСО
