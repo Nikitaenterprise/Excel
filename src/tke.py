@@ -45,7 +45,7 @@ class TKE:
                             Это файл, с которым будет сравниваться список предприятий (новички).
             3. Паспорт Киiвтеплоенерго КП ВО Киiвради (КМДА) за сегодня
             4. Звiт_Рестр_1730_Друк_ВсiОбластi  файл по 1730
-            Итого: 4 экселевских файлов
+            Итого: 4 экселевских файла
             После исправления запустите программу заново. Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
@@ -171,6 +171,7 @@ class TKE:
                         todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
+        self.garantMM(todayTkeWithData)
         todayTkeWithData.close()
         return
 
@@ -194,13 +195,25 @@ class TKE:
         # then it say`s that there is a new company in today TKE and it should 
         # be copied to yesterday TKE
         column = openpyxl.utils.column_index_from_string("R")
-        for row in range(1, todayWs.UsedRange.Rows.Count):
-            value1 = todayWs.Cells(row, column).Value
-            value2 = yestWs.Cells(row, column).Value
-            if value1 != value2:
-                self.yesterdayTKE.insertRow(str(row))
-                for column1 in range(1, yestWs.UsedRange.Columns.Count):
-                    yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
+        numberOfCycles = 0
+        while True:
+            wasMismatch = False
+            for row in range(10, todayWs.UsedRange.Rows.Count):
+                value1 = todayWs.Cells(row, column).Value
+                value2 = yestWs.Cells(row, column).Value
+                if value1 != value2:
+                    wasMismatch = True
+                    print("Внимание!!! Новое предприятие:", value1)
+                    self.yesterdayTKE.insertRow(str(row))
+                    for column1 in range(1, yestWs.UsedRange.Columns.Count):
+                        yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
+            if wasMismatch == False:
+                break
+            elif wasMismatch == True:
+                numberOfCycles += 1
+            if numberOfCycles > 5:
+                print("Внимание!!! Слишком много несовпадений предприятий со вчерашним днем")
+                print("Возможна ошибка")
         # Incerts column left to "AS" column in today TKE and then copies column 
         # "AS" from yesterday TKE and incerts it to created column in today TKE
         self.todayTKE.insertColumn("AS")
@@ -209,6 +222,7 @@ class TKE:
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
         # Saves files with rewriting exsited files in directory
+        
         self.todayTKE.save(self.todayTKE.pathToFile, self.todayTKE.fileNameWithoutExtension)
         self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileNameWithoutExtension)
         self.todayTKE.close()
@@ -239,8 +253,8 @@ class TKE:
             print("В списках договоров реструктуризации " + \
                         "1730 не найдено предприятие с кодом ЕГРПОУ", EGRPOU)
             return None
-        overpaymentColumn = openpyxl.utils.column_index_from_string("U")
-        debtColumn = openpyxl.utils.column_index_from_string("V")
+        overpaymentColumn = openpyxl.utils.column_index_from_string("V")
+        debtColumn = openpyxl.utils.column_index_from_string("W")
         overpayment = wsRestr.cell(column=overpaymentColumn, row=row).value
         debt = wsRestr.cell(column=debtColumn, row=row).value
         # Summary of debt (wich are positive values) and overpayment (negative value)
@@ -308,25 +322,25 @@ class TKE:
         
         return 
 
-    def smilaTeplo(self, dataFile):
-        """Set right calculation for smila teplo comun energo
+    def garantMM(self, dataFile):
+        """Set right calculation of debt for garant energo MM
 
         Keyword arguments:
         dataFile -- TKE file
         """
         try:
-            smilaRow = dataFile.getFirstCellByCriteria("Смілакомунтеплоенерго КП", "R").row
+            garantRow = dataFile.getFirstCellByCriteria("Гарант Енерго М ПП", "R").row
             ws = self.todayTKE.getWs("Sheet1")
             # For all contracts column value
             column=openpyxl.utils.column_index_from_string(str("AE"))
             column1=openpyxl.utils.column_index_from_string(str("AF"))
             # Payment column value
             column2=openpyxl.utils.column_index_from_string(str("AQ"))
-            ws.cell(column=column, row=smilaRow).value = \
-                            ws.cell(column=column1, row=smilaRow).value - \
-                            ws.cell(column=column2, row=smilaRow).value
+            ws.cell(column=column, row=garantRow).value = \
+                            ws.cell(column=column1, row=garantRow).value - \
+                            ws.cell(column=column2, row=garantRow).value
         except:
-            print("Программа не смогла внести данные о задолженности Смілакомунтеплоенерго КП")
+            print("Программа не смогла внести данные о задолженности Гарант Енерго М ПП")
 
 
     def generateName(self):
