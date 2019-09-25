@@ -5,13 +5,23 @@ import openpyxl
 import win32com.client
 
 if __name__ == "__main__":
-    print("I`m main file")
+    #print("I`m main file")
 
-    excelBook = FiscalPlan(r"FiscalPlan")
-    excelBook.run()
-
-    #tke = TKE(r"TKE")
-    #tke.run()
+    print("Введите:\n1 для фин-плана\n2 для ТКЕ_ПСО")
+    while True:
+        what = input()
+        if what == 1:
+            tke = TKE(r"TKE")
+            tke.run()
+            break
+        elif what == 2:
+            TKE = FiscalPlan(r"FiscalPlan")
+            TKE.run()
+            break
+        else:
+            print("Не правильный ввод")
+    print("Программа завершила работу")
+   
 
     # excelApp = win32com.client.Dispatch("Excel.Application")
     # excelApp.Visible = False

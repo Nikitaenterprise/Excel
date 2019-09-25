@@ -384,6 +384,12 @@ class TKE:
                                 str(self.todayTKE.getWs().max_row)
         self.todayTKE.getWs().auto_filter.ref = FullRange
 
+    def addFilter(self):
+        FullRange = "A10:" + openpyxl.utils.get_column_letter(
+                                self.todayTKE.getWs().max_column) + \
+                                str(self.todayTKE.getWs().max_row)
+        self.todayTKE.getWs().auto_filter.ref = FullRange
+
     def generateName(self):
         """Generates name for file TKE_ПСО
         with current date and month

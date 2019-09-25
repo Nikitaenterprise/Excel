@@ -105,6 +105,7 @@ class PyWin(File):
                 or .xlsx
         """
         if self.isOpened == True:
+            self.getApp.DisplayAllerts = False
             if extension == ".xlsx":
                 # Code for xslx format
                 fileFormat = 51
@@ -112,6 +113,7 @@ class PyWin(File):
                 # Code for xls format
                 fileFormat = 56
             self.wb.SaveAs(path + "\\" + name + extension, FileFormat=fileFormat)
+            self.getApp.DisplayAllerts = True
             return True
         return False
         
