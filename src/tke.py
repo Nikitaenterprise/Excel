@@ -73,6 +73,8 @@ class TKE:
         self.copyColumn()
         self.mainCalculations()
         name = self.generateName()
+        self.hideColumns()
+        self.addFilter()
         self.todayTKE.save(self.todayTKE.pathToFile, name, extension=".xls")
         self.deleteFiles()
         
@@ -99,14 +101,23 @@ class TKE:
         for cells in todayWsData[rangeIter]:
             for cell in cells:
                 if cell.value != "" and cell.value != None:
+                    # Call restructurization() for get debt
                     summary = self.restructurization(todayWsData, cell.column, cell.row)
                     column = openpyxl.utils.column_index_from_string("AM")
                     if summary != None:
-                        # If company have dept >0 then this summ will appear in
+                        # If company have debt >0 then this summ will appear in
                         # column "AM"
                         todayWs.cell(column=column, row=cell.row).value = summary
+
+                        columnWithPlan = openpyxl.utils.column_index_from_string("AU")
+                        cellValueWithPlan = todayWs.cell(column=columnWithPlan, row=cell.row).value
+                        # If there is no plan for this company, and this company have debp
+                        # then set 0 to the column with conditions
+                        if cellValueWithPlan == 0 or cellValueWithPlan == None or cellValueWithPlan == "":
+                            columnWithConditions = openpyxl.utils.column_index_from_string("AT")
+                            todayWs.cell(column=columnWithConditions, row=cell.row).value = 0
                     elif summary == None:
-                        # If company have dept or dept <0 then "договір є" will
+                        # If company have debt or debt <0 then "договір є" will
                         # appear in column "AM"
                         todayWs.cell(column=column, row=cell.row).value = str("договір є")
                     # This check needs for empty cell not to be filled
@@ -133,6 +144,7 @@ class TKE:
                     if cell2.value == 0 and cell1.row == cell2.row:
                         column = openpyxl.utils.column_index_from_string("AU")
                         cellValueCheck = todayWsData.cell(column=column, row=cell1.row).value
+                        # Check fo cells not to be empty
                         if cellValueCheck == 0 or cellValueCheck == None or cellValueCheck == "":
                             continue
                         else:
@@ -171,6 +183,7 @@ class TKE:
                         todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
+        self.garantMM(todayTkeWithData)
         todayTkeWithData.close()
         return
 
@@ -194,13 +207,26 @@ class TKE:
         # then it say`s that there is a new company in today TKE and it should 
         # be copied to yesterday TKE
         column = openpyxl.utils.column_index_from_string("R")
-        for row in range(1, todayWs.UsedRange.Rows.Count):
-            value1 = todayWs.Cells(row, column).Value
-            value2 = yestWs.Cells(row, column).Value
-            if value1 != value2:
-                self.yesterdayTKE.insertRow(str(row))
-                for column1 in range(1, yestWs.UsedRange.Columns.Count):
-                    yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
+        numberOfCycles = 0
+        while True:
+            wasMismatch = False
+            for row in range(10, todayWs.UsedRange.Rows.Count):
+                value1 = todayWs.Cells(row, column).Value
+                value2 = yestWs.Cells(row, column).Value
+                if value1 != value2:
+                    wasMismatch = True
+                    print("Внимание!!! Новое предприятие:", value1)
+                    self.yesterdayTKE.insertRow(str(row))
+                    for column1 in range(1, yestWs.UsedRange.Columns.Count):
+                        yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
+            if wasMismatch == False:
+                break
+            elif wasMismatch == True:
+                numberOfCycles += 1
+            if numberOfCycles > 5:
+                print("Внимание!!! Слишком много несовпадений предприятий со вчерашним днем")
+                print("Возможна ошибка")
+                
         # Incerts column left to "AS" column in today TKE and then copies column 
         # "AS" from yesterday TKE and incerts it to created column in today TKE
         self.todayTKE.insertColumn("AS")
@@ -221,7 +247,7 @@ class TKE:
 
     def restructurization(self, ws, column: int, row: int):
         """Looks through 1730 file and finds company`s debt
-        Returns summary dept if its >0, and None if <0
+        Returns summary debt if its >0, and None if <0
 
         Keyword arguments:
         ws -- today TKE worksheet
@@ -252,7 +278,6 @@ class TKE:
 
     def kyivEnergoMoney(self, dataFile):
         """Finds kyiv teplo energo money in their passport file
-
         Keyword arguments:
         dataFile -- TKE file
         """
@@ -308,26 +333,56 @@ class TKE:
         
         return 
 
-    def smilaTeplo(self, dataFile):
-        """Set right calculation for smila teplo comun energo
-
+    def garantMM(self, dataFile):
+        """Set right calculation of debt for garant energo MM
         Keyword arguments:
         dataFile -- TKE file
         """
         try:
-            smilaRow = dataFile.getFirstCellByCriteria("Смілакомунтеплоенерго КП", "R").row
+            garantRow = dataFile.getFirstCellByCriteria("Гарант Енерго М ПП", "R").row
             ws = self.todayTKE.getWs("Sheet1")
             # For all contracts column value
             column=openpyxl.utils.column_index_from_string(str("AE"))
             column1=openpyxl.utils.column_index_from_string(str("AF"))
             # Payment column value
             column2=openpyxl.utils.column_index_from_string(str("AQ"))
-            ws.cell(column=column, row=smilaRow).value = \
-                            ws.cell(column=column1, row=smilaRow).value - \
-                            ws.cell(column=column2, row=smilaRow).value
+            ws.cell(column=column, row=garantRow).value = \
+                            ws.cell(column=column1, row=garantRow).value - \
+                            ws.cell(column=column2, row=garantRow).value
         except:
-            print("Программа не смогла внести данные о задолженности Смілакомунтеплоенерго КП")
+            print("Программа не смогла внести данные о задолженности Гарант Енерго М ПП")
 
+    def hideColumns(self):
+        self.yesterdayTKE.open()
+        # Get list of hidden colulmns
+        listOfHiddenColumns = []
+        for column in range(1, self.yesterdayTKE.getWs().max_column):
+            columnLetter = openpyxl.utils.get_column_letter(column)
+            isHidden = self.yesterdayTKE.getWs().column_dimensions[columnLetter].hidden
+            listOfHiddenColumns.append(isHidden)
+        # Hide columns in today TKE by list
+        for column in range(1, self.todayTKE.getWs().max_column):
+            if column < len(listOfHiddenColumns):
+                if listOfHiddenColumns[column] == True:
+                    columnLetter = openpyxl.utils.get_column_letter(column)
+                    self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
+        # Additional hiding
+        listOfHiddenColumns = ["M", "O", "AW", "AX", "AY", 
+                                "AZ", "BA", "BB", "BC", "BD", 
+                                "BE", "BF", "BG", "BH", "BI",
+                                "BJ", "BK", "BL", "BM", "BN",
+                                "BP", "BQ", "BR", "BS", "BT",
+                                "BU"]
+        for columnLetter in listOfHiddenColumns:
+            self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
+        
+        return
+
+    def addFilter(self):
+        FullRange = "A10:" + openpyxl.utils.get_column_letter(
+                                self.todayTKE.getWs().max_column) + \
+                                str(self.todayTKE.getWs().max_row)
+        self.todayTKE.getWs().auto_filter.ref = FullRange
 
     def generateName(self):
         """Generates name for file TKE_ПСО
@@ -349,13 +404,5 @@ class TKE:
             fileName += str(month) + "."
         fileName += str(year) + ")"
         return fileName
-    
 
-    # def hideColumns(self):
-    #     for column in range(1, self.todayTKE.ws.max_column):
-    #         if column < len(self.listOfHiddenColumns):
-    #             if self.listOfHiddenColumns[column] == True:
-    #                 self.todayTKE.ws.column_dimensions[openpyxl.utils.get_column_letter(
-    #                     column)].hidden = True
-    #     return
 
