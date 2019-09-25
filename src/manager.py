@@ -22,6 +22,7 @@ class File:
         self.fileNameWithoutExtension = os.path.splitext(self.fileName)[0]
         self.isOpened = False
         self.wasCalled = False
+        self.shouldBeDeleted = True
 
     def open(self):
         pass
@@ -462,6 +463,7 @@ class Manager:
         fullName = thatFile.pathToFile + "\\"
         fullName += thatFile.fileNameWithoutExtension
         fullName += thatFile.fileExtension
+        print(fullName)
         os.remove(fullName)
 
     def getNumberOfFiles(self):
@@ -480,6 +482,7 @@ class Manager:
             print("\tfile:")
             print("\t\t", file.fileName)
             print("\t\t", file.wasCalled)
+            print("\t\t", file.isOpened)
             print("\t\t", file)
         print("#----------#\n")
 
@@ -534,7 +537,7 @@ class Manager:
         """
         forDelete = []
         for file in self.files:
-            if file.isOpened == False:
+            if file.isOpened == False and file.shouldBeDeleted:
                 forDelete.append(file)
 
         for file in forDelete:

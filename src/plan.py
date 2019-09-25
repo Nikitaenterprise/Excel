@@ -20,6 +20,7 @@ class FiscalPlan:
         self.mng.addFilesInDir()
         
         self.fiscalPlan = self.mng.getFile("Прогнозне надходження", extension=".xlsx")
+        self.fiscalPlan.shouldBeDeleted = False
         self.mng.getFile("ЗБУТ")
         self.mng.getFile("ПАТ")
         self.mng.getFile("ТЕЦ")
@@ -102,18 +103,29 @@ class FiscalPlan:
 
     def run(self):
         self.todayCash.open()
-        print("1: " + str(self.populationAndReligion(self.todayCash)/1000000))
-        print("2: " + str(self.teploenergy(self.todayCash)/1000000))
-        print("3: " + str(self.directContractIndustryEE(self.todayCash)/1000000))
-        print("4: " + str(self.directContractIndustryPR(self.todayCash)/1000000))
+        today = []
+        today.append(self.populationAndReligion(self.todayCash)/1000000)
+        today.append(self.teploenergy(self.todayCash)/1000000)
+        today.append(self.directContractIndustryEE(self.todayCash)/1000000)
+        today.append(self.directContractIndustryPR(self.todayCash)/1000000)
+        print("Деньги за сегодня")
+        for money in today:
+            print(money)
 
         self.lastYearCash.open()
-        print("1: " + str(self.populationAndReligion(self.lastYearCash)/1000000))
-        print("2: " + str(self.teploenergy(self.lastYearCash)/1000000))
-        print("3: " + str(self.directContractIndustryEE(self.lastYearCash)/1000000))
-        print("4: " + str(self.directContractIndustryPR(self.lastYearCash)/1000000))
+        lastYear = []
+        lastYear.append(self.populationAndReligion(self.lastYearCash)/1000000)
+        lastYear.append(self.teploenergy(self.lastYearCash)/1000000)
+        lastYear.append(self.directContractIndustryEE(self.lastYearCash)/1000000)
+        lastYear.append(self.directContractIndustryPR(self.lastYearCash)/1000000)
+        print("Деньги за прошлый год")
+        for money in lastYear:
+            print(money)
 
-        #self.fiscalPlan.open()
+        self.fiscalPlan.open()
+        self.fillPlan(today, lastYear)
+        self.fiscalPlan.save(self.fiscalPlan.pathToFile, 
+                        self.fiscalPlan.fileNameWithoutExtension)
         self.deleteFiles()
         return
 
@@ -373,6 +385,33 @@ class FiscalPlan:
         print('Деньги от ТОВ "ГАЗОПОСТАЧАЛЬНА КОМПАНІЯ "НАФТОГАЗ ТРЕЙДИНГ" ' +
               str(naftogazTradingCash/1000000))
         return industryPrCash + energoGenerationCash
+
+    def fillPlan(self, todayMoney: list, lastYearMoney: list):
+        self.fiscalPlan.open(data_only=False)
+
+        # Get dates. Today and date frome file name
+        today = datetime.datetime.today().day
+        newstr = ''.join((ch if ch in '0123456789' else '') \
+                    for ch in self.todayCash.fileNameWithoutExtension)
+        #listOfNumbers = [int(i) for i in newstr.split()]
+        dayInFileName = int(newstr)
+
+        # Find date in header of the excel file 
+        cellWithDate = self.fiscalPlan.getFirstCellByCriteria(
+                        dayInFileName, "B3:AF3")
+
+        for money, i in zip(todayMoney, range(1, len(todayMoney))):
+            self.fiscalPlan.getWs().cell(
+                    column=cellWithDate.column,
+                    row = cellWithDate.row + i).value = money
+
+        for money, i in zip(lastYearMoney, range(1, len(lastYearMoney))):
+            self.fiscalPlan.getWs().cell(
+                    column=openpyxl.utils.column_index_from_string("AH"),
+                    row=cellWithDate.row + i).value = money
+        
+        self.fiscalPlan.close()
+
 
     # def addToSummaryFile(self):
     #     self.fiscalPlan.readExcelFile()
