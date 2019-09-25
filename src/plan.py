@@ -28,7 +28,6 @@ class FiscalPlan:
 
         self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
-        self.mng.printAllFiles()
 
         try:
             self.SBUT = self.mng.getFile("ЗБУТ", extension=".xlsx")
@@ -85,8 +84,6 @@ class FiscalPlan:
             input()
             exit()
 
-        self.mng.printAllFiles()
-
     def deleteFiles(self, programmIsDone=True):
         """Deletes all created files with .xlsx extension
         """
@@ -116,7 +113,7 @@ class FiscalPlan:
         print("3: " + str(self.directContractIndustryEE(self.lastYearCash)/1000000))
         print("4: " + str(self.directContractIndustryPR(self.lastYearCash)/1000000))
 
-        self.fiscalPlan.open()
+        #self.fiscalPlan.open()
         self.deleteFiles()
         return
 
