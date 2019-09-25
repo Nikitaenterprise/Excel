@@ -96,7 +96,6 @@ class PyWin(File):
 
     def save(self, path: str, name: str, extension=".xlsx", ConflictResolution=False):
         """Saves file at path/name.xls or path/name.xlsx
-
         Keyword arguments:
         path -- full path to directory. Like C:\\User...(one slash
                 instead of two should be used)
@@ -107,7 +106,6 @@ class PyWin(File):
                 with similar name in directory 
         """
         if self.isOpened == True:
-            #self.excelApp.DisplayAlerts = False
             if extension == ".xlsx":
                 # Code for xslx format
                 fileFormat = 51
@@ -115,12 +113,13 @@ class PyWin(File):
                 # Code for xls format
                 fileFormat = 56
             if ConflictResolution == True:
+                self.excelApp.DisplayAlerts = False
                 self.wb.SaveAs(path + "\\" + name + extension, 
                             FileFormat=fileFormat, ConflictResolution=2)
+                self.excelApp.DisplayAlerts = True
             elif ConflictResolution == False:
                 self.wb.SaveAs(path + "\\" + name + extension, 
                             FileFormat=fileFormat)
-            #self.excelApp.DisplayAlerts = True
             return True
         return False
         
