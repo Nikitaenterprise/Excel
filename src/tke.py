@@ -46,7 +46,7 @@ class TKE:
                             Это файл, с которым будет сравниваться список предприятий (новички).
             3. Паспорт Киiвтеплоенерго КП ВО Киiвради (КМДА) за сегодня
             4. Звiт_Рестр_1730_Друк_ВсiОбластi  файл по 1730
-            Итого: 4 экселевских файлов
+            Итого: 4 экселевских файла
             После исправления запустите программу заново. Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
@@ -87,7 +87,7 @@ class TKE:
         # Write to
         self.todayTKE.open(data_only=False)
         todayWs = self.todayTKE.getWs("Sheet1")
-
+        
         # Read from
         fileNameForRead+=".xlsx"
         todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, 
@@ -228,6 +228,7 @@ class TKE:
             if numberOfCycles > 5:
                 print("Внимание!!! Слишком много несовпадений предприятий со вчерашним днем")
                 print("Возможна ошибка")
+
                 
         # Incerts column left to "AS" column in today TKE and then copies column 
         # "AS" from yesterday TKE and incerts it to created column in today TKE
@@ -239,6 +240,7 @@ class TKE:
         # Saves files with rewriting exsited files in directory
         self.todayTKE.save(self.todayTKE.pathToFile, self.todayTKE.fileNameWithoutExtension)
         self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileNameWithoutExtension)
+        # This somehow closes yesterday TKE also
         self.todayTKE.close()
         self.mng.removeUnCalledFiles()
         # Returns tmp files to variables
@@ -267,8 +269,8 @@ class TKE:
             print("В списках договоров реструктуризации " + \
                         "1730 не найдено предприятие с кодом ЕГРПОУ", EGRPOU)
             return None
-        overpaymentColumn = openpyxl.utils.column_index_from_string("U")
-        debtColumn = openpyxl.utils.column_index_from_string("V")
+        overpaymentColumn = openpyxl.utils.column_index_from_string("V")
+        debtColumn = openpyxl.utils.column_index_from_string("W")
         overpayment = wsRestr.cell(column=overpaymentColumn, row=row).value
         debt = wsRestr.cell(column=debtColumn, row=row).value
         # Summary of debt (wich are positive values) and overpayment (negative value)
@@ -389,13 +391,12 @@ class TKE:
         #     self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
         return
 
-    
-
     def addFilter(self):
         FullRange = "A9:" + openpyxl.utils.get_column_letter(
                                 self.todayTKE.getWs().max_column) + \
                                 str(self.todayTKE.getWs().max_row)
         self.todayTKE.getWs().auto_filter.ref = FullRange
+
 
     def generateName(self):
         """Generates name for file TKE_ПСО
