@@ -94,26 +94,32 @@ class PyWin(File):
             self.excelApp.Quit()
             self.isOpened = False
 
-    def save(self, path: str, name: str, extension=".xlsx"):
+    def save(self, path: str, name: str, extension=".xlsx", ConflictResolution=False):
         """Saves file at path/name.xls or path/name.xlsx
-
         Keyword arguments:
         path -- full path to directory. Like C:\\User...(one slash
                 instead of two should be used)
         name -- name of file without extension
         extension -- extension of excel file. Can be only .xls
                 or .xlsx
+        ConflictResolution -- (Not Working currently) if True then pyWin will overwrite file
+                with similar name in directory 
         """
         if self.isOpened == True:
-            self.getApp.DisplayAllerts = False
             if extension == ".xlsx":
                 # Code for xslx format
                 fileFormat = 51
             elif extension == ".xls":
                 # Code for xls format
                 fileFormat = 56
-            self.wb.SaveAs(path + "\\" + name + extension, FileFormat=fileFormat)
-            self.getApp.DisplayAllerts = True
+            if ConflictResolution == True:
+                self.excelApp.DisplayAlerts = False
+                self.wb.SaveAs(path + "\\" + name + extension, 
+                            FileFormat=fileFormat, ConflictResolution=2)
+                self.excelApp.DisplayAlerts = True
+            elif ConflictResolution == False:
+                self.wb.SaveAs(path + "\\" + name + extension, 
+                            FileFormat=fileFormat)
             return True
         return False
         
