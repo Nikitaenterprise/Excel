@@ -463,7 +463,6 @@ class Manager:
         fullName = thatFile.pathToFile + "\\"
         fullName += thatFile.fileNameWithoutExtension
         fullName += thatFile.fileExtension
-        print(fullName)
         os.remove(fullName)
 
     def getNumberOfFiles(self):
@@ -524,7 +523,7 @@ class Manager:
         """ 
         toDelete = []
         for file in self.files:
-            if file.wasCalled == False:
+            if file.wasCalled == False and file.shouldBeDeleted:
                 toDelete.append(file)
         
         for file in toDelete:
