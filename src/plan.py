@@ -434,45 +434,6 @@ class FiscalPlan:
                         self.fiscalPlan.fileNameWithoutExtension)
         self.deleteFiles()
 
-    # def addToSummaryFile(self):
-    #     self.fiscalPlan.readExcelFile()
-    #     rowWithDates = 5
-    #     columnWithDates = openpyxl.utils.column_index_from_string(str("B"))
-    #     listOfHeaders = getHeadersOfAllColumns()
-    #     while True:
-    #         cellValue = self.fiscalPlan.ws.cell(
-    #             column=columnWithDates, row=rowWithDates).value
-
-    #         isThereAFactCell = False
-    #         if "факт" in cellValue:
-    #             isThereAFactCell = True
-    #         isThereAPlanCell = False
-    #         if "план" in cellValue:
-    #             isThereAPlanCell = True
-    #         if isThereAFactCell == True and isThereAPlanCell == True:
-    #             columnWithDates += 1
-    #             continue
-    #         # elif isThereAFactCell == True and isThereAPlanCell == False:
-
-    # def ppp(self):
-
-    #     self.fiscalPlan.readExcelFile()
-    #     rowWithDates = 5
-    #     columnWithDates = openpyxl.utils.column_index_from_string(str("B"))
-    #     self.fiscalPlan.initHeader("B4:AH5")
-    #     listOfHeaders = self.fiscalPlan.getHeadersOfAllColumns()
-
-    #     excelApp, wb = self.fiscalPlan.readFileWithPyWin()
-
-    #     #ws = wb.Worksheets("вересень")
-    #     ws = wb.ActiveSheet
-    #     coord = openpyxl.utils.coordinate_to_tuple("H6")
-    #     print(ws.Cells(coord[0], coord[1]).Value)
-    #     range = ws.Range("I1:I10")
-    #     range.EntireColumn.Insert()
-
-    #     excelApp.Quit()
-
 
 if __name__ == "__main__":
     print("I`m FiscalPlan.py file")

@@ -75,7 +75,7 @@ class TKE:
         self.mainCalculations()
         name = self.generateName()
         self.hideColumns()
-        self.addFilter()
+        #self.addFilter()
         self.todayTKE.save(self.todayTKE.pathToFile, name, extension=".xls")
         self.deleteFiles()
         
@@ -114,13 +114,8 @@ class TKE:
                             # If company have debt >0 then this summ will appear in
                             # column "AM"
                             todayWs.cell(column=column, row=cell.row).value = summary
-
-                            columnWithPlan = openpyxl.utils.column_index_from_string("AU")
-                            cellValueWithPlan = todayWsData.cell(column=columnWithPlan, row=cell.row).value
-                            # If there is no plan for this company, and this company have debp
-                            # then set 0 to the column with conditions
-                            if cellValueWithPlan == 0 or cellValueWithPlan == None or cellValueWithPlan == "":
-                                todayWs.cell(column=columnWithConditions, row=cell.row).value = 0
+                            # Set 0 to the column with conditions
+                            todayWs.cell(column=columnWithConditions, row=cell.row).value = 0
 
                         elif summary == None:
                             # If company have debt or debt <0 then "договір є" will
@@ -220,7 +215,13 @@ class TKE:
                     print("Внимание!!! Новое предприятие:", value1)
                     self.yesterdayTKE.insertRow(str(row))
                     for column1 in range(1, yestWs.UsedRange.Columns.Count):
-                        yestWs.Cells(row, column1).Value = todayWs.Cells(row, column1).Value
+                        # Copy row from today and paste it as values (without formulas) in
+                        # yesterday excel book
+                        todayWs.Range(str(openpyxl.utils.get_column_letter(column1)) + str(row)).Copy()
+                        # Got this from https://docs.microsoft.com/en-us/office/vba/api/excel.xlpastetype
+                        xlPasteValues = -4163
+                        yestWs.Range(str(openpyxl.utils.get_column_letter(column1)) + \
+                                    str(row)).PasteSpecial(Paste=xlPasteValues)
             if wasMismatch == False:
                 break
             elif wasMismatch == True:
@@ -228,13 +229,10 @@ class TKE:
             if numberOfCycles > 5:
                 print("Внимание!!! Слишком много несовпадений предприятий со вчерашним днем")
                 print("Возможна ошибка")
-
-                
+        
         # Incerts column left to "AS" column in today TKE and then copies column 
         # "AS" from yesterday TKE and incerts it to created column in today TKE
         self.todayTKE.insertColumn("AS")
-        #todayWs.Range("AS1:AS2").EntireColumn.Unmerge()
-        #yestWs.Range("AS1:AS2").EntireColumn.Unmerge()
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
         # Saves files with rewriting exsited files in directory
