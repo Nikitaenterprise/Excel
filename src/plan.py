@@ -396,6 +396,11 @@ class FiscalPlan:
 
         return [industryPrCash + energoGenerationCash, naftogazTradingCash]
 
+    def additionalIncome(self, cashWB: File):
+        """
+        """
+        
+
     def fillPlan(self, todayMoney: list, lastYearMoney: list):
 
         self.fiscalPlan.open(data_only=False)

@@ -199,11 +199,11 @@ class TKE:
         # Set first sheet as active
         todayWs = self.todayTKE.getWs("Sheet1")
         yestWs = self.yesterdayTKE.getWs("Sheet1")
-        # Looks through all rows in today TKE and compare values in "R"
-        # column (wich corresponds to company name) and if values don`t match
+        # Looks through all rows in today TKE and compare values in "P"
+        # column (wich corresponds to company EDRPOU) and if values don`t match
         # then it say`s that there is a new company in today TKE and it should 
         # be copied to yesterday TKE
-        column = openpyxl.utils.column_index_from_string("R")
+        column = openpyxl.utils.column_index_from_string("P")
         numberOfCycles = 0
         while True:
             wasMismatch = False
@@ -253,7 +253,7 @@ class TKE:
 
         Keyword arguments:
         ws -- today TKE worksheet
-        column -- column company number
+        column -- contract company number
         row -- row company number
         """
         # Set EGRPOU value wich is placed in column right next to 
@@ -262,7 +262,7 @@ class TKE:
         try:
             wsRestr = self.restructurization1730.getWs("Sheet1")
             # Get cell with EGRPOU value in 1730 file
-            row = self.restructurization1730.getFirstCellByCriteria(EGRPOU, "D").row-1
+            row = self.restructurization1730.getFirstCellByCriteria(EGRPOU, "D").row
         except AttributeError:
             print("В списках договоров реструктуризации " + \
                         "1730 не найдено предприятие с кодом ЕГРПОУ", EGRPOU)
