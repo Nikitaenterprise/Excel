@@ -111,11 +111,15 @@ class FiscalPlan:
         today.append(self.teploenergy(self.todayCash)/1000000)
         today.append(self.directContractIndustryEE(self.todayCash)/1000000)
         listWithPR = self.directContractIndustryPR(self.todayCash)
+        listWithVTV = self.additionalIncome(self.todayCash)
         # PR money
         today.append(listWithPR[0]/1000000)
         # Naftogaz money
         today.append(listWithPR[1]/1000000)
-        today.append(self.additionalIncome(self.todayCash)/1000000)
+        # UKRTRANSGAS VTV
+        today.append(listWithVTV[1]/1000000)
+        # Additional income 
+        today.append(listWithVTV[0]/1000000)
         
         # List insides:
         # [
@@ -123,8 +127,9 @@ class FiscalPlan:
         #       Теплокомуненерго по договорах ТЕ,БО, КП, РО; 
         #       Теплокомуненерго по договорах ЕЕ;
         #       Промислові підприємства; 
-        #       Нафтогаз Трейдинг
-        #       Додаткові надходження; 
+        #       Нафтогаз Трейдинг;
+        #       УКРТРАНСГАЗ (ВТВ);
+        #       Додаткові надходження
         # ]
 
         print("Деньги за сегодня")
@@ -133,7 +138,8 @@ class FiscalPlan:
         print("\tТеплокомуненерго по договорах ЕЕ", today[2])
         print("\tПромислові підприємства", today[3])
         print("\tНафтогаз Трейдинг", today[4])
-        print("\tДодаткові надходження", today[5])
+        print("\tУКРТРАНСГАЗ", today[5])
+        print("\tДодаткові надходження", today[6])
         
         print("\n\n\n")
         print("Обработка файла с деньгами за месяц")
@@ -144,11 +150,15 @@ class FiscalPlan:
         lastYear.append(self.teploenergy(self.lastYearCash)/1000000)
         lastYear.append(self.directContractIndustryEE(self.lastYearCash)/1000000)
         listWithPR = self.directContractIndustryPR(self.lastYearCash)
+        listWithVTV = self.additionalIncome(self.lastYearCash)
         # PR money
         lastYear.append(listWithPR[0]/1000000)
         # Naftogaz money
         lastYear.append(listWithPR[1]/1000000)
-        lastYear.append(self.additionalIncome(self.lastYearCash)/1000000)
+        # UKRTRANSGAS VTV
+        lastYear.append(listWithVTV[1]/1000000)
+        # Additional income 
+        lastYear.append(listWithVTV[0]/1000000)
 
         print("Деньги за прошлый год")
         print("\tНаселення", lastYear[0])
@@ -156,7 +166,8 @@ class FiscalPlan:
         print("\tТеплокомуненерго по договорах ЕЕ", lastYear[2])
         print("\tПромислові підприємства", lastYear[3])
         print("\tНафтогаз Трейдинг", lastYear[4])
-        print("\tДодаткові надходження", lastYear[5])
+        print("\tУКРТРАНСГАЗ", lastYear[5])
+        print("\tДодаткові надходження", lastYear[6])
 
         self.fillPlan(today, lastYear)
         return
@@ -313,7 +324,9 @@ class FiscalPlan:
     def directContractIndustryPR(self, cashWB: File):
         """Finds cash from direct contract with
         industries (PR) without cash from TEZ companies and
-        SBUT companies and PAT companies
+        SBUT companies and PAT companies. Also finds money from 
+        Naftogaz trading.
+        Returns list
         """
         try:
             self.PAT.open()
@@ -417,7 +430,8 @@ class FiscalPlan:
         return [industryPrCash + energoGenerationCash, naftogazTradingCash]
 
     def additionalIncome(self, cashWB: File):
-        """
+        """Finds VTV money and UKRTRANSGAZ VTV money
+        Returns list
         """
         # Column J contain cash
         cashColumn = openpyxl.utils.column_index_from_string(str("J"))
@@ -450,8 +464,35 @@ class FiscalPlan:
         except:
             print("Нет категории: ВТВ та нормовані втрати")
             vtvCash = 0
+        try:
+            # Column C contain names and categories
+            columnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
+                str("C"))
+            # Column B contain category number
+            categoryNumberColumn = openpyxl.utils.column_index_from_string(
+                str("B"))
+            transGasVtvCash = 0
+            while True:
+                vtvRow += 1
+                categoryNumber = cashWB.getWs(0).cell(
+                        column=categoryNumberColumn,
+                        row=vtvRow).value
+                # Break if category ends
+                if categoryNumber != None:
+                    break
+
+                categoryOrCompanyName = cashWB.getWs(0).cell(
+                        column=columnWithNameOfCompanyOrCategory,
+                        row=vtvRow).value
+                if "Оператор ГТС" in categoryOrCompanyName:
+                    transGasVtvCash += cashWB.getWs(0).cell(
+                            column=cashColumn,
+                            row=vtvRow).value
+        except (AttributeError, UnboundLocalError):
+            print("Нет денег от Філія Оператор ГТС України")
+            transGasVtvCash = 0
         
-        return  prVatCash + teploVatCash + vtvCash
+        return  [prVatCash + teploVatCash + vtvCash - transGasVtvCash, transGasVtvCash]
 
     def fillPlan(self, todayMoney: list, lastYearMoney: list):
 
@@ -468,23 +509,23 @@ class FiscalPlan:
                         dayInFileName, "B4:AF4")
         
         # Iterate in excel book in one column (current day) in 4 rows
-        for i in range(1, 6):
+        for i in range(1, 7):
             self.fiscalPlan.getWs().cell(
                     column=cellWithDate.column,
                     row = cellWithDate.row + i).value = todayMoney[i-1]
-        # Naftogaz trading
+        # Additional income
         self.fiscalPlan.getWs().cell(
                     column=cellWithDate.column,
-                    row = cellWithDate.row + 7).value = todayMoney[5]
+                    row = cellWithDate.row + 8).value = todayMoney[6]
 
-        for i in range(1, 6):
+        for i in range(1, 7):
             self.fiscalPlan.getWs().cell(
                     column=openpyxl.utils.column_index_from_string("AH"),
                     row=cellWithDate.row + i).value = lastYearMoney[i-1]
-        # Naftogaz trading
+        # Additional income
         self.fiscalPlan.getWs().cell(
                     column=openpyxl.utils.column_index_from_string("AH"),
-                    row = cellWithDate.row + 7).value = lastYearMoney[5]
+                    row = cellWithDate.row + 8).value = lastYearMoney[6]
 
         self.fiscalPlan.save(self.fiscalPlan.pathToFile, 
                         self.fiscalPlan.fileNameWithoutExtension)
