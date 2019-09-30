@@ -102,6 +102,9 @@ class FiscalPlan:
         return
 
     def run(self):
+        print("\n\n\n")
+        print("Обработка файла с деньгами за предыдущий")
+        print("банковский день")
         self.todayCash.open()
         today = []
         today.append(self.populationAndReligion(self.todayCash)/1000000)
@@ -112,14 +115,29 @@ class FiscalPlan:
         today.append(listWithPR[0]/1000000)
         # Naftogaz money
         today.append(listWithPR[1]/1000000)
+        today.append(self.additionalIncome(self.todayCash)/1000000)
         
+        # List insides:
+        # [
+        #       Населення; 
+        #       Теплокомуненерго по договорах ТЕ,БО, КП, РО; 
+        #       Теплокомуненерго по договорах ЕЕ;
+        #       Промислові підприємства; 
+        #       Нафтогаз Трейдинг
+        #       Додаткові надходження; 
+        # ]
+
         print("Деньги за сегодня")
         print("\tНаселення", today[0])
         print("\tТеплокомуненерго по договорах ТЕ,БО, КП, РО", today[1])
         print("\tТеплокомуненерго по договорах ЕЕ", today[2])
         print("\tПромислові підприємства", today[3])
         print("\tНафтогаз Трейдинг", today[4])
-
+        print("\tДодаткові надходження", today[5])
+        
+        print("\n\n\n")
+        print("Обработка файла с деньгами за месяц")
+        print("в прошлом году")
         self.lastYearCash.open()
         lastYear = []
         lastYear.append(self.populationAndReligion(self.lastYearCash)/1000000)
@@ -130,6 +148,7 @@ class FiscalPlan:
         lastYear.append(listWithPR[0]/1000000)
         # Naftogaz money
         lastYear.append(listWithPR[1]/1000000)
+        lastYear.append(self.additionalIncome(self.lastYearCash)/1000000)
 
         print("Деньги за прошлый год")
         print("\tНаселення", lastYear[0])
@@ -137,6 +156,7 @@ class FiscalPlan:
         print("\tТеплокомуненерго по договорах ЕЕ", lastYear[2])
         print("\tПромислові підприємства", lastYear[3])
         print("\tНафтогаз Трейдинг", lastYear[4])
+        print("\tДодаткові надходження", lastYear[5])
 
         self.fillPlan(today, lastYear)
         return
@@ -399,14 +419,45 @@ class FiscalPlan:
     def additionalIncome(self, cashWB: File):
         """
         """
+        # Column J contain cash
+        cashColumn = openpyxl.utils.column_index_from_string(str("J"))
+        try:
+            # Column C contain names and categories
+            prVatRow = cashWB.getFirstCellByCriteria(
+                "2.1. Промисловість через ВАТ", "C").row
+            prVatCash = cashWB.getWs(0).cell(
+                    column=cashColumn,
+                    row=prVatRow).value
+        except:
+            print("Нет категории: Промисловість через ВАТ")
+            prVatCash = 0
+        try:
+            # Column C contain names and categories
+            teploVatRow = cashWB.getFirstCellByCriteria(
+                "3.1. Теплоенергетика через ВАТ", "C").row
+            teploVatCash = cashWB.getWs(0).cell(
+                    column=cashColumn,
+                    row=teploVatRow).value
+        except:
+            print("Нет категории: Теплоенергетика через ВАТ")
+            teploVatCash = 0
+        try:
+            vtvRow = cashWB.getFirstCellByCriteria(
+                "ВТВ та нормовані втрати", "C").row
+            vtvCash = cashWB.getWs(0).cell(
+                    column=cashColumn,
+                    row=vtvRow).value
+        except:
+            print("Нет категории: ВТВ та нормовані втрати")
+            vtvCash = 0
         
+        return  prVatCash + teploVatCash + vtvCash
 
     def fillPlan(self, todayMoney: list, lastYearMoney: list):
 
         self.fiscalPlan.open(data_only=False)
 
-        # Get dates. Today and date frome file name
-        today = datetime.datetime.today().day
+        # Get date frome file name
         newstr = ''.join((ch if ch in '0123456789' else '') \
                     for ch in self.todayCash.fileNameWithoutExtension)
         #listOfNumbers = [int(i) for i in newstr.split()]
@@ -414,26 +465,26 @@ class FiscalPlan:
 
         # Find date in header of the excel file 
         cellWithDate = self.fiscalPlan.getFirstCellByCriteria(
-                        dayInFileName, "B3:AF3")
+                        dayInFileName, "B4:AF4")
         
         # Iterate in excel book in one column (current day) in 4 rows
-        for i in range(1, 5):
+        for i in range(1, 6):
             self.fiscalPlan.getWs().cell(
                     column=cellWithDate.column,
                     row = cellWithDate.row + i).value = todayMoney[i-1]
         # Naftogaz trading
         self.fiscalPlan.getWs().cell(
                     column=cellWithDate.column,
-                    row = cellWithDate.row + 6).value = todayMoney[4]
+                    row = cellWithDate.row + 7).value = todayMoney[5]
 
-        for i in range(1, 5):
+        for i in range(1, 6):
             self.fiscalPlan.getWs().cell(
                     column=openpyxl.utils.column_index_from_string("AH"),
                     row=cellWithDate.row + i).value = lastYearMoney[i-1]
         # Naftogaz trading
         self.fiscalPlan.getWs().cell(
                     column=openpyxl.utils.column_index_from_string("AH"),
-                    row = cellWithDate.row + 6).value = lastYearMoney[4]
+                    row = cellWithDate.row + 7).value = lastYearMoney[5]
 
         self.fiscalPlan.save(self.fiscalPlan.pathToFile, 
                         self.fiscalPlan.fileNameWithoutExtension)
