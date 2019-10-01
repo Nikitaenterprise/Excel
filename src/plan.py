@@ -98,7 +98,10 @@ class FiscalPlan:
                 self.lastYearCash.close()
             except:
                 print("Программа не смогла закрыть экселевские файлы")
-            self.mng.deleteClosedFiles()
+            try:
+                self.mng.deleteClosedFiles()
+            except FileNotFoundError:
+                print("Программа не смогла удалить файлы после работы")
         return
 
     def run(self):
@@ -184,7 +187,7 @@ class FiscalPlan:
                 str("J"))
             populationCash = cashWB.getWs(0).cell(
                 column=populationColumn, row=populationRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Населення")
             populationCash = 0
 
@@ -196,7 +199,7 @@ class FiscalPlan:
             religionColumn = populationColumn  # the same column
             religionCash = cashWB.getWs(0).cell(
                 column=religionColumn, row=religionRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Релігійні організації")
             religionCash = 0
 
@@ -214,7 +217,7 @@ class FiscalPlan:
                 str("J"))
             teploenergyCash = cashWB.getWs(0).cell(
                 column=teploenergyColumn, row=teploenergyRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Теплоенергетика за прямими договорами")
             teploenergyCash = 0
 
@@ -242,7 +245,7 @@ class FiscalPlan:
                     self.kyivEnergoEeContractCash = cashValue
                 elif "ЕЕ" not in contractName:
                     kyivEnergoNotEeCash += cashValue
-        except:
+        except AttributeError:
             print("Нет категории: Енергетичні підприємства м.Києва")
             kyivEnergoNotEeCash = 0
 
@@ -306,7 +309,7 @@ class FiscalPlan:
                         TEZCash += cashWB.getWs(0).cell(
                             column=industryEeColumnWithCash,
                             row=industryEeRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Промисловість за прямими договорами (ЕЕ)")
             industryEeCash = 0
             TEZCash = 0
@@ -314,12 +317,12 @@ class FiscalPlan:
         try:
             # Check is this vatiable is created
             # in teploenergy()
-            kyivEnergoEeContractCash
-        except:
+            self.kyivEnergoEeContractCash
+        except (AttributeError, UnboundLocalError):
             print("Нет категории: Енергетичні підприємства м.Києва (ЕЕ)")
-            kyivEnergoEeContractCash = 0
+            self.kyivEnergoEeContractCash = 0
 
-        return industryEeCash + TEZCash + kyivEnergoEeContractCash
+        return industryEeCash + TEZCash + self.kyivEnergoEeContractCash
 
     def directContractIndustryPR(self, cashWB: File):
         """Finds cash from direct contract with
@@ -390,7 +393,7 @@ class FiscalPlan:
                     naftogazTradingCash += cashWB.getWs(0).cell(
                         column=industryPrColumn,
                         row=industryPrRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Промисловість за прямими договорами (ПР)")
             industryPrCash = 0
             naftogazTradingCash = 0
@@ -409,6 +412,7 @@ class FiscalPlan:
             energoGenerationRow = cashWB.getFirstCellByCriteria(
                 "Енергогенеруючі компанії", "C").row
 
+            energoGenerationCash = 0
             while True:
                 energoGenerationRow += 1
                 categoryOrCompanyName = cashWB.getWs(0).cell(
@@ -423,7 +427,7 @@ class FiscalPlan:
                 if "ПР" in contractName:
                     energoGenerationCash += cashWB.getWs(0).cell(
                         column=energoGenerationColumn, row=energoGenerationRow)
-        except:
+        except (AttributeError, TypeError):
             print("Нет категории: Енергогенеруючі компанії (ПР)")
             energoGenerationCash = 0
 
@@ -442,7 +446,7 @@ class FiscalPlan:
             prVatCash = cashWB.getWs(0).cell(
                     column=cashColumn,
                     row=prVatRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Промисловість через ВАТ")
             prVatCash = 0
         try:
@@ -452,7 +456,7 @@ class FiscalPlan:
             teploVatCash = cashWB.getWs(0).cell(
                     column=cashColumn,
                     row=teploVatRow).value
-        except:
+        except AttributeError:
             print("Нет категории: Теплоенергетика через ВАТ")
             teploVatCash = 0
         try:
@@ -461,7 +465,7 @@ class FiscalPlan:
             vtvCash = cashWB.getWs(0).cell(
                     column=cashColumn,
                     row=vtvRow).value
-        except:
+        except AttributeError:
             print("Нет категории: ВТВ та нормовані втрати")
             vtvCash = 0
         try:
@@ -488,8 +492,8 @@ class FiscalPlan:
                     transGasVtvCash += cashWB.getWs(0).cell(
                             column=cashColumn,
                             row=vtvRow).value
-        except (AttributeError, UnboundLocalError):
-            print("Нет денег от Філія Оператор ГТС України")
+        except UnboundLocalError:
+            print("Нет компании: Філія Оператор ГТС України")
             transGasVtvCash = 0
         
         return  [prVatCash + teploVatCash + vtvCash - transGasVtvCash, transGasVtvCash]
