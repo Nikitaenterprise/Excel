@@ -106,6 +106,7 @@ class TKE:
                     # This check needs for empty cell not to be filled
                     if todayWsData.cell(column=columnWithConditions, row=cell.row).value != "":
                         todayWs.cell(column=columnWithConditions, row=cell.row).value = 1
+                        todayWsData.cell(column=columnWithConditions, row=cell.row).value = 1
 
                         # Call restructurization() for get debt
                         summary = self.restructurization(todayWsData, cell.column, cell.row)
@@ -116,6 +117,7 @@ class TKE:
                             todayWs.cell(column=column, row=cell.row).value = summary
                             # Set 0 to the column with conditions
                             todayWs.cell(column=columnWithConditions, row=cell.row).value = 0
+                            todayWsData.cell(column=columnWithConditions, row=cell.row).value = 0
 
                         elif summary == None:
                             # If company have debt or debt <0 then "договір є" will
@@ -309,7 +311,7 @@ class TKE:
                         money += kyivWs.cell(column=moneyColumn, row=row).value
             
             self.kyivEnergoPas.close()
-        except:
+        except (AttributeError, IndexError):
             money = 0
             print("Проблема с подсчетом оплаты Київтеплоенерго КП ВО")
         
@@ -330,7 +332,7 @@ class TKE:
             ws.cell(column=column, row=kyivEnergoRow).value = \
                             ws.cell(column=column1, row=kyivEnergoRow).value - \
                             ws.cell(column=column2, row=kyivEnergoRow).value - money
-        except:
+        except AttributeError:
             print("Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО")
         
         return 
@@ -351,7 +353,7 @@ class TKE:
             ws.cell(column=column, row=garantRow).value = \
                             ws.cell(column=column1, row=garantRow).value - \
                             ws.cell(column=column2, row=garantRow).value
-        except:
+        except AttributeError:
             print("Программа не смогла внести данные о задолженности Гарант Енерго М ПП")
 
     def hideColumns(self):
