@@ -1,10 +1,8 @@
 import os
 import datetime
 
-
 import openpyxl
 import win32com.client
-
 
 from src.manager import *
 
