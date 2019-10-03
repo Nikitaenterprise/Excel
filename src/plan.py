@@ -353,6 +353,7 @@ class FiscalPlan:
         Naftogaz trading.
         Returns list
         """
+        
         try:
             self.PAT.open()
             self.PAT.unmerge()
@@ -429,6 +430,7 @@ class FiscalPlan:
             print("Нет категории: Промисловість за прямими договорами (ПР)")
             industryPrCash = 0
             naftogazTradingCash = 0
+            self.tezCompaniesMoneyFromPr = 0
 
         try:
             # Column J contain cash
