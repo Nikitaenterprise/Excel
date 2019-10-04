@@ -121,6 +121,28 @@ class TKE:
                             # If company have debt or debt <0 then "договір є" will
                             # appear in column "AM"
                             todayWs.cell(column=column, row=cell.row).value = str("договір є")                          
+        
+        # Set 1 to those companies who are currently controlled by Фонд Держ Майна
+        # If they have >60% then set 1
+        listOfDerzhMaino = [
+                            "00130820",
+                            "00130850",
+                            "40885849",
+                            "00131050",
+                            "30083966",
+                            "05471158",
+                            "00131771"
+                            ]
+        # Iterate in EDRPOU column
+        rangeIter = "P12" + ":" + "P" + str(numberOfRows)
+        columnWithPercents = openpyxl.utils.column_index_from_string("AG")
+        columnWithConditions = openpyxl.utils.column_index_from_string("AT")
+        for cells in todayWsData[rangeIter]:
+            for cell in cells:
+                if cell.value in listOfDerzhMaino:
+                    if todayWsData.cell(column=columnWithPercents, row=cell.row).value >= 60:
+                        todayWs.cell(column=columnWithConditions, row=cell.row).value = 1
+                        todayWsData.cell(column=columnWithConditions, row=cell.row).value = 1
 
         # Copy data from 'поточний лимит' to 'попередний лимит'
         rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
