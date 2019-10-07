@@ -113,6 +113,7 @@ class TKE:
                             # If company have debt >0 then this summ will appear in
                             # column "AM"
                             todayWs.cell(column=column, row=cell.row).value = summary
+                            todayWsData.cell(column=column, row=cell.row).value = summary
                             # Set 0 to the column with conditions
                             todayWs.cell(column=columnWithConditions, row=cell.row).value = 0
                             todayWsData.cell(column=columnWithConditions, row=cell.row).value = 0
@@ -137,12 +138,18 @@ class TKE:
         rangeIter = "P12" + ":" + "P" + str(numberOfRows)
         columnWithPercents = openpyxl.utils.column_index_from_string("AG")
         columnWithConditions = openpyxl.utils.column_index_from_string("AT")
+        columnBV = openpyxl.utils.column_index_from_string("BV")
         for cells in todayWsData[rangeIter]:
             for cell in cells:
                 if cell.value in listOfDerzhMaino:
+                    # Set 60 to BV column for right calculation of debt
+                    todayWs.cell(column=columnBV, row=cell.row).value = 60
+                    todayWsData.cell(column=columnBV, row=cell.row).value = 60
                     if todayWsData.cell(column=columnWithPercents, row=cell.row).value >= 60:
                         todayWs.cell(column=columnWithConditions, row=cell.row).value = 1
                         todayWsData.cell(column=columnWithConditions, row=cell.row).value = 1
+                        # Set to 0 sum to 90%
+                        todayWs.cell(column=columnWithConditions + 1, row=cell.row).value = 0                     
 
         # Copy data from 'поточний лимит' to 'попередний лимит'
         rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
@@ -151,6 +158,33 @@ class TKE:
             for cell1, cell2 in zip(cells1, cells2):
                 if cell1.row == cell2.row:
                     todayWs.cell(column=cell2.column, row=cell2.row).value = cell1.value
+        
+        # Check for numbers like 0,001, and if so clear value
+        rangeAH = "AH10" + ":" + "AH" + str(numberOfRows)
+        rangeAI = "AI10" + ":" + "AI" + str(numberOfRows)
+        rangeAM = "AM10" + ":" + "AM" + str(numberOfRows)
+        def setNoneValue(range):
+            for cells in todayWsData[range]:
+                for cell in cells:
+                    try:
+                        if cell.value > 0 and cell.value <= 1:
+                            todayWsData.cell(column=cell.column, row=cell.row).value = None
+                            todayWs.cell(column=cell.column, row=cell.row).value = None
+                    except TypeError:
+                        continue
+            return
+        setNoneValue(rangeAI)
+        setNoneValue(rangeAM)
+        for cells in todayWsData[rangeAH]:
+            for cell in cells:
+                try:
+                    if cell.value > 0 and cell.value <= 1:
+                        todayWsData.cell(column=cell.column, row=cell.row).value = None
+                        todayWs.cell(column=cell.column, row=cell.row).value = None
+                        todayWsData.cell(column=cell.column - 1, row=cell.row).value = 90
+                        todayWs.cell(column=cell.column - 1, row=cell.row).value = 90
+                except TypeError:
+                    continue
 
         # Set 'план э' to those rows wich have 0`s in both columns with conditions
         # Check the range
@@ -176,6 +210,22 @@ class TKE:
                             todayWs.cell(column=column+5, row=cell1.row).value = ""
                             todayWs.cell(column=column+6, row=cell1.row).value = ""
 
+        # Set "інший постачальник" to some companies
+        listOtherProvider = [
+                            "Маріупольське територіальне управління ВП",
+                            "Прогрес ОСКП",
+                            "Служба локомотивного господарства СП",
+                            "Прогрес ТД ТОВ",
+                            "СЕРЕДНЯ 49-А ОСББ"
+                            ]
+        rangeIter = "R12" + ":" + "R" + str(numberOfRows)
+        columnPlan = openpyxl.utils.column_index_from_string("AU")
+        for cells in todayWsData[rangeIter]:
+            for cell in cells:
+                if cell.value in listOtherProvider:
+                    todayWs.cell(column=columnPlan, row=cell.row).value = "інший постачальник"
+                    todayWsData.cell(column=columnPlan, row=cell.row).value = "інший постачальник"
+
         # Find the difference between columns with 'план на декаду' and 'поточний лимит'
         for row in range(10, numberOfRows):
             column = openpyxl.utils.column_index_from_string("AU")
@@ -196,7 +246,10 @@ class TKE:
                     column1 = openpyxl.utils.column_index_from_string("BO")
                     value1 = todayWsData.cell(column=column1, row=row).value
                     value2 = todayWsData.cell(column=column, row=row).value
-                    dx = value1 - value2
+                    try:
+                        dx = value1 - value2
+                    except TypeError:
+                        continue
                     if dx > 1e-6 or dx < -1e-6:
                         column = openpyxl.utils.column_index_from_string("BW")
                         todayWs.cell(column=column, row=row).value = dx
