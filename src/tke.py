@@ -149,7 +149,8 @@ class TKE:
                         todayWs.cell(column=columnWithConditions, row=cell.row).value = 1
                         todayWsData.cell(column=columnWithConditions, row=cell.row).value = 1
                         # Set to 0 sum to 90%
-                        todayWs.cell(column=columnWithConditions + 1, row=cell.row).value = 0                     
+                        todayWs.cell(column=columnWithPercents + 1, row=cell.row).value = 0                     
+                        todayWsData.cell(column=columnWithPercents + 1, row=cell.row).value = 0
 
         # Copy data from 'поточний лимит' to 'попередний лимит'
         rangeIter1 = "BO10" + ":" + "BU" + str(numberOfRows)
@@ -159,10 +160,29 @@ class TKE:
                 if cell1.row == cell2.row:
                     todayWs.cell(column=cell2.column, row=cell2.row).value = cell1.value
         
-        # Check for numbers like 0,001, and if so clear value
-        rangeAH = "AH10" + ":" + "AH" + str(numberOfRows)
+        rangeAG = "AG10" + ":" + "AG" + str(numberOfRows)
         rangeAI = "AI10" + ":" + "AI" + str(numberOfRows)
         rangeAM = "AM10" + ":" + "AM" + str(numberOfRows)
+        for cells in todayWsData[rangeAG]:
+            for cellWithPercent in cells:
+                try:
+                    # If percents are in between 89 and 90
+                    if cellWithPercent.value > 89 and cellWithPercent.value < 90:
+                        cellWithDebt = todayWsData.cell(column=cellWithPercent.column + 1, 
+                                                        row=cellWithPercent.row).value
+                        # If debt less than 1
+                        if cellWithDebt != None and cellWithDebt > 0 and cellWithDebt < 1:
+                            todayWsData.cell(column=cellWithPercent.column, 
+                                            row=cellWithPercent.row).value = 90
+                            todayWs.cell(column=cellWithPercent.column, 
+                                            row=cellWithPercent.row).value = 90
+                            todayWs.cell(column=columnWithConditions, 
+                                            row=cellWithPercent.row).value = 1
+                            todayWsData.cell(column=columnWithConditions, 
+                                            row=cellWithPercent.row).value = 1
+                except TypeError:
+                    continue
+        # Check for numbers like 0,001, and if so clear value
         def setNoneValue(range):
             for cells in todayWsData[range]:
                 for cell in cells:
@@ -175,40 +195,29 @@ class TKE:
             return
         setNoneValue(rangeAI)
         setNoneValue(rangeAM)
-        for cells in todayWsData[rangeAH]:
-            for cell in cells:
-                try:
-                    if cell.value > 0 and cell.value <= 1:
-                        todayWsData.cell(column=cell.column, row=cell.row).value = None
-                        todayWs.cell(column=cell.column, row=cell.row).value = None
-                        todayWsData.cell(column=cell.column - 1, row=cell.row).value = 90
-                        todayWs.cell(column=cell.column - 1, row=cell.row).value = 90
-                except TypeError:
-                    continue
 
-        # Set 'план э' to those rows wich have 0`s in both columns with conditions
+        # Set 'план є' to those rows wich have 0`s in both columns with conditions
         # Check the range
         list1 = todayTkeWithData.getListOfCellsByCriteria(0, "AS")  
         list2 = todayTkeWithData.getListOfCellsByCriteria(0, "AT")
+        columnPlan = openpyxl.utils.column_index_from_string("AU")
 
         for cell1 in list1:
             if cell1.value == 0:
                 for cell2 in list2:
                     if cell2.value == 0 and cell1.row == cell2.row:
-                        column = openpyxl.utils.column_index_from_string("AU")
-                        cellValueCheck = todayWsData.cell(column=column, row=cell1.row).value
+                        cellValueCheck = todayWsData.cell(column=columnPlan, row=cell1.row).value
                         # Check fo cells not to be empty
                         if cellValueCheck == 0 or cellValueCheck == None or cellValueCheck == "":
                             continue
                         else:
-                            column = openpyxl.utils.column_index_from_string("AU")
-                            todayWs.cell(column=column, row=cell1.row).value = str("план є")
-                            todayWs.cell(column=column+1, row=cell1.row).value = ""
-                            todayWs.cell(column=column+2, row=cell1.row).value = ""
-                            todayWs.cell(column=column+3, row=cell1.row).value = ""
-                            todayWs.cell(column=column+4, row=cell1.row).value = ""
-                            todayWs.cell(column=column+5, row=cell1.row).value = ""
-                            todayWs.cell(column=column+6, row=cell1.row).value = ""
+                            todayWs.cell(column=columnPlan, row=cell1.row).value = str("план є")
+                            todayWs.cell(column=columnPlan+1, row=cell1.row).value = ""
+                            todayWs.cell(column=columnPlan+2, row=cell1.row).value = ""
+                            todayWs.cell(column=columnPlan+3, row=cell1.row).value = ""
+                            todayWs.cell(column=columnPlan+4, row=cell1.row).value = ""
+                            todayWs.cell(column=columnPlan+5, row=cell1.row).value = ""
+                            todayWs.cell(column=columnPlan+6, row=cell1.row).value = ""
 
         # Set "інший постачальник" to some companies
         listOtherProvider = [
@@ -224,7 +233,13 @@ class TKE:
             for cell in cells:
                 if cell.value in listOtherProvider:
                     todayWs.cell(column=columnPlan, row=cell.row).value = "інший постачальник"
-                    todayWsData.cell(column=columnPlan, row=cell.row).value = "інший постачальник"
+                    #todayWsData.cell(column=columnPlan, row=cell.row).value = "інший постачальник"
+                    todayWs.cell(column=columnPlan+1, row=cell.row).value = ""
+                    todayWs.cell(column=columnPlan+2, row=cell.row).value = ""
+                    todayWs.cell(column=columnPlan+3, row=cell.row).value = ""
+                    todayWs.cell(column=columnPlan+4, row=cell.row).value = ""
+                    todayWs.cell(column=columnPlan+5, row=cell.row).value = ""
+                    todayWs.cell(column=columnPlan+6, row=cell.row).value = ""
 
         # Find the difference between columns with 'план на декаду' and 'поточний лимит'
         for row in range(10, numberOfRows):
@@ -287,7 +302,7 @@ class TKE:
                 value2 = yestWs.Cells(row, column).Value
                 if value1 != value2:
                     wasMismatch = True
-                    print("Внимание!!! Новое предприятие:", value1)
+                    print("Внимание!!! Новое предприятие в списке:", value1, todayWs.Cells(row, column+2).Value)
                     self.yesterdayTKE.insertRow(str(row))
                     for column1 in range(1, yestWs.UsedRange.Columns.Count):
                         # Copy row from today and paste it as values (without formulas) in
@@ -434,7 +449,7 @@ class TKE:
         listOfNotHiddenColumns = ["B", "C", "D", "P", "Q",
                                     "R", "S", "AD", "AG", "AH",
                                     "AI", "AM", "AS", "AT", "AU",
-                                    "BO", "BW"]
+                                    "BO", "BV", "BW"]
         
         for column in range(1, self.todayTKE.getWs().max_column+1):
             columnLetter = openpyxl.utils.get_column_letter(column)
