@@ -1,19 +1,6 @@
-import os
-import datetime
-from copy import copy
+from src.alg import *
 
-import openpyxl
-import win32com.client
-
-from src.manager import *
-
-
-class TKE:
-
-    def __init__(self, dir: str):
-        self.mng = Manager(os.path.abspath(dir))
-        self.numberOfFilesToStart = 4
-        self.checkIfDirectoryIsReady(dir)
+class TKE(Algorithm):
 
     def checkIfDirectoryIsReady(self, path: str):
 
@@ -48,7 +35,7 @@ class TKE:
             После исправления запустите программу заново. Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
-            print(msg)
+            print(bcolors.OKGREEN + msg + bcolors.ENDC)
             input()
             exit()
 
@@ -62,7 +49,9 @@ class TKE:
                 self.kyivEnergoPas.close()
                 self.restructurization1730.close()
             except:
-                print("Программа не смогла закрыть экселевские файлы")
+                print(bcolors.WARNING +\
+                    "Программа не смогла закрыть экселевские файлы"\
+                    + bcolors.ENDC)
         self.mng.addFileByPath(self.todayTKE.pathToFile, 
                             self.generateName() + ".xlsx")
         self.mng.deleteClosedFiles()
@@ -85,9 +74,9 @@ class TKE:
         # Write to
         self.todayTKE.open(data_only=False)
         todayWs = self.todayTKE.getWs("Sheet1")
-        
+
         # Read from
-        fileNameForRead+=".xlsx"
+        fileNameForRead += ".xlsx"
         todayTkeWithData = self.mng.addFileByPath(self.todayTKE.pathToFile, 
                             fileNameForRead, returnFile=True)
         todayTkeWithData.open(data_only=True)
@@ -220,13 +209,25 @@ class TKE:
                             todayWs.cell(column=columnPlan+6, row=cell1.row).value = ""
 
         # Set "інший постачальник" to some companies
-        listOtherProvider = [
-                            "Маріупольське територіальне управління ВП",
-                            "Прогрес ОСКП",
-                            "Служба локомотивного господарства СП",
-                            "Прогрес ТД ТОВ",
-                            "СЕРЕДНЯ 49-А ОСББ"
-                            ]
+        # Opens file with company names and reads them
+        with open(self.todayTKE.pathToFile+"\\"+"Інший постачальник.txt", "r") as f:
+            content = f.read().splitlines()
+            while True:
+                haveEmpty = False
+                for element in content:
+                    if element == "":
+                        haveEmpty = True
+                        content.remove("")
+                if haveEmpty == False:
+                    break
+        if not content:
+            print(bcolors.WARNING +\
+                "Файл ""Інші постачальники"" пустой"\
+                + bcolors.ENDC)
+            listOtherProvider = []
+        else:
+            listOtherProvider = content
+
         rangeIter = "R12" + ":" + "R" + str(numberOfRows)
         columnPlan = openpyxl.utils.column_index_from_string("AU")
         for cells in todayWsData[rangeIter]:
@@ -302,7 +303,10 @@ class TKE:
                 value2 = yestWs.Cells(row, column).Value
                 if value1 != value2:
                     wasMismatch = True
-                    print("Внимание!!! Новое предприятие в списке:", value1, todayWs.Cells(row, column+2).Value)
+                    print(bcolors.OKGREEN +\
+                            "Внимание!!! Новое предприятие в списке:", 
+                            value1, todayWs.Cells(row, column+2).Value\
+                            + bcolors.ENDC)
                     self.yesterdayTKE.insertRow(str(row))
                     for column1 in range(1, yestWs.UsedRange.Columns.Count):
                         # Copy row from today and paste it as values (without formulas) in
@@ -317,8 +321,10 @@ class TKE:
             elif wasMismatch == True:
                 numberOfCycles += 1
             if numberOfCycles > 5:
-                print("Внимание!!! Слишком много несовпадений предприятий со вчерашним днем")
-                print("Возможна ошибка")
+                print(bcolors.WARNING +\
+                    "Внимание!!! Слишком много несовпадений предприятий со вчерашним днем"\
+                    + bcolors.ENDC)
+                print(bcolors.WARNING + "Возможна ошибка" + bcolors.ENDC)
         
         # Incerts column left to "AS" column in today TKE and then copies column 
         # "AS" from yesterday TKE and incerts it to created column in today TKE
@@ -326,8 +332,8 @@ class TKE:
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
         # Saves files with rewriting exsited files in directory
-        self.todayTKE.save(self.todayTKE.pathToFile, self.todayTKE.fileNameWithoutExtension)
-        self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileNameWithoutExtension)
+        self.todayTKE.save(self.todayTKE.pathToFile, self.todayTKE.fileNameWithoutExtension, conflictResolution = True)
+        self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, self.yesterdayTKE.fileNameWithoutExtension, conflictResolution = True)
         # This somehow closes yesterday TKE also
         self.todayTKE.close()
         self.mng.removeUnCalledFiles()
@@ -354,8 +360,10 @@ class TKE:
             # Get cell with EGRPOU value in 1730 file
             row = self.restructurization1730.getFirstCellByCriteria(EGRPOU, "D").row
         except AttributeError:
-            print("В списках договоров реструктуризации " + \
-                        "1730 не найдено предприятие с кодом ЕГРПОУ", EGRPOU)
+            print(bcolors.OKGREEN +\
+                    "В списках договоров реструктуризации " +\
+                    "1730 не найдено предприятие с кодом ЕГРПОУ"\
+                    + bcolors.ENDC, bcolors.OKGREEN + EGRPOU + bcolors.ENDC)
             return None
         overpaymentColumn = openpyxl.utils.column_index_from_string("V")
         debtColumn = openpyxl.utils.column_index_from_string("W")
@@ -401,7 +409,9 @@ class TKE:
             self.kyivEnergoPas.close()
         except (AttributeError, IndexError):
             money = 0
-            print("Проблема с подсчетом оплаты Київтеплоенерго КП ВО")
+            print(bcolors.WARNING +\
+                "Проблема с подсчетом оплаты Київтеплоенерго КП ВО"\
+                + bcolors.ENDC)
         
         try:
             # Finds cell with "Київтеплоенерго КП ВО Київради (КМДА)" in TKE file
@@ -421,7 +431,9 @@ class TKE:
                             ws.cell(column=column1, row=kyivEnergoRow).value - \
                             ws.cell(column=column2, row=kyivEnergoRow).value - money
         except AttributeError:
-            print("Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО")
+            print(bcolors.WARNING +\
+                "Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО"\
+                + bcolors.ENDC)
         
         return 
 
@@ -442,7 +454,8 @@ class TKE:
                             ws.cell(column=column1, row=garantRow).value - \
                             ws.cell(column=column2, row=garantRow).value
         except AttributeError:
-            print("Программа не смогла внести данные о задолженности Гарант Енерго М ПП")
+            print(bcolors.WARNING + "Программа не смогла внести данные о \
+                            задолженности Гарант Енерго М ПП" + bcolors.ENDC)
 
     def hideColumns(self):
         

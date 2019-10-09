@@ -129,6 +129,7 @@ dmypy.json
 *.xlsx
 *.xls
 *.xlsb
+*.txt
 
 # Build results
 [Dd]ebug/

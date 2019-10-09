@@ -1,11 +1,7 @@
 ﻿import os
 
-import openpyxl
-import win32com.client
-
 from src.plan import FiscalPlan
 from src.tke import TKE
-
 
 def killProcess(hardKill: int):
     processes = os.popen('tasklist').readlines()
@@ -26,13 +22,13 @@ if __name__ == "__main__":
 
         if what == "1":
             killProcess(1)
-            TKE = FiscalPlan(r"FiscalPlan")
-            TKE.run()
+            fp = FiscalPlan(r"FiscalPlan", 6)
+            fp.run()
             killProcess(0)
             break
         elif what == "2":
             killProcess(1)
-            tke = TKE(r"TKE")
+            tke = TKE(r"TKE", 4)
             tke.run()
             killProcess(0)
             break

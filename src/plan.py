@@ -1,18 +1,6 @@
-import os
-import datetime
+from src.alg import *
 
-import openpyxl
-import win32com.client
-
-from src.manager import *
-
-
-class FiscalPlan:
-
-    def __init__(self, dir: str):
-        self.mng = Manager(os.path.abspath(dir))
-        self.numberOfFilesToStart = 6
-        self.checkIfDirectoryIsReady(dir)
+class FiscalPlan(Algorithm):
 
     def checkIfDirectoryIsReady(self, path: str):
         self.mng.addFilesInDir()
@@ -41,7 +29,7 @@ class FiscalPlan:
                 try:
                     fileName = cashFile.fileName
                 except AttributeError:
-                    print("Проблема с файлом НаКР, возможно, он отсутствует")
+                    print(bcolors.WARNING + "Проблема с файлом НаКР, возможно, он отсутствует" + bcolors.ENDC)
                     raise WindowsError
 
                 if hasNumbers(fileName):
@@ -53,8 +41,9 @@ class FiscalPlan:
                     elif str(day - 1) in fileName:
                         self.todayCash = cashFile
                     else:
-                        print(
-                            "Будьте осторожны, программа использует файл с деньгами с неправильной датой")
+                        print(bcolors.OKGREEN + \
+                            "Будьте осторожны, программа использует файл с деньгами с неправильной датой" \
+                            + bcolors.ENDC)
                         self.todayCash = cashFile
 
                 if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
@@ -79,7 +68,7 @@ class FiscalPlan:
             После исправления запустите программу заново. Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
-            print(msg)
+            print(bcolors.OKGREEN + msg + bcolors.ENDC)
             input()
             exit()
 
@@ -95,11 +84,15 @@ class FiscalPlan:
                 self.todayCash.close()
                 self.lastYearCash.close()
             except:
-                print("Программа не смогла закрыть экселевские файлы")
+                print(bcolors.WARNING +\
+                    "Программа не смогла закрыть экселевские файлы"\
+                    + bcolors.ENDC)
             try:
                 self.mng.deleteClosedFiles()
             except FileNotFoundError:
-                print("Программа не смогла удалить файлы после работы")
+                print(bcolors.WARNING +\
+                    "Программа не смогла удалить файлы после работы"\
+                    + bcolors.ENDC)
         return
 
     def run(self):
@@ -192,7 +185,9 @@ class FiscalPlan:
             populationCash = cashWB.getWs(0).cell(
                 column=populationColumn, row=populationRow).value
         except AttributeError:
-            print("Нет категории: Населення")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Населення"\
+                + bcolors.ENDC)
             populationCash = 0
 
         try:
@@ -204,7 +199,9 @@ class FiscalPlan:
             religionCash = cashWB.getWs(0).cell(
                 column=religionColumn, row=religionRow).value
         except AttributeError:
-            print("Нет категории: Релігійні організації")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Релігійні організації"\
+                + bcolors.ENDC)
             religionCash = 0
 
         return populationCash + religionCash
@@ -222,7 +219,9 @@ class FiscalPlan:
             teploenergyCash = cashWB.getWs(0).cell(
                 column=teploenergyColumn, row=teploenergyRow).value
         except AttributeError:
-            print("Нет категории: Теплоенергетика за прямими договорами")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Теплоенергетика за прямими договорами"\
+                + bcolors.ENDC)
             teploenergyCash = 0
 
         try:
@@ -262,7 +261,9 @@ class FiscalPlan:
                 elif "ЕЕ" not in contractName:
                     kyivEnergoNotEeCash += cashValue
         except (AttributeError, TypeError):
-            print("Нет категории: Енергетичні підприємства м.Києва")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Енергетичні підприємства м.Києва"\
+                + bcolors.ENDC)
             kyivEnergoNotEeCash = 0
 
         return teploenergyCash + kyivEnergoNotEeCash
@@ -332,7 +333,9 @@ class FiscalPlan:
                             column=industryEeColumnWithCash,
                             row=industryEeRow).value
         except (AttributeError, TypeError):
-            print("Нет категории: Промисловість за прямими договорами (ЕЕ)")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Промисловість за прямими договорами (ЕЕ)"\
+                + bcolors.ENDC)
             industryEeCash = 0
             TEZCash = 0
 
@@ -341,7 +344,9 @@ class FiscalPlan:
             # in teploenergy()
             self.kyivEnergoEeContractCash
         except (AttributeError, UnboundLocalError):
-            print("Нет категории: Енергетичні підприємства м.Києва (ЕЕ)")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Енергетичні підприємства м.Києва (ЕЕ)"\
+                + bcolors.ENDC)
             self.kyivEnergoEeContractCash = 0
 
         return industryEeCash + TEZCash + self.kyivEnergoEeContractCash
@@ -427,7 +432,9 @@ class FiscalPlan:
                         column=industryPrColumn,
                         row=industryPrRow).value
         except (AttributeError, TypeError):
-            print("Нет категории: Промисловість за прямими договорами (ПР)")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Промисловість за прямими договорами (ПР)"\
+                + bcolors.ENDC)
             industryPrCash = 0
             naftogazTradingCash = 0
             self.tezCompaniesMoneyFromPr = 0
@@ -479,7 +486,9 @@ class FiscalPlan:
                             row=energoGenerationRow).value
                     
         except (AttributeError, TypeError):
-            print("Нет категории: Енергогенеруючі компанії (ПР)")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Енергогенеруючі компанії (ПР)"\
+                + bcolors.ENDC)
             energoGenerationCashPR = 0
             energoGenerationCashEE = 0
 
@@ -501,7 +510,9 @@ class FiscalPlan:
                     column=cashColumn,
                     row=prVatRow).value
         except AttributeError:
-            print("Нет категории: Промисловість через ВАТ")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Промисловість через ВАТ"\
+                + bcolors.ENDC)
             prVatCash = 0
         try:
             # Column C contain names and categories
@@ -511,7 +522,9 @@ class FiscalPlan:
                     column=cashColumn,
                     row=teploVatRow).value
         except AttributeError:
-            print("Нет категории: Теплоенергетика через ВАТ")
+            print(bcolors.OKGREEN +\
+                "Нет категории: Теплоенергетика через ВАТ"\
+                + bcolors.ENDC)
             teploVatCash = 0
         try:
             vtvRow = cashWB.getFirstCellByCriteria(
@@ -520,7 +533,9 @@ class FiscalPlan:
                     column=cashColumn,
                     row=vtvRow).value
         except AttributeError:
-            print("Нет категории: ВТВ та нормовані втрати")
+            print(bcolors.OKGREEN +\
+                "Нет категории: ВТВ та нормовані втрати"\
+                + bcolors.ENDC)
             vtvCash = 0
         try:
             # Column C contain names and categories
@@ -546,7 +561,9 @@ class FiscalPlan:
                             column=cashColumn,
                             row=vtvRow).value
         except UnboundLocalError:
-            print("Нет компании: Філія Оператор ГТС України")
+            print(bcolors.OKGREEN +\
+                "Нет компании: Філія Оператор ГТС України"\
+                + bcolors.ENDC)
             transGasVtvCash = 0
         
         return  [prVatCash + teploVatCash + vtvCash - transGasVtvCash, transGasVtvCash]
