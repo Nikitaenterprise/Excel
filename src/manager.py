@@ -485,19 +485,22 @@ class Manager:
             print("\t\t", file)
         print("#----------#\n")
 
-    def getFile(self, partOfNameOfFile, extension=".xls"):
+    def getFile(self, partOfNameOfFile, extension=".xls", exactMatch=False):
         """Returns file by part of file 
         name and its extension
 
         Keyword arguments:
         partOfNameOfFile -- part of file name. If a file have
                 a name "IAmTheFile.xls", then partOfNameOfFile
-                could be "TheFile" of "iam", etc.
+                could be "TheFile" or "iam", etc.
         extension -- extension of file. By default set to ".xls"
                 but can be set to ".xlsx"
+        exactMatch -- flag. If true then partOfNameOfFile should be 
+                exactly as a file name
         """
         for file in self.files:
-            if partOfNameOfFile in file.fileName:
+            if (exactMatch == False and partOfNameOfFile in file.fileName) or\
+                            (exactMatch == True and partOfNameOfFile == file.fileName):
                 if extension == file.fileExtension:
                     if file.wasCalled == False:
                         file.wasCalled = True

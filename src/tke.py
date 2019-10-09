@@ -361,7 +361,7 @@ class TKE(Algorithm):
             row = self.restructurization1730.getFirstCellByCriteria(EGRPOU, "D").row
         except AttributeError:
             print(bcolors.OKGREEN +\
-                    "В списках договоров реструктуризации " +\
+                    "В списках договоров реструктуризации" +\
                     "1730 не найдено предприятие с кодом ЕГРПОУ"\
                     + bcolors.ENDC, bcolors.OKGREEN + EGRPOU + bcolors.ENDC)
             return None

@@ -2,6 +2,7 @@
 
 from src.plan import FiscalPlan
 from src.tke import TKE
+from src.decade import Decade
 
 def killProcess(hardKill: int):
     processes = os.popen('tasklist').readlines()
@@ -16,20 +17,27 @@ if __name__ == "__main__":
     killProcess(0)
     print("Программа закрывает приложение excel")
     print("Сохраните книги, если они были открыты\n")
-    print("Введите:\n1 для фин-плана\n2 для ТКЕ_ПСО")
+    print("Введите:")
+    print("\t1 для фин-плана")
+    print("\t2 для ТКЕ_ПСО")
+    print("\t3 для форм 1-8 газ")
     while True:
         what = input()
+        killProcess(1)
 
         if what == "1":
-            killProcess(1)
             fp = FiscalPlan(r"FiscalPlan", 6)
             fp.run()
             killProcess(0)
             break
         elif what == "2":
-            killProcess(1)
             tke = TKE(r"TKE", 4)
             tke.run()
+            killProcess(0)
+            break
+        elif what == "3":
+            decade = Decade(r"Decade", 4)
+            decade.run()
             killProcess(0)
             break
         else:
