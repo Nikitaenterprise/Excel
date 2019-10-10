@@ -290,6 +290,8 @@ class TKE(Algorithm):
         # Set first sheet as active
         todayWs = self.todayTKE.getWs("Sheet1")
         yestWs = self.yesterdayTKE.getWs("Sheet1")
+        # Incerts column left to "AS" column in today TKE 
+        self.todayTKE.insertColumn("AS")
         # Looks through all rows in today TKE and compare values in "P"
         # column (wich corresponds to company EDRPOU) and if values don`t match
         # then it say`s that there is a new company in today TKE and it should 
@@ -313,9 +315,15 @@ class TKE(Algorithm):
                         # yesterday excel book
                         todayWs.Range(str(openpyxl.utils.get_column_letter(column1)) + str(row)).Copy()
                         # Got this from https://docs.microsoft.com/en-us/office/vba/api/excel.xlpastetype
+                        # paste values
                         xlPasteValues = -4163
                         yestWs.Range(str(openpyxl.utils.get_column_letter(column1)) + \
                                     str(row)).PasteSpecial(Paste=xlPasteValues)
+                    # Copy 1 cell with condition from AT and paste it to AS
+                    yestWs.Range("AT" + str(row)).Copy()
+                    xlPasteValues = -4163
+                    yestWs.Range("AS" + str(row)).PasteSpecial(Paste=xlPasteValues)
+                    
             if wasMismatch == False:
                 break
             elif wasMismatch == True:
@@ -326,9 +334,7 @@ class TKE(Algorithm):
                     + bcolors.ENDC)
                 print(bcolors.WARNING + "Возможна ошибка" + bcolors.ENDC)
         
-        # Incerts column left to "AS" column in today TKE and then copies column 
-        # "AS" from yesterday TKE and incerts it to created column in today TKE
-        self.todayTKE.insertColumn("AS")
+        # Incerts column "AS" from yesterday TKE into today TKE
         yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
         # Saves files with rewriting exsited files in directory

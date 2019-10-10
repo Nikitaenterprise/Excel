@@ -64,9 +64,9 @@ class Decade(Algorithm):
         self.gasConsumption = open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.iterateInTOVandPAT(decadeWsNas, saldoWs)
+        self.iterateInTOVandPAT(decadeWsNas, saldoWs, saldoLastMontsWs, gasConsumptionWs)
 
-    def iterateInTOVandPAT(self, decadeSheet, saldoSheet):
+    def iterateInTOVandPAT(self, decadeSheet, saldoSheet, saldoLastMonthSheet, gasConsumtionSheet):
         """
         """
         numberOfRows = decadeSheet.max_row
@@ -78,6 +78,7 @@ class Decade(Algorithm):
                                         "населення", "2018", "U", "E")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
                                         "населення", "2019", "T", "H")
+        self.columnFandG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, rangeIter)
         
         # Iterate in column with PAT companies
         rangeIter = "C7" + ":" + "C" + str(numberOfRows)
@@ -87,6 +88,7 @@ class Decade(Algorithm):
                                         "населення", "2018", "U", "E") 
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
                                         "населення", "2019", "T", "H")
+        self.columnFandG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, rangeIter)
         
     
     def findInSaldoWriteToDecade(self, decadeSheet, saldoSheet, rangeIter, 
@@ -162,13 +164,15 @@ class Decade(Algorithm):
                         
                         return returnValue
 
-    def columnFandG(self, decadeSheet, saldoSheet, rangeIter):
+    def columnFandG(self, decadeSheet, saldoSheet, gasConsumptionSheet, rangeIter):
         columnWhereToPut = openpyxl.utils.column_index_from_string("F")
         for cells in decadeSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     companyName = cell.value
-                    valueFromGasConsumption = self.findInGasConsumption(whatToFind=companyName)
+                    valueFromGasConsumption = self.findInGasConsumption(gasConsumptionSheet, 
+                                                                whatToFind=companyName,
+                                                                whatColumn="J")
                     valueFromSaldoLastMonth = self.findInSaldo(saldoSheet,
                                                                 whatToFind=companyName,
                                                                 whatCategory="населення",
@@ -180,8 +184,17 @@ class Decade(Algorithm):
                         valueFromSaldoLastMonth = 0
                     summary = valueFromGasConsumption + valueFromSaldoLastMonth
                     decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary
-        pass
+        
     
-    def findInGasConsumption(self, whatToFind: str):
-
-        pass
+    def findInGasConsumption(self, gasConsumptionSheet, whatToFind: str, whatColumn: str):
+        numberOfRows = gasConsumptionSheet.max_row
+        rangeIter = "B13" + ":" + "B" + str(numberOfRows)
+        for cells in gasConsumptionSheet[rangeIter]:
+            for cell in cells:
+                if cell.value != None and cell.value == whatToFind:
+                    value = gasConsumptionSheet.cell(column=whatColumn,
+                                                    row=cell.row).value
+                    if value != None:
+                        return value
+                    elif value == None:
+                        return 0
