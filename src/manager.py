@@ -499,8 +499,9 @@ class Manager:
                 exactly as a file name
         """
         for file in self.files:
-            if (exactMatch == False and partOfNameOfFile in file.fileName) or\
-                            (exactMatch == True and partOfNameOfFile == file.fileName):
+            if (exactMatch == False and partOfNameOfFile in file.fileName) or \
+                            (exactMatch == True and \
+                            partOfNameOfFile == file.fileNameWithoutExtension):
                 if extension == file.fileExtension:
                     if file.wasCalled == False:
                         file.wasCalled = True
