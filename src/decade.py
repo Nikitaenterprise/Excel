@@ -72,11 +72,11 @@ class Decade(Algorithm):
         return
 
     def run(self):
-        self.naselenie()
-        self.religion()
-        self.budget()
-        #self.teploseti()
-        #self.promishlennost()
+        # self.naselenie()
+        # self.religion()
+        # self.budget()
+        # self.teploseti()
+        self.promishlennost()
         self.decade.save(self.decade.pathToFile, "111", extension=".xlsx")
         self.deleteFiles()
 
@@ -151,9 +151,11 @@ class Decade(Algorithm):
         promPrevWs = self.promPrev.getWs()
         self.prom.open(data_only=True)
         promWs = self.prom.getWs("База_2")
-
-        rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
-        self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
+        # Delete Naftogaz trading data
+        self.deleteCompanyData(promWs, ["42399676"])
+        self.prom.save(self.prom.pathToFile, "qqqqq", extension=".xlsx")
+        #rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
+        #self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
 
     def promIterInRegions(self, decadeSheet, promDkSheet, promSheet, promPrevSheet, rangeIter):
         """
@@ -693,3 +695,14 @@ class Decade(Algorithm):
             return returnValue
         elif returnValue == None:
             return 0
+
+    def deleteCompanyData(self, promSheet, listOfSpecificCompanies):
+        """
+        """
+        rangeIter = "E12" + ":" + "E" + str(promSheet.max_row)
+        for cells in promSheet[rangeIter]:
+            for cell in cells:
+                if str(cell.value) in listOfSpecificCompanies:
+                    
+                    for i in range(1, promSheet.max_column):
+                        promSheet.cell(column=i, row=cell.row).value = None
