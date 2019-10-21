@@ -152,8 +152,8 @@ class Decade(Algorithm):
         self.prom.open(data_only=True)
         promWs = self.prom.getWs("База_2")
         # Delete Naftogaz trading data
-        self.deleteCompanyData(promWs, ["42399676"])
-        self.prom.save(self.prom.pathToFile, "qqqqq", extension=".xlsx")
+        self.deleteCompanyData(self.prom, ["42399676"])
+        
         #rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
         #self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
 
@@ -696,13 +696,32 @@ class Decade(Algorithm):
         elif returnValue == None:
             return 0
 
-    def deleteCompanyData(self, promSheet, listOfSpecificCompanies):
+    def deleteCompanyData(self, prom, listOfSpecificCompanies):
         """
         """
-        rangeIter = "E12" + ":" + "E" + str(promSheet.max_row)
-        for cells in promSheet[rangeIter]:
-            for cell in cells:
-                if str(cell.value) in listOfSpecificCompanies:
-                    
-                    for i in range(1, promSheet.max_column):
-                        promSheet.cell(column=i, row=cell.row).value = None
+        # Save to temp variable prom excel book
+        tempProm = self.prom
+        # Open with pyWin
+        self.prom = self.mng.addFileByPath(
+                                            self.prom.pathToFile, 
+                                            self.prom.fileName,
+                                            returnFile=True, 
+                                            defaultParser=False, 
+                                            openBy=1
+                                            )
+        self.prom.open()
+        promWs = self.prom.getWs("База_2")
+
+        column = openpyxl.utils.column_index_from_string("E")
+        maxColumn = openpyxl.utils.get_column_letter(promWs.UsedRange.Columns.Count)
+        while True:
+            for row in range(12, promWs.UsedRange.Rows.Count):
+                EDRPOU = promWs.Cells(row, column).Value
+                if str(EDRPOU) in listOfSpecificCompanies:
+                    promWs.Range("A"+str(row)+":"+maxColumn+str(row)).Clear()
+        
+        # Save file with rewriting
+        self.prom.save(self.prom.pathToFile, self.prom.fileMameWithoutExtension, conflictResolution=True)
+        self.prom.close()
+        #self.mng.removeUnCalledFiles()
+        self.prom = tempProm

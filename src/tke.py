@@ -171,19 +171,27 @@ class TKE(Algorithm):
                                             row=cellWithPercent.row).value = 1
                 except TypeError:
                     continue
+
         # Check for numbers like 0,001, and if so clear value
-        def setNoneValue(range):
-            for cells in todayWsData[range]:
-                for cell in cells:
-                    try:
-                        if cell.value > 0 and cell.value <= 1:
-                            todayWsData.cell(column=cell.column, row=cell.row).value = None
-                            todayWs.cell(column=cell.column, row=cell.row).value = None
-                    except TypeError:
-                        continue
-            return
-        setNoneValue(rangeAI)
-        setNoneValue(rangeAM)
+        for cells in todayWsData[rangeAI]:
+            for cell in cells:
+                try:
+                    if cell.value > 0 and cell.value <= 1:
+                        todayWsData.cell(column=cell.column, row=cell.row).value = None
+                        todayWs.cell(column=cell.column, row=cell.row).value = None
+                except TypeError:
+                    continue
+
+        # Check for numbers like 0,001, and if so write "договір є"
+        for cells in todayWsData[rangeAM]:
+            for cell in cells:
+                try:
+                    if cell.value > 0 and cell.value <= 1:
+                        todayWsData.cell(column=cell.column, row=cell.row).value = str("договір є")
+                        todayWs.cell(column=cell.column, row=cell.row).value = str("договір є")
+                except TypeError:
+                    continue
+
 
         # Set 'план є' to those rows wich have 0`s in both columns with conditions
         # Check the range
