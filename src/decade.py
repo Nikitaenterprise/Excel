@@ -28,6 +28,8 @@ class Decade(Algorithm):
         self.mng.getFile("ТКЕ", exactMatch=True)
         self.mng.getFile("gpg")
         self.mng.getFile("Промисловість_")
+        self.mng.getFile("Оборотно-сальдова вiдомiсть пром", exactMatch=True)
+        self.mng.getFile("Оборотно-сальдова вiдомiсть ТКЕ", exactMatch=True)
 
         # Deletes other files in dir
         self.mng.deleteUnCalledFiles()               
@@ -45,13 +47,31 @@ class Decade(Algorithm):
                                     extension=".xlsx")
             self.prom = self.mng.getFile("Промисловість_", 
                                     extension=".xlsx")
+            self.saldoTKE = self.mng.getFile("Оборотно-сальдова вiдомiсть ТКЕ", 
+                                    extension=".xlsx", exactMatch=True)
+            self.saldoProm = self.mng.getFile("Оборотно-сальдова вiдомiсть пром", 
+                                    extension=".xlsx", exactMatch=True)
             
             
             if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
                     raise AttributeError
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
-            msg = """11111
+            msg = """Файлы, нужные для работы: 
+            1. gpg... : використання природного газу споживачами України в розрізі газорозподільних підприємств
+            2. Декадка : пустой шаблон
+            3. Оборотно-сальдова вiдомiсть последний месяц : 2gv за период 1 января - 30(31) число предыдущего месяца
+            4. Оборотно-сальдова вiдомiсть пром : 2gv за период 1 января - по декаду, категория промисловість
+            5. Оборотно-сальдова вiдомiсть ТКЕ : 2gv за период 1 января - по декаду, категории ТЕ, БО, КП, РО, НС, ВТЕ
+            6. Оборотно-сальдова вiдомiсть : 2gv за период 1 января - по декаду, категории населення, бюджет, релігійні організації, вічний вогонь
+            7. Промисловість_ : база Зубарева, за период 1 января - по декаду
+            8. ТКЕ : база Зубарева, за период 1 января - по декаду
+            9. ТКЕ начало года : база Зубарева, построенная на 1.01.2019
+            10. Пром ДК : база за 2017 год (не меняется)
+            11. Розрахунок промислових минулі роки : база Зубарева, построенная на 1.01.2019
+            12. ТКЕ ДК : база за 2011-2012 год
+            После исправления запустите программу заново. Сейчас программа завершит работу
+            Нажмите любую клавишу а затем Enter
             """
             print(bcolors.OKGREEN + msg + bcolors.ENDC)
             input()
@@ -64,6 +84,10 @@ class Decade(Algorithm):
         if programmIsDone == True:
             try:
                 self.saldo.close()
+                self.saldoLastMonth.close()
+                self.tke.close()
+                self.gasConsumption.close()
+                self.prom.close()
             except:
                 print(bcolors.WARNING +\
                     "Программа не смогла закрыть экселевские файлы"\
@@ -72,13 +96,15 @@ class Decade(Algorithm):
         return
 
     def run(self):
-        # self.naselenie()
-        # self.religion()
-        # self.budget()
-        # self.teploseti()
+        self.naselenie()
+        self.religion()
+        self.budget()
+        self.teploseti()
         self.promishlennost()
-        self.decade.save(self.decade.pathToFile, "111", extension=".xlsx")
+        self.forPresident()
+        self.decade.save(self.decade.pathToFile, "На печать", extension=".xlsx")
         self.deleteFiles()
+
 
         return
 
@@ -149,50 +175,101 @@ class Decade(Algorithm):
         promDKWs = self.promDK.getWs()
         self.promPrev.open(data_only=True)
         promPrevWs = self.promPrev.getWs()
-        self.prom.open(data_only=True)
-        promWs = self.prom.getWs("База_2")
+        
         # Delete Naftogaz trading data
         self.deleteCompanyData(self.prom, ["42399676"])
-        
-        #rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
-        #self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
+        self.prom.open(data_only=True)
+        promWs = self.prom.getWs("База_2")
 
-    def promIterInRegions(self, decadeSheet, promDkSheet, promSheet, promPrevSheet, rangeIter):
-        """
-        """
+        rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
+        self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
+
+    def forPresident(self):
+
+        self.decade.open(data_only=False)
+        decadeWsPivot = self.decade.getWs("Зведена")
+        self.saldo.open(data_only=True)
+        saldoNasBudgRelWs = self.saldo.getWs()
+        self.saldoTKE.open(data_only=True)
+        saldoTKEWs = self.saldoTKE.getWs()
+        self.saldoProm.open(data_only=True)
+        saldoPromWs = self.saldoProm.getWs()
+
+        numberOfRowsInPAT = self.decade.getWs("Населення").max_row
+        rangeIterPAT = "B7" + ":" + "B" + str(numberOfRowsInPAT)
+        rangeIterTOV = "C7" + ":" + "C" + str(numberOfRowsInPAT)
+        numberOfRowsInTeplo = self.decade.getWs("Тепломережі").max_row
+        rangeIterOther = "A9" + ":" + "A" + str(numberOfRowsInTeplo)
+        
+        
+
+        naselenie = 0
+        budget = 0
+        religion = 0
+        TKE = 0
+        prom = 0
+        
+        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs("Населення"),
+                                                rangeIterPAT,
+                                                saldoNasBudgRelWs,
+                                                ["населення"],
+                                                "A")
+        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs("Населення"),
+                                                rangeIterTOV,
+                                                saldoNasBudgRelWs,
+                                                ["населення"],
+                                                "A")
+
+        budget += self.getTotalPaymentFromSaldo(self.decade.getWs("Бюджет"),
+                                                rangeIterPAT,
+                                                saldoNasBudgRelWs,
+                                                ["бюджет"],
+                                                "A")
+        budget += self.getTotalPaymentFromSaldo(self.decade.getWs("Бюджет"),
+                                                rangeIterTOV,
+                                                saldoNasBudgRelWs,
+                                                ["бюджет"],
+                                                "A")
+
+        religion += self.getTotalPaymentFromSaldo(self.decade.getWs("Релігія"),
+                                                rangeIterPAT,
+                                                saldoNasBudgRelWs,
+                                                ["релігійні організації", "вічний вогонь"],
+                                                "A")
+        religion += self.getTotalPaymentFromSaldo(self.decade.getWs("Релігія"),
+                                                rangeIterTOV,
+                                                saldoNasBudgRelWs,
+                                                ["релігійні організації", "вічний вогонь"],
+                                                "A")
+        
+        column = openpyxl.utils.column_index_from_string("T")
+        TKE = saldoTKEWs.cell(column=column, row=9).value
+        prom = saldoPromWs.cell(column=column, row=9).value
+
+        columnWhereToWrite = openpyxl.utils.column_index_from_string("J")
+        try:
+            decadeWsPivot.cell(column=columnWhereToWrite, row=13).value = naselenie / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, row=14).value = budget / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, row=15).value = TKE / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, row=16).value = prom / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, row=17).value = religion / 1000
+        except (UnboundLocalError, AttributeError):
+            print("Не заполнен последний столбец во вкладке со сводной таблицей")
+
+        return
+
+    def getTotalPaymentFromSaldo(self, decadeSheet, rangeIter, saldoSheet, whatCategory: list, inWhatColumnFind):
+        
+        
+        returnValue = 0
         for cells in decadeSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
-                    region = cell.value
-
-                    listOfTwoValues = self.promColumnB(promPrevSheet, promDkSheet, region)
-                    # Get debt of NAK and DK together
-                    summOfTwoValues = listOfTwoValues[0] + listOfTwoValues[1]
-                    value1 = listOfTwoValues[1]
-                    decadeSheet.cell(column=cell.column+1, row=cell.row).value = summOfTwoValues
-
-                    value2 = self.promColumnsFromCToF(promSheet, region, "DP")
-                    decadeSheet.cell(column=cell.column+2, row=cell.row).value = value2
-                    
-                    decadeSheet.cell(column=cell.column+3, row=cell.row).value =\
-                                    self.promColumnsFromCToF(promSheet, region, "CX")
-                    
-                    value3 = self.promColumnsFromCToF(promSheet, region, "CY")
-                    decadeSheet.cell(column=cell.column+4, row=cell.row).value = value3
-                    
-                    value4 = self.promColumnsFromCToF(promSheet, region, "CZ")
-                    decadeSheet.cell(column=cell.column+5, row=cell.row).value = value4
-
-                    if value3 != 0:
-                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = value4 / value3 * 100
-                    elif value3 == 0:
-                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = 0
-
-                    value5 = self.promColumnsFromCToF(promSheet, region, "AB")
-                    value6 = self.promColumnsFromCToF(promSheet, region, "DO")
-                    total = value5 + value6 + value2 + value1 + value3 + value4
-                    decadeSheet.cell(column=cell.column+7, row=cell.row).value = total
-                    decadeSheet.cell(column=cell.column+8, row=cell.row).value = value3 - value4
+                    companyName = cell.value
+                    value = self.findInSaldo(saldoSheet, companyName, whatCategory, None, "T", inWhatColumnFind)
+                    if value != None:
+                        returnValue += value
+        return returnValue
 
     
     def naselenieIterateInTOVandPAT(self, decadeSheet, saldoSheet, saldoLastMonthSheet, gasConsumtionSheet):
@@ -210,7 +287,7 @@ class Decade(Algorithm):
         self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, "J", ["населення"])
         self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
-                    rangeIter, "H", ["населення"])
+                    rangeIter, "J", ["населення"])
         self.columnIandK(decadeSheet, rangeIter)
         self.columnJ(decadeSheet, saldoSheet, rangeIter, ["населення"])
         
@@ -225,7 +302,7 @@ class Decade(Algorithm):
         self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, "J", ["населення"])
         self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
-                    rangeIter, "H", ["населення"])
+                    rangeIter, "J", ["населення"])
         self.columnIandK(decadeSheet, rangeIter)
         self.columnJ(decadeSheet, saldoSheet, rangeIter, ["населення"])
 
@@ -303,9 +380,8 @@ class Decade(Algorithm):
 
         return
         
-    
     def findInSaldoWriteToDecade(self, decadeSheet, saldoSheet, rangeIter, 
-                                    whatCategory: str, whatResource: str, 
+                                    whatCategory: list, whatResource: list, 
                                     whatColumn: str, whereToPut: str):
         """
         """
@@ -321,15 +397,15 @@ class Decade(Algorithm):
                                             whatColumn=whatColumn)
                     if value != None:
                         decadeSheet.cell(column=columnWhereToPut, 
-                                        row=cell.row).value = value
+                                        row=cell.row).value = value / 1000
         return
 
     def findInSaldo(self, saldoSheet, whatToFind: str, 
-                    whatCategory: list, whatResource: list, whatColumn: str):
+                    whatCategory: list, whatResource: list, whatColumn: str, inWhatColumnFind="A"):
         """
         """
         numberOfRows = saldoSheet.max_row
-        rangeIter = "A10" + ":" + "A" + str(numberOfRows)
+        rangeIter = inWhatColumnFind + "10" + ":" + inWhatColumnFind + str(numberOfRows)
         columnCategory = openpyxl.utils.column_index_from_string("C")
         columnResource = openpyxl.utils.column_index_from_string("F")
         columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
@@ -412,7 +488,7 @@ class Decade(Algorithm):
                         valueFromSaldoLastMonth = 0
 
                     summary = valueFromGasConsumption + valueFromSaldoLastMonth
-                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary
+                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary / 1000
         return
 
     def columnG(self, decadeSheet, saldoSheet, gasConsumptionSheet,
@@ -444,9 +520,9 @@ class Decade(Algorithm):
                         valueFromSaldoLastMonth = 0
 
                     # Where to get price???????????????????????????
-                    price = 1
-                    summary = valueFromGasConsumption + valueFromSaldoLastMonth
-                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary * price
+                    price = 5392.26
+                    summary = valueFromGasConsumption / 1000 * price + valueFromSaldoLastMonth / 1000 
+                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary
         return
 
 
@@ -493,7 +569,7 @@ class Decade(Algorithm):
 
                     # Fill column K in decade
                     decadeSheet.cell(column=columnWithDebt, 
-                                            row=cell.row).value = amountConsumedGas - paymentForConsumedGas
+                                            row=cell.row).value = (amountConsumedGas - paymentForConsumedGas) / 1000
         return
 
     def columnJ(self, decadeSheet, saldoSheet, rangeIter: str, whatCategory: list):
@@ -532,7 +608,7 @@ class Decade(Algorithm):
                                 valueFromColumnTSaldo2019 + valueFromColumnJSaldo + \
                                 consumedGasAmount - paymentForConsumedGas
                     
-                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = total
+                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = total / 1000
         return
 
     def teplosetiIterInRegions(self, decadeSheet, tkePrevWs, tkeWs, tkeDKsheet, rangeIter):
@@ -546,34 +622,34 @@ class Decade(Algorithm):
                     listOfTwoValues = self.teplosetiColumnB(tkePrevWs, tkeDKsheet, region)
                     # Get debt of NAK and tkeDK together
                     summOfTwoValues = listOfTwoValues[0] + listOfTwoValues[1]
-                    decadeSheet.cell(column=cell.column+1, row=cell.row).value = summOfTwoValues
+                    decadeSheet.cell(column=cell.column+1, row=cell.row).value = summOfTwoValues / 1000
                                     
                     
                     value1 = self.teplosetiColumnsFromCToF(tkeWs, region, "DI")
-                    decadeSheet.cell(column=cell.column+2, row=cell.row).value = value1
+                    decadeSheet.cell(column=cell.column+2, row=cell.row).value = value1 / 1000
                                     
                     decadeSheet.cell(column=cell.column+3, row=cell.row).value = \
-                                    self.teplosetiColumnsFromCToF(tkeWs, region, "DJ")
+                                    self.teplosetiColumnsFromCToF(tkeWs, region, "DJ") / 1000
                     
                     value2 = self.teplosetiColumnsFromCToF(tkeWs, region, "DK")
-                    decadeSheet.cell(column=cell.column+4, row=cell.row).value = value2
+                    decadeSheet.cell(column=cell.column+4, row=cell.row).value = value2 / 1000
 
                     value3 = self.teplosetiColumnsFromCToF(tkeWs, region, "DQ")
-                    decadeSheet.cell(column=cell.column+5, row=cell.row).value = value3
+                    decadeSheet.cell(column=cell.column+5, row=cell.row).value = value3 / 1000
                                     
                     value4 = self.teplosetiColumnsFromCToF(tkeWs, region, "CU")
                     value5 = self.teplosetiColumnsFromCToF(tkeWs, region, "CG")
                     value6 = listOfTwoValues[1]
                     total = value1 + value4 + value5 + value6 + value2 - value3
 
-                    decadeSheet.cell(column=cell.column+7, row=cell.row).value = total
+                    decadeSheet.cell(column=cell.column+7, row=cell.row).value = total / 1000
                     
                     if value2 != 0:
                         decadeSheet.cell(column=cell.column+6, row=cell.row).value = value3 / value2 * 100
                     elif value2 == 0:
                         decadeSheet.cell(column=cell.column+6, row=cell.row).value = 0
 
-                    decadeSheet.cell(column=cell.column+8, row=cell.row).value = value2 - value3
+                    decadeSheet.cell(column=cell.column+8, row=cell.row).value = (value2 - value3) / 1000
 
 
                     
@@ -714,14 +790,53 @@ class Decade(Algorithm):
 
         column = openpyxl.utils.column_index_from_string("E")
         maxColumn = openpyxl.utils.get_column_letter(promWs.UsedRange.Columns.Count)
-        while True:
-            for row in range(12, promWs.UsedRange.Rows.Count):
-                EDRPOU = promWs.Cells(row, column).Value
-                if str(EDRPOU) in listOfSpecificCompanies:
-                    promWs.Range("A"+str(row)+":"+maxColumn+str(row)).Clear()
+
+        for row in range(12, promWs.UsedRange.Rows.Count):
+            EDRPOU = promWs.Cells(row, column).Value
+            if str(EDRPOU) in listOfSpecificCompanies:
+                promWs.Range("A"+str(row)+":"+maxColumn+str(row)).Clear()
         
         # Save file with rewriting
-        self.prom.save(self.prom.pathToFile, self.prom.fileMameWithoutExtension, conflictResolution=True)
+        self.prom.save(self.prom.pathToFile, self.prom.fileNameWithoutExtension, conflictResolution=True)
         self.prom.close()
-        #self.mng.removeUnCalledFiles()
+        self.mng.removeUnCalledFiles()
         self.prom = tempProm
+
+        return
+
+    def promIterInRegions(self, decadeSheet, promDkSheet, promSheet, promPrevSheet, rangeIter):
+        """
+        """
+        for cells in decadeSheet[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    region = cell.value
+
+                    listOfTwoValues = self.promColumnB(promPrevSheet, promDkSheet, region)
+                    # Get debt of NAK and DK together
+                    summOfTwoValues = listOfTwoValues[0] + listOfTwoValues[1]
+                    value1 = listOfTwoValues[1]
+                    decadeSheet.cell(column=cell.column+1, row=cell.row).value = summOfTwoValues / 1000
+
+                    value2 = self.promColumnsFromCToF(promSheet, region, "DP")
+                    decadeSheet.cell(column=cell.column+2, row=cell.row).value = value2 / 1000
+                    
+                    decadeSheet.cell(column=cell.column+3, row=cell.row).value =\
+                                    self.promColumnsFromCToF(promSheet, region, "CX") / 1000
+                    
+                    value3 = self.promColumnsFromCToF(promSheet, region, "CY")
+                    decadeSheet.cell(column=cell.column+4, row=cell.row).value = value3 / 1000
+                    
+                    value4 = self.promColumnsFromCToF(promSheet, region, "CZ")
+                    decadeSheet.cell(column=cell.column+5, row=cell.row).value = value4 / 1000
+
+                    if value3 != 0:
+                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = value4 / value3 * 100
+                    elif value3 == 0:
+                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = 0
+
+                    value5 = self.promColumnsFromCToF(promSheet, region, "AB")
+                    value6 = self.promColumnsFromCToF(promSheet, region, "DO")
+                    total = value5 + value6 + value2 + value1 + value3 - value4
+                    decadeSheet.cell(column=cell.column+7, row=cell.row).value = total / 1000
+                    decadeSheet.cell(column=cell.column+8, row=cell.row).value = (value3 - value4) / 1000

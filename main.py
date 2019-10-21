@@ -36,7 +36,7 @@ if __name__ == "__main__":
             killProcess(0)
             break
         elif what == "3":
-            decade = Decade(r"Decade", 10)
+            decade = Decade(r"Decade", 12)
             decade.run()
             killProcess(0)
             break
