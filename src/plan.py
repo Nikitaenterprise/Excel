@@ -515,6 +515,17 @@ class FiscalPlan(Algorithm):
                 + bcolors.ENDC)
             prVatCash = 0
         try:
+            budgetRow = cashWB.getFirstCellByCriteria(
+                "1.1. Бюджет", "C").row
+            budgetCash = cashWB.getWs(0).cell(
+                    column=cashColumn,
+                    row=budgetRow).value
+        except AttributeError:
+            print(bcolors.OKGREEN +\
+                "Нет категории: Бюджет"\
+                + bcolors.ENDC)
+            budgetCash = 0
+        try:
             # Column C contain names and categories
             teploVatRow = cashWB.getFirstCellByCriteria(
                 "3.1. Теплоенергетика через ВАТ", "C").row
@@ -566,7 +577,7 @@ class FiscalPlan(Algorithm):
                 + bcolors.ENDC)
             transGasVtvCash = 0
         
-        return  [prVatCash + teploVatCash + vtvCash - transGasVtvCash, transGasVtvCash]
+        return  [prVatCash + budgetCash + teploVatCash + vtvCash - transGasVtvCash, transGasVtvCash]
 
     def fillPlan(self, todayMoney: list, lastYearMoney: list):
 
