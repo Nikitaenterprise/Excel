@@ -57,7 +57,7 @@ class Decade(Algorithm):
                     raise AttributeError
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
-            msg = """Файлы, нужные для работы: 
+            msg = r"""Файлы, нужные для работы: 
             1. gpg... : за период 1 января - последняя декада
                         (Менеджер отчетов\Диспетчерський газ\Використання природного газу... (2480bk))
             2. Оборотно-сальдова вiдомiсть : за период 1 января - по декаду, категории населення, бюджет, 
@@ -569,10 +569,12 @@ class Decade(Algorithm):
         for cells in decadeSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
+                    # Find in Декадка numbers in columns H, G with value that were divided by 1000
+                    # thats why they should be multiplied by 1000
                     paymentForConsumedGas = decadeSheet.cell(column=columnPaymentForConsumedGas, 
-                                            row=cell.row).value
+                                            row=cell.row).value * 1000
                     amountConsumedGas = decadeSheet.cell(column=columnAmountConsumedGas, 
-                                            row=cell.row).value
+                                            row=cell.row).value * 1000
                     
                     # Fill column I in decade
                     if amountConsumedGas == 0:
@@ -598,8 +600,15 @@ class Decade(Algorithm):
         for cells in decadeSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
+                    # Find in Декадка numbers in columns D, G, H with value that were divided by 1000
+                    # thats why they should be multiplied by 1000
                     lastPeriodDebt = decadeSheet.cell(column=columnWithDebtPreviousYears,
-                                            row=cell.row).value
+                                            row=cell.row).value * 1000
+                    consumedGasAmount = decadeSheet.cell(column=columnConsumedGasAmount,
+                                            row=cell.row).value * 1000
+                    paymentForConsumedGas = decadeSheet.cell(column=columnPaymentForConsumedGas,
+                                            row=cell.row).value * 1000
+
                     valueFromColumnTSaldo = self.findInSaldo(saldoSheet, 
                                             whatToFind=cell.value, 
                                             whatCategory=whatCategory,
@@ -615,10 +624,6 @@ class Decade(Algorithm):
                                             whatCategory=whatCategory,
                                             whatResource=None,
                                             whatColumn="J")
-                    consumedGasAmount = decadeSheet.cell(column=columnConsumedGasAmount,
-                                            row=cell.row).value
-                    paymentForConsumedGas = decadeSheet.cell(column=columnPaymentForConsumedGas,
-                                            row=cell.row).value
                     
                     total = lastPeriodDebt - valueFromColumnTSaldo + \
                                 valueFromColumnTSaldo2019 + valueFromColumnJSaldo + \
@@ -815,7 +820,10 @@ class Decade(Algorithm):
         # Save file with rewriting
         self.prom.save(self.prom.pathToFile, self.prom.fileNameWithoutExtension, conflictResolution=True)
         self.prom.close()
-        self.mng.removeUnCalledFiles()
+        # This is needed because two copies of Промисловість_.xlsx were created
+        # and one of them should be removed from mng before deleting 
+        # because of error
+        self.mng.removeFile(self.prom)
         self.prom = tempProm
 
         return

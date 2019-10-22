@@ -3,6 +3,7 @@
 from src.plan import FiscalPlan
 from src.tke import TKE
 from src.decade import Decade
+from src.nkreku2 import NKREKU2
 
 def killProcess(hardKill: int):
     processes = os.popen('tasklist').readlines()
@@ -20,28 +21,42 @@ if __name__ == "__main__":
     print("Введите:")
     print("\t1 для фин-плана")
     print("\t2 для ТКЕ_ПСО")
-    print("\t3 для форм 1-8 газ")
+    print("\t3 для форм 1-8")
+    print("\t4 для формы НКРЭКУ №2")
+
     while True:
         what = input()
         killProcess(1)
-
-        if what == "1":
-            fp = FiscalPlan(r"FiscalPlan", 6)
-            fp.run()
-            killProcess(0)
-            break
-        elif what == "2":
-            tke = TKE(r"TKE", 4)
-            tke.run()
-            killProcess(0)
-            break
-        elif what == "3":
-            decade = Decade(r"Decade", 12)
-            decade.run()
-            killProcess(0)
-            break
-        else:
-            print("Неправильный ввод")
+        try:
+            if what == "1":
+                fp = FiscalPlan(r"FiscalPlan", 6)
+                fp.run()
+                print("Время выполнения :", fp.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "2":
+                tke = TKE(r"TKE", 4)
+                tke.run()
+                print("Время выполнения :", tke.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "3":
+                decade = Decade(r"Decade", 12)
+                decade.run()
+                print("Время выполнения :", decade.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "4":
+                nkreku2 = NKREKU2(r"NKREKU2", 2)
+                nkreku2.run()
+                print("Время выполнения :", nkreku2.getTimeOfRun())
+                killProcess(0)
+                break
+            else:
+                print("Неправильный ввод")
+        except Exception as e:
+            print("Возникло необработанное исключение")
+            print(e)
     print("Программа завершила работу")
     input()
 

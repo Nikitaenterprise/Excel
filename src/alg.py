@@ -1,5 +1,6 @@
 import os
 import datetime
+import time
 from copy import copy
 
 import openpyxl
@@ -9,6 +10,7 @@ from src.manager import *
 
 class Algorithm():
     def __init__(self, dir, files):
+        self.start_time = time.time()
         self.mng = Manager(os.path.abspath(dir))
         self.numberOfFilesToStart = files
         self.checkIfDirectoryIsReady(dir)
@@ -21,6 +23,9 @@ class Algorithm():
 
     def run(self):
         pass
+
+    def getTimeOfRun(self):
+        return time.time() - self.start_time
 
 class bcolors:
     HEADER = ""#' \033[95m '
