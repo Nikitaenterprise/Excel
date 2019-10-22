@@ -178,22 +178,18 @@ class NKREKU2(Algorithm):
                     # are not specified then add all values
                     if not whatCategory and not whatResource:       
                         returnValue += value
-                        continue
                     # If category is specified and resource aren`t
-                    if whatCategory and not whatResource:
+                    elif whatCategory and not whatResource:
                         if category in whatCategory:
                             returnValue += value
-                            continue
                     # If resource is specified and category aren`t
-                    if whatResource and not whatCategory:
+                    elif whatResource and not whatCategory:
                         if resource in whatResource:
                             returnValue += value
-                            continue
                     # If both are specified
-                    if whatCategory and whatResource:
+                    elif whatCategory and whatResource:
                         if category in whatCategory and resource in whatResource:
                             returnValue += value
-                            continue
         try:
             returnValue
         except UnboundLocalError:

@@ -27,36 +27,36 @@ if __name__ == "__main__":
     while True:
         what = input()
         killProcess(1)
-        #try:
-        if what == "1":
-            fp = FiscalPlan(r"FiscalPlan", 6)
-            fp.run()
-            print("Время выполнения :", fp.getTimeOfRun())
-            killProcess(0)
-            break
-        elif what == "2":
-            tke = TKE(r"TKE", 4)
-            tke.run()
-            print("Время выполнения :", tke.getTimeOfRun())
-            killProcess(0)
-            break
-        elif what == "3":
-            decade = Decade(r"Decade", 12)
-            decade.run()
-            print("Время выполнения :", decade.getTimeOfRun())
-            killProcess(0)
-            break
-        elif what == "4":
-            nkreku2 = NKREKU2(r"NKREKU2", 2)
-            nkreku2.run()
-            print("Время выполнения :", nkreku2.getTimeOfRun())
-            killProcess(0)
-            break
-        else:
-            print("Неправильный ввод")
-        #except Exception as e:
-           # print("Возникло необработанное исключение")
-           # print(e)
+        try:
+            if what == "1":
+                fp = FiscalPlan(r"FiscalPlan", 6)
+                fp.run()
+                print("Время выполнения :", fp.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "2":
+                tke = TKE(r"TKE", 4)
+                tke.run()
+                print("Время выполнения :", tke.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "3":
+                decade = Decade(r"Decade", 12)
+                decade.run()
+                print("Время выполнения :", decade.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "4":
+                nkreku2 = NKREKU2(r"NKREKU2", 2)
+                nkreku2.run()
+                print("Время выполнения :", nkreku2.getTimeOfRun())
+                killProcess(0)
+                break
+            else:
+                print("Неправильный ввод")
+        except Exception as e:
+           print("Возникло необработанное исключение")
+           print(e)
     print("Программа завершила работу")
     input()
 
