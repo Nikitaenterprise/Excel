@@ -443,7 +443,7 @@ class Decade(Algorithm):
                             break
                         # Transform int value of resource into str 2019 -> "2019"
                         resource = str(saldoSheet.cell(column=columnResource,
-                                                row=row).value)
+                                                row=row).value).strip()
                         value = saldoSheet.cell(column=columnWithData,
                                                 row=row).value
                         if value != None:
