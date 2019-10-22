@@ -15,10 +15,10 @@ class Decade(Algorithm):
         self.tkeDK = self.mng.getFile("ТКЕ ДК", 
                                         extension=".xlsx", exactMatch=True)
         self.tkeDK.shouldBeDeleted = False
-        self.promDK = self.mng.getFile("Пром ДК", 
+        self.promDK = self.mng.getFile("Промисловість_ ДК", 
                                         extension=".xlsx", exactMatch=True)
         self.promDK.shouldBeDeleted = False
-        self.promPrev = self.mng.getFile("Розрахунок промислових минулі роки", 
+        self.promPrev = self.mng.getFile("Промисловість_ начало года", 
                                         extension=".xlsx", exactMatch=True)
         self.promPrev.shouldBeDeleted = False
                                         
@@ -27,7 +27,7 @@ class Decade(Algorithm):
         self.mng.getFile("Оборотно-сальдова вiдомiсть последний месяц", exactMatch=True)
         self.mng.getFile("ТКЕ", exactMatch=True)
         self.mng.getFile("gpg")
-        self.mng.getFile("Промисловість_")
+        self.mng.getFile("Промисловість_", exactMatch=True)
         self.mng.getFile("Оборотно-сальдова вiдомiсть пром", exactMatch=True)
         self.mng.getFile("Оборотно-сальдова вiдомiсть ТКЕ", exactMatch=True)
 
@@ -46,7 +46,7 @@ class Decade(Algorithm):
             self.gasConsumption = self.mng.getFile("gpg", 
                                     extension=".xlsx")
             self.prom = self.mng.getFile("Промисловість_", 
-                                    extension=".xlsx")
+                                    extension=".xlsx", exactMatch=True)
             self.saldoTKE = self.mng.getFile("Оборотно-сальдова вiдомiсть ТКЕ", 
                                     extension=".xlsx", exactMatch=True)
             self.saldoProm = self.mng.getFile("Оборотно-сальдова вiдомiсть пром", 
@@ -58,18 +58,32 @@ class Decade(Algorithm):
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
             msg = """Файлы, нужные для работы: 
-            1. gpg... : використання природного газу споживачами України в розрізі газорозподільних підприємств
-            2. Декадка : пустой шаблон
+            1. gpg... : за период 1 января - последняя декада
+                        (Менеджер отчетов\Диспетчерський газ\Використання природного газу... (2480bk))
+            2. Оборотно-сальдова вiдомiсть : за период 1 января - по декаду, категории населення, бюджет, 
+                                                                            релігійні організації, вічний вогонь
+                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
             3. Оборотно-сальдова вiдомiсть последний месяц : 2gv за период 1 января - 30(31) число предыдущего месяца
-            4. Оборотно-сальдова вiдомiсть пром : 2gv за период 1 января - по декаду, категория промисловість
-            5. Оборотно-сальдова вiдомiсть ТКЕ : 2gv за период 1 января - по декаду, категории ТЕ, БО, КП, РО, НС, ВТЕ
-            6. Оборотно-сальдова вiдомiсть : 2gv за период 1 января - по декаду, категории населення, бюджет, релігійні організації, вічний вогонь
+                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
+            4. Оборотно-сальдова вiдомiсть ТКЕ : 2gv за период 1 января - по декаду, категории ТЕ, БО, КП, РО, НС, ВТЕ
+                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
+            5. Оборотно-сальдова вiдомiсть пром : 2gv за период 1 января - по декаду, категория промисловість
+                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
+            6. ТКЕ : база Зубарева, за период 1 января - по декаду
+                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ТКЕ_2018-2019)
             7. Промисловість_ : база Зубарева, за период 1 января - по декаду
-            8. ТКЕ : база Зубарева, за период 1 января - по декаду
-            9. ТКЕ начало года : база Зубарева, построенная на 1.01.2019
-            10. Пром ДК : база за 2017 год (не меняется)
-            11. Розрахунок промислових минулі роки : база Зубарева, построенная на 1.01.2019
-            12. ТКЕ ДК : база за 2011-2012 год
+                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ПРОМ)
+
+            Файлы, которые не надо загружать, но они должны быть в папке
+            1. Декадка : пустой шаблон
+            2. ТКЕ начало года : база Зубарева, построенная на 1.01.2019
+                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ТКЕ_2018-2019)
+            3. Промисловість_ начало года : база Зубарева, построенная на 1.01.2019
+                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ПРОМ)
+            4. ТКЕ ДК : база за 2010-2011 год, построена в 2018 году
+                        (Dept\Monitoring.Gas\4. Газ України\ДК Газ України.  База ТКЕ 2010-2011)
+            5. Промисловість_ ДК : база за 2010-2011 год, построена в 2018 году
+                        (Dept\Monitoring.Gas\4. Газ України\ДК Газ України. Промисловість)
             После исправления запустите программу заново. Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
@@ -80,7 +94,7 @@ class Decade(Algorithm):
     def deleteFiles(self, programmIsDone=True):
         """Deletes all created files with .xlsx extension
         """
-        # If programm has daone its work then close files
+        # If programm has done its work then close files
         if programmIsDone == True:
             try:
                 self.saldo.close()
@@ -88,6 +102,8 @@ class Decade(Algorithm):
                 self.tke.close()
                 self.gasConsumption.close()
                 self.prom.close()
+                self.saldoTKE.close()
+                self.saldoProm.close()
             except:
                 print(bcolors.WARNING +\
                     "Программа не смогла закрыть экселевские файлы"\
@@ -167,6 +183,8 @@ class Decade(Algorithm):
         rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsTeploseti.max_row)
         self.teplosetiIterInRegions(decadeWsTeploseti, tkePrevWs, tkeWs, tkeDKWs, rangeIterInDecade)
 
+        return
+
     def promishlennost(self):
         
         self.decade.open(data_only=False)
@@ -184,6 +202,8 @@ class Decade(Algorithm):
         rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
         self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
 
+        return
+
     def forPresident(self):
 
         self.decade.open(data_only=False)
@@ -198,10 +218,6 @@ class Decade(Algorithm):
         numberOfRowsInPAT = self.decade.getWs("Населення").max_row
         rangeIterPAT = "B7" + ":" + "B" + str(numberOfRowsInPAT)
         rangeIterTOV = "C7" + ":" + "C" + str(numberOfRowsInPAT)
-        numberOfRowsInTeplo = self.decade.getWs("Тепломережі").max_row
-        rangeIterOther = "A9" + ":" + "A" + str(numberOfRowsInTeplo)
-        
-        
 
         naselenie = 0
         budget = 0
