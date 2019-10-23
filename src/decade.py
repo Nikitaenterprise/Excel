@@ -260,7 +260,17 @@ class Decade(Algorithm):
         
         column = openpyxl.utils.column_index_from_string("T")
         TKE = saldoTKEWs.cell(column=column, row=9).value
+        
         prom = saldoPromWs.cell(column=column, row=9).value
+        naftogazTrading = self.findInSaldo(
+                                            saldoSheet=saldoPromWs,
+                                            whatToFind='ТОВ "ГАЗОПОСТАЧАЛЬНА КОМПАНІЯ "НАФТОГАЗ ТРЕЙДИНГ"',
+                                            whatColumn="T",
+                                            whatCategory=None,
+                                            whatResource=None
+                                            )
+        if naftogazTrading != None:
+            prom -= naftogazTrading
 
         columnWhereToWrite = openpyxl.utils.column_index_from_string("J")
         try:
@@ -684,14 +694,12 @@ class Decade(Algorithm):
         for cells in tkeSheet[rangeIterInTkePrev]:
             for cell in cells:
                 # If left cell is equal to ВАТ/ПАТ
-                if tkeSheet.cell(column=cell.column-1, row=cell.row).value == "ВАТ/ПАТ":
+                if tkeSheet.cell(column=cell.column-1, row=cell.row).value == "РАЗОМ (Прямі договори та ВАТ/ПАТ):":
                     isDone = True
                     break
                 
                 if cell.value == regionName:
-                    returnValueFromTke = tkeSheet.cell(column=columnDebtInTke, row=cell.row).value
-                    isDone = True
-                    break
+                    returnValueFromTke += tkeSheet.cell(column=columnDebtInTke, row=cell.row).value
             if isDone:
                 break
 
@@ -725,19 +733,23 @@ class Decade(Algorithm):
         rangeIterInTke = "C15" + ":" + "C" + str(tkeSheet.max_row)
         columnWithData = openpyxl.utils.column_index_from_string(fromWhatColumn)
         returnValue = 0
+        isDone = False
         for cells in tkeSheet[rangeIterInTke]:
             for cell in cells:
                 # If null then its end of data
-                if cell.value == None:
-                    return 0
+                if cell.value == "Область / Населений пункт":
+                    isDone = True
+                    break
                 
                 if cell.value == regionName:
-                    returnValue = tkeSheet.cell(column=columnWithData, row=cell.row).value
-                    if returnValue != None:
-                        return returnValue
-                    elif returnValue == None:
-                        return 0
-        return 0
+                    returnValue += tkeSheet.cell(column=columnWithData, row=cell.row).value
+            if isDone:
+                break
+        
+        if returnValue != None:
+            return returnValue
+        elif returnValue == None:
+            return 0          
 
     def promColumnB(self, promPrevSheet, promDkSheet, regionName):
         """
