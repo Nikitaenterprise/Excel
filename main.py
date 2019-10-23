@@ -4,6 +4,7 @@ from src.plan import FiscalPlan
 from src.tke import TKE
 from src.decade import Decade
 from src.nkreku2 import NKREKU2
+from src.nkreku_pat import NKREKU_PAT
 
 def killProcess(hardKill: int):
     processes = os.popen('tasklist').readlines()
@@ -50,6 +51,12 @@ if __name__ == "__main__":
                 nkreku2 = NKREKU2(r"NKREKU2", 2)
                 nkreku2.run()
                 print("Время выполнения :", nkreku2.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "5":
+                nkreku_pat = NKREKU_PAT(r"NKREKU_PAT", 2)
+                nkreku_pat.run()
+                print("Время выполнения :", nkreku_pat.getTimeOfRun())
                 killProcess(0)
                 break
             else:
