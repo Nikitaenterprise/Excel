@@ -156,6 +156,7 @@ class TKE(Algorithm):
         rangeAG = "AG10" + ":" + "AG" + str(numberOfRows)
         rangeAI = "AI10" + ":" + "AI" + str(numberOfRows)
         rangeAM = "AM10" + ":" + "AM" + str(numberOfRows)
+
         for cells in todayWsData[rangeAG]:
             for cellWithPercent in cells:
                 try:
@@ -174,6 +175,19 @@ class TKE(Algorithm):
                             todayWsData.cell(column=columnWithConditions, 
                                             row=cellWithPercent.row).value = 1
                     
+                    # Set 1 to conditions column if payment >90%
+                    # this need to be done because of situation when
+                    # company has restructurization contract with debt in it
+                    cellWithConditions = todayWsData.cell(
+                                            column=columnWithConditions, 
+                                            row=cellWithPercent.row).value
+                    if (cellWithPercent.value > 90 and 
+                            (cellWithConditions != None or
+                            cellWithConditions != "")):
+                        todayWs.cell(column=columnWithConditions, 
+                                    row=cellWithPercent.row).value = 1
+                        todayWsData.cell(column=columnWithConditions, 
+                                    row=cellWithPercent.row).value = 1
                 except TypeError:
                     continue
 
