@@ -1,12 +1,13 @@
 from src.alg import *
+from src.saldo import *
 
 class NKREKU2(Algorithm):
 
     def checkIfDirectoryIsReady(self, path: str):
         self.mng.addFilesInDir()
 
-        self.outFile = self.mng.getFile("Ф2", extension=".xlsx")
-        self.outFile.shouldBeDeleted = False
+        self.template = self.mng.getFile("Шаблон", extension=".xlsx")
+        self.template.shouldBeDeleted = False
 
         self.mng.getFile("Оборотно-сальдова вiдомiсть")
 
@@ -21,7 +22,7 @@ class NKREKU2(Algorithm):
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
             msg = r"""Файлы, нужные для работы:
-            1. Ф2... файл-форма отчетности НКРЭКУ №2 с заполненными данными в колонке L в строках 48(4.1)-51(4.4)
+            1. Шаблон... файл-форма отчетности НКРЭКУ №2 с заполненными данными в колонке L в строках 48(4.1)-51(4.4)
                     даные заполняются из : Финансы\Движение денежных средств\Импорт платежей
             2. Оборотно-сальдова вiдомiсть : за предыдущий месяц (1 число месяца - последнее число месяца),
                     по категориям ТЕ, БО, КП, РО, НС, ВТЕ,
@@ -55,15 +56,15 @@ class NKREKU2(Algorithm):
 
     def getValues(self):
 
-        self.outFile.open(data_only=False)
-        self.outFileWs = self.outFile.getWs()
+        self.template.open(data_only=False)
+        self.templateWs = self.template.getWs()
         self.saldo.open(data_only=True)
         self.saldoWs = self.saldo.getWs()
         
         isReady = self.checkIfFileIsReady()
         if isReady:
             self.columnFiller()
-            self.outFile.save(self.outFile.pathToFile, "НКРЕКП №2", extension=".xlsx")
+            self.template.save(self.template.pathToFile, "НКРЕКП №2", extension=".xlsx")
         else:
             msg = r"""Заполните столбец L с названием :
             перераховано коштів на поточний рахунок із спеціальним режимом використання
@@ -80,25 +81,25 @@ class NKREKU2(Algorithm):
 
     def checkIfFileIsReady(self):
         
-        tempOutFile = self.outFile
-        self.outFile = self.mng.addFileByPath(
-                                            self.outFile.pathToFile, 
-                                            self.outFile.fileName,
+        tempTemplate = self.template
+        self.template = self.mng.addFileByPath(
+                                            self.template.pathToFile, 
+                                            self.template.fileName,
                                             returnFile=True
                                             ) 
-        self.outFile.open(data_only=True)
-        outFileWs = self.outFile.getWs()
+        self.template.open(data_only=True)
+        templateWs = self.template.getWs()
 
         columnL = openpyxl.utils.column_index_from_string("L")
         startRow = 48
         self.listOfValuesFromColumnL = []
         for i in range(0, 4):
-            value = outFileWs.cell(column=columnL, row=startRow+i).value
+            value = templateWs.cell(column=columnL, row=startRow+i).value
             self.listOfValuesFromColumnL.append(value)
 
-        self.outFile.close()
-        self.mng.removeFile(self.outFile)
-        self.outFile = tempOutFile
+        self.template.close()
+        self.mng.removeFile(self.template)
+        self.template = tempTemplate
 
         # If cells are empty then file isn`t ready
         if None in self.listOfValuesFromColumnL:
@@ -112,41 +113,56 @@ class NKREKU2(Algorithm):
                             ["ТЕ теплоенергетика"], 
                             ["РО теплоенергетика"], 
                             ["БО теплоенергетика"], 
-                            ["НС теплоенергетика","КП теплоенергетика", "ВТЕ теплоенергетика"]
+                                [
+                                "НС теплоенергетика",
+                                "КП теплоенергетика", 
+                                "ВТЕ теплоенергетика"
+                                ]
                             ]
-        
-        columnE = openpyxl.utils.column_index_from_string("E")
+        columnToWriteList = ["E", "F", "G", "M"]
+        columnList = []
+        for column in columnToWriteList:
+            columnList.append(openpyxl.utils.column_index_from_string(column))
+
         for i in range(0, 4):
-            toWrite = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], None, "G")
-            self.outFileWs.cell(column=columnE, row=startRow+i).value = toWrite / 1000
-        
-        columnM = openpyxl.utils.column_index_from_string("M")
-        for i in range(0, 4):
-            toWrite = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], None, "L")
-            self.outFileWs.cell(column=columnM, row=startRow+i).value = toWrite / 1000
-        
+            toWrite = findInSaldoAllValues(self.saldoWs, 
+                                            listOfCategories[i],
+                                            None,
+                                            ["G", "H", "I", "L",])
+            # Multiply by 1000 because its already divided by 1000 
+            # in saldo excel data
+            toWrite[1] *= 1000
+
+            for j in range(0, 4):
+                self.templateWs.cell(column=columnList[j], 
+                            row=startRow+i).value = toWrite[j] / 1000
+            
         columnO = openpyxl.utils.column_index_from_string("O")
-        for i in range(0, 4):
-            allResources = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], None, "T")
-            resources2019 = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], ["2019"], "T")
-            toWrite = allResources - resources2019
-            self.outFileWs.cell(column=columnO, row=startRow+i).value = toWrite / 1000
-        
         columnQ = openpyxl.utils.column_index_from_string("Q")
         for i in range(0, 4):
-            allResources = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], None, "U")
-            resources2019 = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], ["2019"], "U")
-            toWrite = allResources - resources2019
-            self.outFileWs.cell(column=columnQ, row=startRow+i).value = toWrite / 1000
-
+            toWrite = findInSaldoAllValues(self.saldoWs, 
+                                            listOfCategories[i], 
+                                            ["!2019"], 
+                                            ["T", "U"])
+            self.templateWs.cell(column=columnO, row=startRow+i).value =\
+                        toWrite[0] / 1000
+            self.templateWs.cell(column=columnQ, row=startRow+i).value =\
+                        toWrite[1] / 1000
+        
         columnN = openpyxl.utils.column_index_from_string("N")
+        columnM = openpyxl.utils.column_index_from_string("M")
         for i in range(0, 4):
             valueFromL = self.listOfValuesFromColumnL[i] * 1000
-            valueFromM = self.outFileWs.cell(column=columnM, row=startRow+i).value * 1000
-            valueFromSaldo = self.findInSaldoAllValues(self.saldoWs, listOfCategories[i], None, "T")
-            toWrite = valueFromSaldo - valueFromL - valueFromM
-            self.outFileWs.cell(column=columnN, row=startRow+i).value = toWrite / 1000
-        
+            valueFromM = self.templateWs.cell(column=columnM, 
+                                        row=startRow+i).value * 1000
+            valueFromSaldo = findInSaldoAllValues(self.saldoWs, 
+                                        listOfCategories[i], 
+                                        None, 
+                                        ["T"])
+            toWrite = valueFromSaldo[0] - valueFromL - valueFromM
+            self.templateWs.cell(column=columnN, row=startRow+i).value =\
+                                        toWrite / 1000
+
         return
 
         

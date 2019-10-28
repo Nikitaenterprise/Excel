@@ -177,8 +177,8 @@ class TKE(Algorithm):
             for cell in cells:
                 try:
                     if cell.value > 0 and cell.value <= 1:
-                        todayWsData.cell(column=cell.column, row=cell.row).value = None
-                        todayWs.cell(column=cell.column, row=cell.row).value = None
+                        todayWsData.cell(column=cell.column, row=cell.row).value = 0
+                        todayWs.cell(column=cell.column, row=cell.row).value = 0
                 except TypeError:
                     continue
 
