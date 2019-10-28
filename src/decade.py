@@ -112,15 +112,27 @@ class Decade(Algorithm):
         return
 
     def run(self):
+        try:
+            self.price = self.getPrice()
+            print("Прочитанная цена из файла равна", 
+                    self.price, "грн за 1000 м3")
+        except (FileNotFoundError, ArithmeticError):
+            print("Не правильно указана цена в файле Цена.txt или нет файла")
+            print("Заполните файл правильной ценой")
+            print("Или же создайте файл (если его нет)")
+            print("Исправьте проблему и перезапустите программу")
+            self.deleteFiles()
+            exit()
+
         self.naselenie()
         self.religion()
         self.budget()
         self.teploseti()
         self.promishlennost()
         self.forPresident()
-        self.decade.save(self.decade.pathToFile, "На печать", extension=".xlsx")
+        self.decade.save(self.decade.pathToFile, 
+                            "На печать", extension=".xlsx")
         self.deleteFiles()
-
 
         return
 
@@ -135,7 +147,8 @@ class Decade(Algorithm):
         self.gasConsumption.open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.naselenieIterateInTOVandPAT(decadeWsNas, saldoWs, saldoLastMonthWs, gasConsumptionWs)
+        self.naselenieIterateInTOVandPAT(decadeWsNas, saldoWs, 
+                                saldoLastMonthWs, gasConsumptionWs)
 
         return
 
@@ -150,7 +163,8 @@ class Decade(Algorithm):
         self.gasConsumption.open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.religionIterateInTOVandPAT(decadeWsReligion, saldoWs, saldoLastMonthWs, gasConsumptionWs)
+        self.religionIterateInTOVandPAT(decadeWsReligion, saldoWs, 
+                                saldoLastMonthWs, gasConsumptionWs)
 
         return
 
@@ -165,7 +179,8 @@ class Decade(Algorithm):
         self.gasConsumption.open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.budgetIterateInTOVandPAT(decadeWsBudget, saldoWs, saldoLastMonthWs, gasConsumptionWs)
+        self.budgetIterateInTOVandPAT(decadeWsBudget, saldoWs, 
+                                saldoLastMonthWs, gasConsumptionWs)
 
         return
 
@@ -180,8 +195,10 @@ class Decade(Algorithm):
         self.tke.open(data_only=True)
         tkeWs = self.tke.getWs("База")
 
-        rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsTeploseti.max_row)
-        self.teplosetiIterInRegions(decadeWsTeploseti, tkePrevWs, tkeWs, tkeDKWs, rangeIterInDecade)
+        rangeIterInDecade = "A9" + ":" + "A" +\
+                                     str(decadeWsTeploseti.max_row)
+        self.teplosetiIterInRegions(decadeWsTeploseti, tkePrevWs, 
+                                    tkeWs, tkeDKWs, rangeIterInDecade)
 
         return
 
@@ -200,7 +217,8 @@ class Decade(Algorithm):
         promWs = self.prom.getWs("База_2")
 
         rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
-        self.promIterInRegions(decadeWsProm, promDKWs, promWs, promPrevWs, rangeIterInDecade)
+        self.promIterInRegions(decadeWsProm, promDKWs, 
+                                promWs, promPrevWs, rangeIterInDecade)
 
         return
 
@@ -225,37 +243,45 @@ class Decade(Algorithm):
         TKE = 0
         prom = 0
         
-        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs("Населення"),
+        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs(
+                                                "Населення"),
                                                 rangeIterPAT,
                                                 saldoNasBudgRelWs,
                                                 ["населення"],
                                                 "A")
-        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs("Населення"),
+        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs(
+                                                "Населення"),
                                                 rangeIterTOV,
                                                 saldoNasBudgRelWs,
                                                 ["населення"],
                                                 "A")
 
-        budget += self.getTotalPaymentFromSaldo(self.decade.getWs("Бюджет"),
+        budget += self.getTotalPaymentFromSaldo(self.decade.getWs(
+                                                "Бюджет"),
                                                 rangeIterPAT,
                                                 saldoNasBudgRelWs,
                                                 ["бюджет"],
                                                 "A")
-        budget += self.getTotalPaymentFromSaldo(self.decade.getWs("Бюджет"),
+        budget += self.getTotalPaymentFromSaldo(self.decade.getWs(
+                                                "Бюджет"),
                                                 rangeIterTOV,
                                                 saldoNasBudgRelWs,
                                                 ["бюджет"],
                                                 "A")
 
-        religion += self.getTotalPaymentFromSaldo(self.decade.getWs("Релігія"),
+        religion += self.getTotalPaymentFromSaldo(self.decade.getWs(
+                                                "Релігія"),
                                                 rangeIterPAT,
                                                 saldoNasBudgRelWs,
-                                                ["релігійні організації", "вічний вогонь"],
+                                                ["релігійні організації", 
+                                                "вічний вогонь"],
                                                 "A")
-        religion += self.getTotalPaymentFromSaldo(self.decade.getWs("Релігія"),
+        religion += self.getTotalPaymentFromSaldo(self.decade.getWs(
+                                                "Релігія"),
                                                 rangeIterTOV,
                                                 saldoNasBudgRelWs,
-                                                ["релігійні організації", "вічний вогонь"],
+                                                ["релігійні організації", 
+                                                "вічний вогонь"],
                                                 "A")
         
         column = openpyxl.utils.column_index_from_string("T")
@@ -545,9 +571,8 @@ class Decade(Algorithm):
                     if valueFromSaldoLastMonth == None:
                         valueFromSaldoLastMonth = 0
 
-                    # Where to get price???????????????????????????
-                    price = 5392.26
-                    summary = valueFromGasConsumption / 1000 * price + valueFromSaldoLastMonth / 1000 
+                    summary = valueFromGasConsumption / 1000 *\
+                            self.price + valueFromSaldoLastMonth / 1000 
                     decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary
         return
 
@@ -876,3 +901,26 @@ class Decade(Algorithm):
                     total = value5 + value6 + value2 + value1 + value3 - value4
                     decadeSheet.cell(column=cell.column+7, row=cell.row).value = total / 1000
                     decadeSheet.cell(column=cell.column+8, row=cell.row).value = (value3 - value4) / 1000
+
+    def getPrice(self):
+        """Get price value from Цена.txt
+        """
+        with open(self.decade.pathToFile+"\\"+"Цена.txt", "r") as f:
+            content = f.read().splitlines()
+            while True:
+                haveEmpty = False
+                for element in content:
+                    if element == "":
+                        haveEmpty = True
+                        content.remove("")
+                if haveEmpty == False:
+                    break
+        if not content:
+            print(bcolors.WARNING +\
+                """Файл "Цена.txt" пустой"""\
+                + bcolors.ENDC)
+            price = 0
+            raise ArithmeticError
+        else:
+            price = float(content[0])
+        return price
