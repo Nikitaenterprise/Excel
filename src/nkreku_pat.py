@@ -157,23 +157,35 @@ class NKREKU_PAT(Algorithm):
             col = openpyxl.utils.column_index_from_string(column)
             listOfColumns.append(col)
 
+        additionListCategory = []
         exclusionListCategory = []
         if whatCategory != None:
             for cat in whatCategory:
                 if "!" in cat:
-                    catList = cat.split("!")
-                    exclusionListCategory.append(catList[1])
+                    exclusionListCategory.append(cat.split("!")[1])
+                elif "!" not in cat:
+                    additionListCategory.append(cat)
+        # If list is empty (no ! was found) then add empty str to list
         if not exclusionListCategory:
             exclusionListCategory.append("")
+        # If list is empty then add empty str to list
+        if not additionListCategory:
+            additionListCategory.append("")
 
+        additionListResource = []
         exclusionListResource = []
         if whatResource != None:
             for res in whatResource:
                 if "!" in res:
-                    resList = res.split("!")
-                    exclusionListResource.append(resList[1]) 
+                    exclusionListResource.append(res.split("!")[1]) 
+                elif "!" not in res:
+                    additionListResource.append(res)
+        # If list is empty (no ! was found) then add empty str to list
         if not exclusionListResource:
             exclusionListResource.append("")
+        # If list is empty then add empty str to list
+        if not additionListResource:
+            additionListResource.append("")
 
         for cells in saldoSheet[rangeIter]:
             for cell in cells:
@@ -217,28 +229,37 @@ class NKREKU_PAT(Algorithm):
                             willBeCalculated = True
                         # If category is specified and resource aren`t
                         elif whatCategory and not whatResource:
-                            if category in whatCategory or category not in exclusionListCategory:
+                            if category in whatCategory:
                                 willBeCalculated = True
-                            elif category in exclusionListCategory:
+                            if category not in exclusionListCategory:
+                                willBeCalculated = True
+                            if category in exclusionListCategory:
                                 willBeCalculated = False
 
                         # If resource is specified and category aren`t
                         elif whatResource and not whatCategory:
-                            if resource in whatResource or resource not in exclusionListResource:
+                            if resource in whatResource:
+                                willBeCalculated = True
+                            if resource not in exclusionListResource:
                                 willBeCalculated = True
                             if resource in exclusionListResource:
                                 willBeCalculated = False
+
                         # If both are specified
                         elif whatCategory and whatResource:
                             if category in whatCategory and\
-                                    resource in whatResource or\
-                                    category not in exclusionListCategory and\
+                                    resource in whatResource:   
+                                willBeCalculated = True
+
+                            if category not in exclusionListCategory and\
                                     resource not in exclusionListResource:
                                 willBeCalculated = True
-                            if category in exclusionListCategory or\
-                                    resource in exclusionListResource:
+
+                            if category in exclusionListCategory:
                                 willBeCalculated = False
-                            
+
+                            if resource in exclusionListResource:
+                                willBeCalculated = False
 
                         if willBeCalculated == True:
                             for i in range(0, len(valuesList)):
