@@ -82,9 +82,11 @@ class TKE(Algorithm):
         todayTkeWithData.open(data_only=True)
         todayWsData = todayTkeWithData.getWs("Sheet1")
 
-        numberOfRows = todayWs.max_row
         # Set 1 and 'договир э' to those companies who have a restructurization contract
         self.restructurization1730.open()
+        self.checkRestructurizationData(todayWs, todayWsData)
+
+        numberOfRows = todayWs.max_row
         rangeIter = "O12" + ":" + "O" + str(numberOfRows)
         for cells in todayWsData[rangeIter]:
             for cell in cells:
@@ -97,6 +99,7 @@ class TKE(Algorithm):
 
                         # Call restructurization() for get debt
                         summary = self.restructurization(todayWsData, cell.column, cell.row)
+
                         column = openpyxl.utils.column_index_from_string("AM")
                         if summary != None:
                             # If company have debt >0 then this summ will appear in
@@ -111,6 +114,7 @@ class TKE(Algorithm):
                             # If company have debt or debt <0 then "договір є" will
                             # appear in column "AM"
                             todayWs.cell(column=column, row=cell.row).value = str("договір є")                          
+                            todayWsData.cell(column=column, row=cell.row).value = str("договір є")                          
         
         # Set 1 to those companies who are currently controlled by Фонд Держ Майна
         # If they have >60% then set 1
@@ -169,6 +173,7 @@ class TKE(Algorithm):
                                             row=cellWithPercent.row).value = 1
                             todayWsData.cell(column=columnWithConditions, 
                                             row=cellWithPercent.row).value = 1
+                    
                 except TypeError:
                     continue
 
@@ -375,7 +380,7 @@ class TKE(Algorithm):
             row = self.restructurization1730.getFirstCellByCriteria(EGRPOU, "D").row
         except AttributeError:
             print(bcolors.OKGREEN +\
-                    "В списках договоров реструктуризации" +\
+                    "В списках договоров реструктуризации " +\
                     "1730 не найдено предприятие с кодом ЕГРПОУ"\
                     + bcolors.ENDC, bcolors.OKGREEN + EGRPOU + bcolors.ENDC)
             return None
@@ -389,6 +394,46 @@ class TKE(Algorithm):
             return summary
         if summary <= 0:
             return None
+
+    def checkRestructurizationData(self, ws, wsData):
+        """
+        """
+        restructWs = self.restructurization1730.getWs()
+        rangeIter = "F13" + ":" + "F" + str(restructWs.max_row)
+        
+        dictOfRestructNumbers = {}
+        # Fill dict with EDRPOU and restructurization number from 1730
+        for cells in restructWs[rangeIter]:
+            for cell in cells:
+                if cell.value == None:
+                    EDRPOU = str(restructWs.cell(
+                                                column=cell.column-2,
+                                                row=cell.row).value)
+                    number = str(restructWs.cell(
+                                                column=cell.column,
+                                                row=cell.row+1).value)
+                    dictOfRestructNumbers[EDRPOU] = number
+                
+        rangeIterInner = "P12" + ":" + "P" + str(wsData.max_row)
+        for cells in wsData[rangeIterInner]:
+            for cell in cells:
+                # If EDRPOU in TKE are also in dict from 1730
+                # and in TKE there are no data about restructurization
+                res = wsData.cell(
+                                    column=cell.column-1, 
+                                    row=cell.row).value
+                if (cell.value != None and
+                    str(cell.value) in dictOfRestructNumbers and
+                    (res == None or res == "")):
+                    # If so then copy restruct number from
+                    # 1730 to TKE
+                    restructNumber = dictOfRestructNumbers[str(cell.value)]                         
+                    ws.cell(column=cell.column - 1,
+                            row=cell.row).value = restructNumber
+                    wsData.cell(column=cell.column - 1,
+                            row=cell.row).value = restructNumber
+        
+        
 
     def kyivEnergoMoney(self, dataFile):
         """Finds kyiv teplo energo money in their passport file
@@ -482,28 +527,6 @@ class TKE(Algorithm):
             columnLetter = openpyxl.utils.get_column_letter(column)
             if columnLetter not in listOfNotHiddenColumns:
                 self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
-        # self.yesterdayTKE.open()
-        # # Get list of hidden colulmns
-        # listOfHiddenColumns = []
-        # for column in range(1, self.yesterdayTKE.getWs().max_column):
-        #     columnLetter = openpyxl.utils.get_column_letter(column)
-        #     isHidden = self.yesterdayTKE.getWs().column_dimensions[columnLetter].hidden
-        #     listOfHiddenColumns.append(isHidden)
-        # # Hide columns in today TKE by list
-        # for column in range(1, self.todayTKE.getWs().max_column):
-        #     if column < len(listOfHiddenColumns):
-        #         if listOfHiddenColumns[column] == True:
-        #             columnLetter = openpyxl.utils.get_column_letter(column)
-        #             self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
-        # Additional hiding
-        # listOfHiddenColumns = ["M", "O", "AW", "AX", "AY", 
-        #                         "AZ", "BA", "BB", "BC", "BD", 
-        #                         "BE", "BF", "BG", "BH", "BI",
-        #                         "BJ", "BK", "BL", "BM", "BN",
-        #                         "BP", "BQ", "BR", "BS", "BT",
-        #                         "BU"]
-        # for columnLetter in listOfHiddenColumns:
-        #     self.todayTKE.getWs().column_dimensions[columnLetter].hidden = True
         return
 
     def addFilter(self):
