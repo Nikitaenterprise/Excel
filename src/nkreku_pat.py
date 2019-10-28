@@ -15,7 +15,7 @@ class NKREKU_PAT(Algorithm):
             self.saldo = self.mng.getFile("Оборотно-сальдова вiдомiсть",
                                             extension=".xlsx")
             if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
-                    raise AttributeError
+                raise AttributeError
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
             msg = r"""Файлы, нужные для работы: 
@@ -67,83 +67,29 @@ class NKREKU_PAT(Algorithm):
                 if cell.value != None:
                     company = cell.value
 
-                    data = self.findInSaldo2(saldoWs, company, None, None, whatColumns=["G", "H", "I"])
+                    data = self.findInSaldo(saldoWs, company, None, None, whatColumns=["G", "H", "I"])
                     for i in range(0, len(data)):
                         VTVWs.cell(column=columnList[i], row=cell.row).value = data[i]
 
-                    data = self.findInSaldo2(saldoWs, company, None, ["2019"], whatColumns=["K", "L", "S"])
+                    data = self.findInSaldo(saldoWs, company, None, ["2019"], whatColumns=["K", "L", "S"])
                     for i in range(0, len(data)):
                         # i + 4 to shift columns from C D E to G H I
                         VTVWs.cell(column=columnList[i]+4, row=cell.row).value = data[i]
 
-                    data = self.findInSaldo2(saldoWs, company, None, ["!2019"], whatColumns=["K", "L", "S"])
+                    data = self.findInSaldo(saldoWs, company, None, ["!2019"], whatColumns=["K", "L", "S"])
                     for i in range(0, len(data)):
                         # i + 4 to shift columns from C D E to K L M
                         VTVWs.cell(column=columnList[i]+8, row=cell.row).value = data[i]
-                    
-        self.VTV.save(self.VTV.pathToFile, "111", extension=".xlsx")
 
+                    data = self.findInSaldo(saldoWs, company, None, None, whatColumns=["J"])
+                    columnP = openpyxl.utils.column_index_from_string("P")
+                    VTVWs.cell(column=columnP, row=cell.row).value = data[0]
+                    
+        self.VTV.save(self.VTV.pathToFile, "НКРЕКП ВТВ+НОРМ", extension=".xlsx")
+
+        self.deleteFiles()
 
     def findInSaldo(self, saldoSheet, whatToFind: str, 
-                    whatCategory: list, whatResource: list, whatColumn: str, inWhatColumnFind="A"):
-        """
-        """
-        numberOfRows = saldoSheet.max_row
-        rangeIter = inWhatColumnFind + "10" + ":" + inWhatColumnFind + str(numberOfRows)
-        columnCategory = openpyxl.utils.column_index_from_string("C")
-        columnResource = openpyxl.utils.column_index_from_string("F")
-        columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
-        for cells in saldoSheet[rangeIter]:
-            for cell in cells:
-                # If company name equals to what to find variable
-                if cell.value != None and cell.value == whatToFind:
-                    # Iterate throug this company data
-                    returnValue = 0
-                    row = cell.row
-                    while True:
-                        # Move 1 row down
-                        row += 1
-                        category = saldoSheet.cell(column=columnCategory,
-                                                row=row).value
-                        # If its None then we know that company data ends
-                        # and other company begins
-                        if category == None:
-                            break
-                        # Transform int value of resource into str 2019 -> "2019"
-                        resource = str(saldoSheet.cell(column=columnResource,
-                                                row=row).value).strip()
-                        value = saldoSheet.cell(column=columnWithData,
-                                                row=row).value
-                        if value != None:
-                            # If both category and resource 
-                            # are not specified then add all values
-                            if not whatCategory and not whatResource:       
-                                returnValue += value
-                            # If category is specified and resource aren`t
-                            elif whatCategory and not whatResource:
-                                if category in whatCategory:
-                                    returnValue += value
-                            # If resource is specified and category aren`t
-                            elif whatResource and not whatCategory:
-                                if resource in whatResource:
-                                    returnValue += value
-                            # If both are specified
-                            elif whatCategory and whatResource:
-                                if category in whatCategory and resource in whatResource:
-                                    returnValue += value
-                    
-                    return returnValue
-        
-        # If company wasn`t found in saldo then set return value to 0
-        try:
-            returnValue
-        except UnboundLocalError:
-            returnValue = 0
-            return returnValue
-        
-        return
-
-    def findInSaldo2(self, saldoSheet, whatToFind: str, 
                     whatCategory: list, whatResource: list, whatColumns: list, inWhatColumnFind="A"):
         """
         """
@@ -165,12 +111,7 @@ class NKREKU_PAT(Algorithm):
                     exclusionListCategory.append(cat.split("!")[1])
                 elif "!" not in cat:
                     additionListCategory.append(cat)
-        # If list is empty (no ! was found) then add empty str to list
-        if not exclusionListCategory:
-            exclusionListCategory.append("")
-        # If list is empty then add empty str to list
-        if not additionListCategory:
-            additionListCategory.append("")
+        
 
         additionListResource = []
         exclusionListResource = []
@@ -180,12 +121,7 @@ class NKREKU_PAT(Algorithm):
                     exclusionListResource.append(res.split("!")[1]) 
                 elif "!" not in res:
                     additionListResource.append(res)
-        # If list is empty (no ! was found) then add empty str to list
-        if not exclusionListResource:
-            exclusionListResource.append("")
-        # If list is empty then add empty str to list
-        if not additionListResource:
-            additionListResource.append("")
+        
 
         for cells in saldoSheet[rangeIter]:
             for cell in cells:
@@ -218,59 +154,54 @@ class NKREKU_PAT(Algorithm):
                                 value = 0
                             valuesList.append(value)
                         
-                        willBeCalculated = False
+                        willBeCalculatedCategory = False
+                        willBeCalculatedResource = False
 
-                        # If just category or resource was specified without excluding
-                        # values. for example ["2019"] or ["ТЕ"]
-                        #if "!" not in whatCategory and "!" not in whatResource:
-                        # If both category and resource 
-                        # are not specified then add all values
-                        if not whatCategory and not whatResource:       
-                            willBeCalculated = True
-                        # If category is specified and resource aren`t
-                        elif whatCategory and not whatResource:
-                            if category in whatCategory:
-                                willBeCalculated = True
-                            if category not in exclusionListCategory:
-                                willBeCalculated = True
-                            if category in exclusionListCategory:
-                                willBeCalculated = False
-
-                        # If resource is specified and category aren`t
-                        elif whatResource and not whatCategory:
-                            if resource in whatResource:
-                                willBeCalculated = True
-                            if resource not in exclusionListResource:
-                                willBeCalculated = True
-                            if resource in exclusionListResource:
-                                willBeCalculated = False
-
-                        # If both are specified
-                        elif whatCategory and whatResource:
-                            if category in whatCategory and\
-                                    resource in whatResource:   
-                                willBeCalculated = True
-
-                            if category not in exclusionListCategory and\
-                                    resource not in exclusionListResource:
-                                willBeCalculated = True
-
-                            if category in exclusionListCategory:
-                                willBeCalculated = False
-
-                            if resource in exclusionListResource:
-                                willBeCalculated = False
-
-                        if willBeCalculated == True:
+                        willBeCalculatedCategory = makeDecision(
+                                    additionListCategory,
+                                    exclusionListCategory,
+                                    category)
+                        willBeCalculatedResource = makeDecision(
+                                    additionListResource,
+                                    exclusionListResource,
+                                    resource)
+                       
+                        if (willBeCalculatedCategory and 
+                            willBeCalculatedResource):
                             for i in range(0, len(valuesList)):
                                 returnValuesList[i] += valuesList[i]
-                        # If excluding values are in resource or category
-                        # For example ["!2019"] or ["!ТЕ"]
-                        #elif "!" in whatCategory or "!" in whatResource:
-
                     
                     return returnValuesList
 
-        # If no data waas found then return zeros
+        # If no data was found then return zeros
         returnValuesList = [0]*len(listOfColumns)
         return returnValuesList
+
+
+def makeDecision(addList: list, excudeList: list, value):
+    
+    boolValue = False
+
+    if (not addList and
+        not excudeList):
+
+        boolValue = True
+
+    elif (addList and
+        not excudeList and
+        value in addList):
+
+        boolValue = True
+
+    elif (not addList and
+        excudeList and
+        value not in excudeList):
+        
+        boolValue = True
+
+    elif (addList and
+        excudeList):
+
+        boolValue = True
+
+    return boolValue

@@ -24,6 +24,7 @@ if __name__ == "__main__":
     print("\t2 для ТКЕ_ПСО")
     print("\t3 для форм 1-8")
     print("\t4 для формы НКРЭКУ №2")
+    print("\t5 для формы НКРЭКУ ВТВ+НОРМ")
 
     while True:
         what = input()
