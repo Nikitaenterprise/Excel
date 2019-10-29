@@ -1,4 +1,5 @@
 ﻿import os
+import traceback
 
 from src.plan import FiscalPlan
 from src.tke import TKE
@@ -62,10 +63,8 @@ if __name__ == "__main__":
                 break
             else:
                 print("Неправильный ввод")
-        except Exception as e:
+        except Exception:
            print("Возникло необработанное исключение")
-           print(e)
+           print(traceback.format_exc())
     print("Программа завершила работу")
     input()
-
-

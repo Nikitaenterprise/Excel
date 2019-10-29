@@ -92,6 +92,7 @@ class PyWin(File):
         """
         if self.isOpened == True:
             self.wb.Close()
+            
             self.excelApp.Quit()
             self.isOpened = False
 

@@ -491,6 +491,7 @@ class TKE(Algorithm):
             kyivEnergoRow = dataFile.getFirstCellByCriteria("Київтеплоенерго " + \
                             "КП ВО Київради (КМДА)", "R").row
             ws = self.todayTKE.getWs("Sheet1")
+            wsData = dataFile.getWs()
 
             # Payment column value
             column=openpyxl.utils.column_index_from_string(str("AQ"))
@@ -500,9 +501,57 @@ class TKE(Algorithm):
             column1=openpyxl.utils.column_index_from_string(str("AF"))
             column2=openpyxl.utils.column_index_from_string(str("AD"))
             # Set the right value in cell with debt
-            ws.cell(column=column, row=kyivEnergoRow).value = \
-                            ws.cell(column=column1, row=kyivEnergoRow).value - \
-                            ws.cell(column=column2, row=kyivEnergoRow).value - money
+            ws.cell(column=column, row=kyivEnergoRow).value =\
+                            ws.cell(column=column1, 
+                                row=kyivEnergoRow).value -\
+                                    ws.cell(column=column2, 
+                                        row=kyivEnergoRow).value - money
+            wsData.cell(column=column, row=kyivEnergoRow).value =\
+                            ws.cell(column=column1, 
+                                row=kyivEnergoRow).value -\
+                                    ws.cell(column=column2, 
+                                        row=kyivEnergoRow).value - money
+            
+            columnAH = openpyxl.utils.column_index_from_string("AH")
+            columnAM = openpyxl.utils.column_index_from_string("AM")
+            # Reopen with pyWin for recalculate formula with debt
+            self.todayTKE.save(self.todayTKE.pathToFile, 
+                                "tmp", 
+                                extension=".xlsx")
+            tmpTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, 
+                                                "tmp.xlsx", returnFile=True, 
+                                                defaultParser=False, 
+                                                openBy=1)
+            tmpTKE.open()
+            tmpWs = tmpTKE.getWs("Sheet1")
+            value1 = tmpWs.Cells(kyivEnergoRow, columnAH).Value
+            value2 = tmpWs.Cells(kyivEnergoRow, columnAM).Value
+            tmpTKE.save(self.todayTKE.pathToFile, 
+                        "tmp", 
+                        conflictResolution=True)
+            tmpTKE.close()
+            self.mng.deleteFile(tmpTKE)
+            # Make right conditions
+            # If have >90% (no debt in column AH) and payed for 
+            # restructurization then set 1
+            # if other - set 0
+            columnAT = openpyxl.utils.column_index_from_string("AT")
+
+            if (value1 == 0 and
+                value2 != None and
+                value2 == "договір є"):
+                
+                wsData.cell(column=columnAT, 
+                            row=kyivEnergoRow).value = 1
+                ws.cell(column=columnAT, 
+                            row=kyivEnergoRow).value = 1
+            else:
+                wsData.cell(column=columnAT, 
+                            row=kyivEnergoRow).value = 0
+                ws.cell(column=columnAT, 
+                            row=kyivEnergoRow).value = 0
+
+
         except AttributeError:
             print(bcolors.WARNING +\
                 "Программа не смогла внести данные о задолженности Київтеплоенерго КП ВО"\

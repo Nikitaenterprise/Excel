@@ -57,34 +57,72 @@ class Decade(Algorithm):
                     raise AttributeError
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
-            msg = r"""Файлы, нужные для работы: 
+            msg = r"""Файлы, нужные для работы : 
             1. gpg... : за период 1 января - последняя декада
-                        (Менеджер отчетов\Диспетчерський газ\Використання природного газу... (2480bk))
-            2. Оборотно-сальдова вiдомiсть : за период 1 января - по декаду, категории населення, бюджет, 
-                                                                            релігійні організації, вічний вогонь
-                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
-            3. Оборотно-сальдова вiдомiсть последний месяц : 2gv за период 1 января - 30(31) число предыдущего месяца
-                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
-            4. Оборотно-сальдова вiдомiсть ТКЕ : 2gv за период 1 января - по декаду, категории ТЕ, БО, КП, РО, НС, ВТЕ
-                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
-            5. Оборотно-сальдова вiдомiсть пром : 2gv за период 1 января - по декаду, категория промисловість
-                        (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
-            6. ТКЕ : база Зубарева, за период 1 января - по декаду
-                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ТКЕ_2018-2019)
-            7. Промисловість_ : база Зубарева, за период 1 января - по декаду
-                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ПРОМ)
+                        (Менеджер отчетов\Диспетчерський газ\
+                            Використання природного газу... (2480bk))
+            2. Оборотно-сальдова вiдомiсть : 
+                                1 января - по декаду, 
+                                категории : населення, 
+                                            бюджет, 
+                                            релігійні організації, 
+                                            вічний вогонь
+                        (Менеджер отчетов\Стан розрахунків\
+                            Оборотно-сальдовая\
+                                Оборотно-сальдова відомість... (2gv))
+            3. Оборотно-сальдова вiдомiсть последний месяц : 
+                                1 января - 30(31) предыдущий месяц
+                        (Менеджер отчетов\Стан розрахунків\
+                            Оборотно-сальдовая\
+                                Оборотно-сальдова відомість... (2gv))
+            4. Оборотно-сальдова вiдомiсть ТКЕ : 
+                                1 января - по декаду, 
+                                категории : 
+                                            ТЕ,
+                                            БО, 
+                                            КП, 
+                                            РО, 
+                                            НС, 
+                                            ВТЕ
+                        (Менеджер отчетов\Стан розрахунків\
+                            Оборотно-сальдовая\
+                                Оборотно-сальдова відомість... (2gv))
+            5. Оборотно-сальдова вiдомiсть пром : 
+                                1 января - по декаду, 
+                                категория промисловість
+                        (Менеджер отчетов\Стан розрахунків\
+                            Оборотно-сальдовая\
+                                Оборотно-сальдова відомість... (2gv))
+            6. ТКЕ : база Зубарева, 
+                    1 января - по декаду
+                        (Менеджер отчетов\Стан розрахунків\
+                            Розрахунки_ТКЕ_2018-2019)
+            7. Промисловість_ : база Зубарева, 
+                    1 января - по декаду
+                        (Менеджер отчетов\Стан розрахунків\
+                            Розрахунки_ПРОМ)
 
-            Файлы, которые не надо загружать, но они должны быть в папке
+            Файлы, которые не надо загружать, 
+            но они должны быть в папке
             1. Декадка : пустой шаблон
-            2. ТКЕ начало года : база Зубарева, построенная на 1.01.2019
-                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ТКЕ_2018-2019)
-            3. Промисловість_ начало года : база Зубарева, построенная на 1.01.2019
-                        (Менеджер отчетов\Стан розрахунків\Розрахунки_ПРОМ)
-            4. ТКЕ ДК : база за 2010-2011 год, построена в 2018 году
-                        (Dept\Monitoring.Gas\4. Газ України\ДК Газ України.  База ТКЕ 2010-2011)
-            5. Промисловість_ ДК : база за 2010-2011 год, построена в 2018 году
-                        (Dept\Monitoring.Gas\4. Газ України\ДК Газ України. Промисловість)
-            После исправления запустите программу заново. Сейчас программа завершит работу
+            2. ТКЕ начало года : база Зубарева, 
+                                построена на 1.01.2019
+                        (Менеджер отчетов\Стан розрахунків\
+                            Розрахунки_ТКЕ_2018-2019)
+            3. Промисловість_ начало года : база Зубарева, 
+                                построена на 1.01.2019
+                        (Менеджер отчетов\Стан розрахунків\
+                            Розрахунки_ПРОМ)
+            4. ТКЕ ДК : база за 2010-2011 год, 
+                                построена в 2018 году
+                        (Dept\Monitoring.Gas\4. Газ України\
+                            ДК Газ України.  База ТКЕ 2010-2011)
+            5. Промисловість_ ДК : база за 2010-2011 год, 
+                                построена в 2018 году
+                        (Dept\Monitoring.Gas\4. Газ України\
+                            ДК Газ України. Промисловість)
+            После исправления запустите программу заново. 
+            Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
             print(bcolors.OKGREEN + msg + bcolors.ENDC)
@@ -130,6 +168,7 @@ class Decade(Algorithm):
         self.teploseti()
         self.promishlennost()
         self.forPresident()
+        self.generations()
         self.decade.save(self.decade.pathToFile, 
                             "На печать", extension=".xlsx")
         self.deleteFiles()
@@ -195,8 +234,10 @@ class Decade(Algorithm):
         self.tke.open(data_only=True)
         tkeWs = self.tke.getWs("База")
 
+        # Set range to max line -2 because of merged cell in the bottom
+        # of the sheet
         rangeIterInDecade = "A9" + ":" + "A" +\
-                                     str(decadeWsTeploseti.max_row)
+                                     str(decadeWsTeploseti.max_row-2)
         self.teplosetiIterInRegions(decadeWsTeploseti, tkePrevWs, 
                                     tkeWs, tkeDKWs, rangeIterInDecade)
 
@@ -215,8 +256,11 @@ class Decade(Algorithm):
         self.deleteCompanyData(self.prom, ["42399676"])
         self.prom.open(data_only=True)
         promWs = self.prom.getWs("База_2")
-
-        rangeIterInDecade = "A9" + ":" + "A" + str(decadeWsProm.max_row)
+        
+        # Set range to max line -2 because of merged cell in the bottom
+        # of the sheet
+        rangeIterInDecade = "A9" + ":" + "A" +\
+                                        str(decadeWsProm.max_row-2)
         self.promIterInRegions(decadeWsProm, promDKWs, 
                                 promWs, promPrevWs, rangeIterInDecade)
 
@@ -300,19 +344,71 @@ class Decade(Algorithm):
 
         columnWhereToWrite = openpyxl.utils.column_index_from_string("J")
         try:
-            decadeWsPivot.cell(column=columnWhereToWrite, row=13).value = naselenie / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, row=14).value = budget / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, row=15).value = TKE / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, row=16).value = prom / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, row=17).value = religion / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, 
+                                row=13).value = naselenie / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, 
+                                row=14).value = budget / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, 
+                                row=15).value = TKE / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, 
+                                row=16).value = prom / 1000
+            decadeWsPivot.cell(column=columnWhereToWrite, 
+                                row=19).value = religion / 1000
         except (UnboundLocalError, AttributeError):
             print("Не заполнен последний столбец во вкладке со сводной таблицей")
 
         return
 
-    def getTotalPaymentFromSaldo(self, decadeSheet, rangeIter, saldoSheet, whatCategory: list, inWhatColumnFind):
+    def generations(self):
+
+        self.decade.open(data_only=False)
+        decadeWs = self.decade.getWs("Зведена")
+        self.promPrev.open(data_only=True)
+        promLastWs = self.promPrev.getWs()
+        self.prom.open(data_only=True)
+        promWs = self.prom.getWs("База_2")
+
+        values = []
+        rangeIter = "C11" + ":" + "C" + str(promLastWs.max_row)
+        columnIG = openpyxl.utils.column_index_from_string("IG")
+
+        # Get cell with "Генерації" name in it. This cell is needed 
+        # for row number
+        cell = self.promPrev.getFirstCellByCriteria("Генерації", 
+                                                        rangeIter)
+        value = promLastWs.cell(column=columnIG, row=cell.row).value
+        values.append(value)
+
+        rangeIter = "H11" + ":" + "H" + str(promLastWs.max_row)
+        columnList = ["AB", "CX", "CY", "CZ", "DS", "DQ"]
+        columnNumber = []
+        for column in columnList:
+            columnNumber.append(openpyxl.utils.column_index_from_string(column))
+        # Get cell with "Генерації" name in it. This cell is needed 
+        # for row number
+        cell = self.prom.getFirstCellByCriteria("Генерації", 
+                                                        rangeIter,
+                                                        "База_2")
+        # Get data form columns "AB", "CX", "CY", "CZ", "DS", "DQ"
+        # from Промисловість_
+        for column in columnNumber:
+            value = promWs.cell(column=column, row=cell.row).value
+            values.append(value)
         
+        columnList = ["B", "C", "D", "E", "F", "H", "I"]
+        columnNumber = []
+        for column in columnList:
+            columnNumber.append(openpyxl.utils.column_index_from_string(column))
+        if len(values) != 7 or len(values) != len(columnNumber):
+            print("Возможны проблемы в заполнении сводной таблицы",
+                    "по категории 2.1. Генерації")
+        for column, value in zip(columnNumber, values):
+            decadeWs.cell(column=column, row=17).value = value / 1000
         
+
+    def getTotalPaymentFromSaldo(self, decadeSheet, rangeIter, 
+                    saldoSheet, whatCategory: list, inWhatColumnFind):
+            
         returnValue = 0
         for cells in decadeSheet[rangeIter]:
             for cell in cells:
@@ -667,7 +763,8 @@ class Decade(Algorithm):
                     decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = total / 1000
         return
 
-    def teplosetiIterInRegions(self, decadeSheet, tkePrevWs, tkeWs, tkeDKsheet, rangeIter):
+    def teplosetiIterInRegions(self, decadeSheet, tkePrevWs, 
+                                tkeWs, tkeDKsheet, rangeIter):
         """
         """
         for cells in decadeSheet[rangeIter]:
@@ -675,17 +772,24 @@ class Decade(Algorithm):
                 if cell.value != None:
                     region = cell.value
 
-                    listOfTwoValues = self.teplosetiColumnB(tkePrevWs, tkeDKsheet, region)
+                    listOfTwoValues = self.teplosetiColumnB(tkePrevWs, 
+                                                    tkeDKsheet, region)
                     # Get debt of NAK and tkeDK together
                     summOfTwoValues = listOfTwoValues[0] + listOfTwoValues[1]
-                    decadeSheet.cell(column=cell.column+1, row=cell.row).value = summOfTwoValues / 1000
+                    decadeSheet.cell(column=cell.column+1, 
+                            row=cell.row).value = summOfTwoValues / 1000
                                     
                     
-                    value1 = self.teplosetiColumnsFromCToF(tkeWs, region, "DI")
-                    decadeSheet.cell(column=cell.column+2, row=cell.row).value = value1 / 1000
+                    value1 = self.teplosetiColumnsFromCToF(tkeWs, 
+                                                        region, "DI")
+                    decadeSheet.cell(column=cell.column+2, 
+                            row=cell.row).value = value1 / 1000
                                     
-                    decadeSheet.cell(column=cell.column+3, row=cell.row).value = \
-                                    self.teplosetiColumnsFromCToF(tkeWs, region, "DJ") / 1000
+                    decadeSheet.cell(column=cell.column+3, 
+                            row=cell.row).value = \
+                            self.teplosetiColumnsFromCToF(tkeWs, 
+                                                            region,    
+                                                            "DJ") / 1000
                     
                     value2 = self.teplosetiColumnsFromCToF(tkeWs, region, "DK")
                     decadeSheet.cell(column=cell.column+4, row=cell.row).value = value2 / 1000
