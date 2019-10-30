@@ -61,54 +61,104 @@ class NKREKU_PAT_ZBUT_VTV_naselenie(Algorithm):
 
         self.template.open(data_only=False)
         templateWsNasel = self.template.getWs("Населення")
-        rangeIterNas = "B4" + ":" + "B" + str(templateWsNasel.max_row-1)
+        rangeIterNas = "B4" + ":" + "B" + str(templateWsNasel.max_row)
         columnWithDebt = openpyxl.utils.column_index_from_string("C")
+        summary = []
         for cells in templateWsNasel[rangeIterNas]:
             for cell in cells:
                 if (cell.value != None and
-                    cell.value != "Всього:" and
-                    cell.value != "Разом:"):
+                    cell.value != "Всього:"):
                     company = cell.value
                     data = findInSaldo(saldoWs,
                                         company,
                                         ["населення"],
                                         ["2018", "2019"],
                                         ["I", "T", "U"])
-                    templateWsNasel.cell(column=columnWithDebt, 
-                                        row=cell.row).value = data[2]
+                    summary.append(data)
+
                     if data[0] == 0:
                         percent = 0
                     elif data[0] != 0:
                         percent = data[1]/data[0] * 100
+                    self.write(templateWsNasel, 
+                                columnWithDebt,
+                                cell.row,
+                                data[2],
+                                percent)
+                
+                elif cell.value == "Всього:":
+                    data0, data1, data2 = 0, 0, 0
+                    for i in summary:
+                        data0 += i[0]
+                        data1 += i[1]
+                        data2 += i[2]
 
-                    templateWsNasel.cell(column=columnWithDebt+1, 
-                                        row=cell.row).value = percent
+                    if data0 == 0:
+                        percent = 0
+                    elif data0 != 0:
+                        percent = data1/data0 * 100
+                    self.write(templateWsNasel, 
+                                columnWithDebt,
+                                cell.row,
+                                data2,
+                                percent)
+
         
         templateWsVTV = self.template.getWs("ВТВ+НОРМ")
-        rangeIterVTV = "B4" + ":" + "B" + str(templateWsVTV.max_row-1)
+        rangeIterVTV = "B4" + ":" + "B" + str(templateWsVTV.max_row)
+        summary = []
         for cells in templateWsVTV[rangeIterVTV]:
             for cell in cells:
                 if (cell.value != None and
                     cell.value != "Всього:" and
                     cell.value != "Разом:"):
                     company = cell.value
+                    
                     data = findInSaldo(saldoWs,
                                         company,
                                         ["ВТВ + НОРМ"],
                                         None,
                                         ["U", "T", "G", "I"])
-                    templateWsVTV.cell(column=columnWithDebt, 
-                                        row=cell.row).value = data[0]
+                    summary.append(data)
+                    
                     if data[3] == 0:
                         percent = 0
                     elif data[3] != 0:
                         percent = (data[1] - data[2])/data[3] * 100
+                    self.write(templateWsVTV, 
+                                columnWithDebt,
+                                cell.row,
+                                data[0],
+                                percent)
+                
+                if cell.value == "Всього:":
+                    data0, data1, data2, data3 = 0, 0, 0, 0
+                    for i in summary:
+                        data0 += i[0]
+                        data1 += i[1]
+                        data2 += i[2]
+                        data3 += i[3]
+                        # Check for excluding negative percents
+                        if (data1 - data2) < 0:
+                            data3 = 0
 
-                    templateWsVTV.cell(column=columnWithDebt+1, 
-                                        row=cell.row).value = percent
+                    if data3 == 0:
+                        percent = 0
+                    elif data3 != 0:
+                        percent = (data1 - data2)/data3 * 100
+                    self.write(templateWsVTV, 
+                                columnWithDebt,
+                                cell.row,
+                                data0,
+                                percent)
                     
 
         self.template.save(self.template.pathToFile, 
                             "Население и ВТВ+НОРМ",
                             extension=".xlsx")
         self.deleteFiles()
+
+    def write(self, ws, column, row, debt, percent):
+        
+        ws.cell(column=column, row=row).value = debt
+        ws.cell(column=column+1, row=row).value = percent
