@@ -152,10 +152,10 @@ class Decade(Algorithm):
     def run(self):
         try:
             self.price = self.getPrice()
-            print("Прочитанная цена из файла равна", 
+            print("Прочитанная цена из файла : ", 
                     self.price, "грн за 1000 м3")
         except (FileNotFoundError, ArithmeticError):
-            print("Не правильно указана цена в файле Цена.txt или нет файла")
+            print("Неправильно указана цена в файле Цена.txt или нет файла")
             print("Заполните файл правильной ценой")
             print("Или же создайте файл (если его нет)")
             print("Исправьте проблему и перезапустите программу")
