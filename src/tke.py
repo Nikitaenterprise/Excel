@@ -621,3 +621,160 @@ class TKE(Algorithm):
         return fileName
 
 
+class TKELess(TKE):
+
+    def prepareTodayTkeFile(self):
+        
+        tmpTke = self.todayTKE
+        self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, 
+                                            self.todayTKE.fileName, 
+                                            returnFile=True, 
+                                            defaultParser=False, 
+                                            openBy=1)
+        self.todayTKE.open()
+        ws = self.todayTKE.getWs("Sheet1")
+
+        # Delete one row with numbers of column
+        ws.Rows(10).Delete()
+
+        # Translate column names with different contracts in numbers
+        columns = ["E", "G", "I", "K", "M", "N"]
+        columnList = []
+        for col in columns:
+            columnList.append(openpyxl.utils.column_index_from_string(col))
+        
+        numberOfDeletedCompanies = 0
+        for row in range(11, ws.UsedRange.Rows.Count):
+            # Move 1 row up because excel moves entire sheet up
+            # by number of deleted rows after deleting row
+            row -= numberOfDeletedCompanies
+            # Get data from columns
+            # the data is the contracts name
+            haveContract = True
+            # Check if this is a row with company
+            # and not the row with region
+            if ws.Cells(row, 3).Value != None:
+                for col in columnList:
+                    value = ws.Cells(row, col).Value
+                    
+                    # Check if there is at least one contract
+                    if value == None or value == "":
+                        haveContract = False
+                    else:
+                        haveContract = True
+                        break
+            
+            # If that company haven`t contract, then delete row with
+            # that company
+            if haveContract == False:
+                ws.Rows(row).Delete()
+                numberOfDeletedCompanies += 1
+
+        self.todayTKE.save(self.todayTKE.pathToFile, 
+                        self.todayTKE.fileNameWithoutExtension, 
+                        conflictResolution = True)
+        self.todayTKE.close()
+        self.mng.removeFile(self.todayTKE)
+        self.todayTKE = tmpTke
+        
+
+    def copyColumn(self):
+        """This is just copy of copyColumn from TKE class
+        with some changes highlited with "" coments
+        """
+        # Save to tmp variable today and yesterday TKE files
+        tmpTodayTKE = self.todayTKE
+        tmpYesterdayTKE = self.yesterdayTKE
+        # Opens today and yesterday TKE files with pyWin
+        self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, 
+                                                self.todayTKE.fileName, 
+                                                returnFile=True, 
+                                                defaultParser=False, 
+                                                openBy=1)
+        self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, 
+                                                    self.yesterdayTKE.fileName, 
+                                                    returnFile=True, 
+                                                    defaultParser=False, 
+                                                    openBy=1)
+        self.todayTKE.open()
+        self.yesterdayTKE.open()
+        # Set first sheet as active
+        todayWs = self.todayTKE.getWs("Sheet1")
+
+        """Here is the change of sheet name"""
+        yestWs = self.yesterdayTKE.getWs("ТКЕ1920")
+
+        # Incerts column left to "AS" column in today TKE 
+        self.todayTKE.insertColumn("AS")
+        # Looks through all rows in today TKE and compare values in "P"
+        # column (wich corresponds to company EDRPOU) and if values don`t match
+        # then it say`s that there is a new company in today TKE and it should 
+        # be copied to yesterday TKE
+        """Added defferent column name in yesterday TKE"""
+        columnP = openpyxl.utils.column_index_from_string("P")
+        columnQ = openpyxl.utils.column_index_from_string("Q")
+        numberOfCycles = 0
+        while True:
+            wasMismatch = False
+            for row in range(10, todayWs.UsedRange.Rows.Count):
+                value1 = todayWs.Cells(row, columnP).Value
+                value2 = yestWs.Cells(row, columnQ).Value
+                if value1 != value2:
+                    wasMismatch = True
+                    print(bcolors.OKGREEN +\
+                            "Внимание!!! Новое предприятие в списке:", 
+                            value1, todayWs.Cells(row, columnP+2).Value\
+                            + bcolors.ENDC)
+                    self.yesterdayTKE.insertRow(str(row))
+                    for column in range(2, yestWs.UsedRange.Columns.Count):
+                        # Copy row from today and paste it as values (without formulas) in
+                        # yesterday excel book
+                        todayWs.Range(str(openpyxl.utils.get_column_letter(column-1)) + str(row)).Copy()
+                        # Got this from https://docs.microsoft.com/en-us/office/vba/api/excel.xlpastetype
+                        # paste values
+                        xlPasteValues = -4163
+                        yestWs.Range(str(openpyxl.utils.get_column_letter(column)) + \
+                                    str(row)).PasteSpecial(Paste=xlPasteValues)
+                    # Copy 1 cell with condition from AT and paste it to AS
+                    """Renamed columns in yesterdayTKE"""
+                    yestWs.Range("AU" + str(row)).Copy()
+                    xlPasteValues = -4163
+                    yestWs.Range("AT" + str(row)).PasteSpecial(Paste=xlPasteValues)
+                    
+            if wasMismatch == False:
+                break
+            elif wasMismatch == True:
+                numberOfCycles += 1
+            if numberOfCycles > 5:
+                print(bcolors.WARNING +\
+                    "Внимание!!! Слишком много несовпадений предприятий со вчерашним днем"\
+                    + bcolors.ENDC)
+                print(bcolors.WARNING + "Возможна ошибка" + bcolors.ENDC)
+        
+        # Incerts column "AS" from yesterday TKE into today TKE
+        """Renamed columns in yesterdayTKE"""
+        yestWs.Range("AT1:AT2").EntireColumn.Copy()
+        todayWs.Paste(todayWs.Range("AS1:AS2"))
+        # Saves files with rewriting exsited files in directory
+        self.todayTKE.save(self.todayTKE.pathToFile, 
+                            self.todayTKE.fileNameWithoutExtension, 
+                            conflictResolution = True)
+        self.yesterdayTKE.save(self.yesterdayTKE.pathToFile, 
+                            self.yesterdayTKE.fileNameWithoutExtension, 
+                            conflictResolution = True)
+        # This somehow closes yesterday TKE also
+        self.todayTKE.close()
+        self.mng.removeUnCalledFiles()
+        # Returns tmp files to variables
+        self.todayTKE = tmpTodayTKE
+        self.yesterdayTKE = tmpYesterdayTKE
+    
+    def run(self):
+        self.prepareTodayTkeFile()
+        self.copyColumn()
+        self.mainCalculations()
+        name = self.generateName()
+        self.hideColumns()
+        self.todayTKE.save(self.todayTKE.pathToFile, 
+                            name, extension=".xls")
+        self.deleteFiles()

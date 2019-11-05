@@ -70,7 +70,7 @@ class PyWin(File):
         Keyword arguments:
         wsName -- name of worksheet.
         isActibeSheet -- If True then will return first 
-                sheet or active sheet (sheet that waws 
+                sheet or active sheet (sheet that was 
                 opened last time)
         """
         if self.isOpened == True:
@@ -480,10 +480,10 @@ class Manager:
         print("\n#----------#")
         for file in self.files:
             print("\tfile:")
-            print("\t\t", file.fileName)
-            print("\t\t", file.wasCalled)
-            print("\t\t", file.isOpened)
-            print("\t\t", file)
+            print("\t\t", "Name :", file.fileName)
+            print("\t\t", "wasCalled :", file.wasCalled)
+            print("\t\t", "isOpened :", file.isOpened)
+            print("\t\t", "File :", file)
         print("#----------#\n")
 
     def getFile(self, partOfNameOfFile, extension=".xls", exactMatch=False):
@@ -517,8 +517,8 @@ class Manager:
         for file in self.files:
             if file.wasCalled == False:
                 toRemove.append(file)
-                
-        for file in toRemove:
+        # Remove duplicates by set()    
+        for file in set(toRemove):
             self.removeFile(file)
 
     def deleteUnCalledFiles(self):
@@ -530,8 +530,8 @@ class Manager:
         for file in self.files:
             if file.wasCalled == False and file.shouldBeDeleted:
                 toDelete.append(file)
-        
-        for file in toDelete:
+        # Remove duplicates by set()
+        for file in set(toDelete):
             self.deleteFile(file)
 
     def deleteClosedFiles(self):
@@ -544,7 +544,8 @@ class Manager:
             if file.isOpened == False and file.shouldBeDeleted:
                 forDelete.append(file)
 
-        for file in forDelete:
+        # Remove duplicates by set()
+        for file in set(forDelete):
             self.deleteFile(file)
 
     def allFromXlsToXlsx(self):

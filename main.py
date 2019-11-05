@@ -2,7 +2,7 @@
 import traceback
 
 from src.plan import FiscalPlan
-from src.tke import TKE
+from src.tke import TKE, TKELess
 from src.decade import Decade
 from src.nkreku2 import NKREKU2
 from src.nkreku_pat import NKREKU_PAT
@@ -24,6 +24,7 @@ if __name__ == "__main__":
     print("Введите:")
     print("\t1 для фин-плана")
     print("\t2 для ТКЕ_ПСО")
+    print("\t20 для ТКЕ_ПСО без неработающих предприятий")
     print("\t3 для форм 1-8")
     print("\t4 для формы НКРЭКУ №2")
     print("\t5 для формы НКРЭКУ ПАТ(ВТВ+НОРМ) месячная")
@@ -41,6 +42,12 @@ if __name__ == "__main__":
                 break
             elif what == "2":
                 alg = TKE(r"TKE", 4)
+                alg.run()
+                print("Время выполнения :", alg.getTimeOfRun())
+                killProcess(0)
+                break
+            elif what == "20":
+                alg = TKELess(r"TKE", 4)
                 alg.run()
                 print("Время выполнения :", alg.getTimeOfRun())
                 killProcess(0)
