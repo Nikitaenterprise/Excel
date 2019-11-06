@@ -1,5 +1,6 @@
 ﻿import os
 import traceback
+import time
 
 from src.plan import FiscalPlan
 from src.tke import TKE, TKELess
@@ -33,6 +34,7 @@ if __name__ == "__main__":
     while True:
         what = input()
         killProcess(1)
+        time.sleep(1)
         try:
             if what == "1":
                 alg = FiscalPlan(r"FiscalPlan", 6)

@@ -325,9 +325,10 @@ class TKE(Algorithm):
         # be copied to yesterday TKE
         column = openpyxl.utils.column_index_from_string("P")
         numberOfCycles = 0
+        startRow = 10
         while True:
             wasMismatch = False
-            for row in range(10, todayWs.UsedRange.Rows.Count):
+            for row in range(startRow, todayWs.UsedRange.Rows.Count):
                 value1 = todayWs.Cells(row, column).Value
                 value2 = yestWs.Cells(row, column).Value
                 if value1 != value2:
@@ -350,7 +351,9 @@ class TKE(Algorithm):
                     yestWs.Range("AT" + str(row)).Copy()
                     xlPasteValues = -4163
                     yestWs.Range("AS" + str(row)).PasteSpecial(Paste=xlPasteValues)
-                    
+                    startRow = row
+                    break
+
             if wasMismatch == False:
                 break
             elif wasMismatch == True:
@@ -714,9 +717,10 @@ class TKELess(TKE):
         columnP = openpyxl.utils.column_index_from_string("P")
         columnQ = openpyxl.utils.column_index_from_string("Q")
         numberOfCycles = 0
+        startRow = 10
         while True:
             wasMismatch = False
-            for row in range(10, todayWs.UsedRange.Rows.Count):
+            for row in range(startRow, todayWs.UsedRange.Rows.Count):
                 value1 = todayWs.Cells(row, columnP).Value
                 value2 = yestWs.Cells(row, columnQ).Value
                 if value1 != value2:
@@ -740,7 +744,9 @@ class TKELess(TKE):
                     yestWs.Range("AU" + str(row)).Copy()
                     xlPasteValues = -4163
                     yestWs.Range("AT" + str(row)).PasteSpecial(Paste=xlPasteValues)
-                    
+                    startRow = row
+                    break
+                
             if wasMismatch == False:
                 break
             elif wasMismatch == True:
