@@ -156,24 +156,39 @@ class TKE(Algorithm):
         rangeAG = "AG10" + ":" + "AG" + str(numberOfRows)
         rangeAI = "AI10" + ":" + "AI" + str(numberOfRows)
         rangeAM = "AM10" + ":" + "AM" + str(numberOfRows)
-
+        columnR = openpyxl.utils.column_index_from_string("R")
         for cells in todayWsData[rangeAG]:
             for cellWithPercent in cells:
                 try:
                     # If percents are in between 89 and 90
-                    if cellWithPercent.value > 89 and cellWithPercent.value < 90:
-                        cellWithDebt = todayWsData.cell(column=cellWithPercent.column + 1, 
-                                                        row=cellWithPercent.row).value
+                    if (cellWithPercent.value > 89 and 
+                        cellWithPercent.value < 90):
+
+                        cellWithDebt = todayWsData.cell(
+                                    column=cellWithPercent.column + 1, 
+                                    row=cellWithPercent.row).value
+                        cellWithCompany = todayWsData.cell(
+                                    column=columnR, 
+                                    row=cellWithPercent.row).value
                         # If debt less than 1
-                        if cellWithDebt != None and cellWithDebt > 0 and cellWithDebt < 1:
-                            todayWsData.cell(column=cellWithPercent.column, 
-                                            row=cellWithPercent.row).value = 90
-                            todayWs.cell(column=cellWithPercent.column, 
-                                            row=cellWithPercent.row).value = 90
-                            todayWs.cell(column=columnWithConditions, 
-                                            row=cellWithPercent.row).value = 1
-                            todayWsData.cell(column=columnWithConditions, 
-                                            row=cellWithPercent.row).value = 1
+                        if (cellWithDebt != None and 
+                            cellWithDebt > 0 and 
+                            cellWithDebt < 1 and
+                            cellWithCompany != None and
+                            cellWithCompany != ""):
+
+                            todayWsData.cell(
+                                    column=cellWithPercent.column, 
+                                    row=cellWithPercent.row).value = 90
+                            todayWs.cell(
+                                    column=cellWithPercent.column, 
+                                    row=cellWithPercent.row).value = 90
+                            todayWs.cell(
+                                    column=columnWithConditions, 
+                                    row=cellWithPercent.row).value = 1
+                            todayWsData.cell(
+                                    column=columnWithConditions, 
+                                    row=cellWithPercent.row).value = 1
                     
                     # Set 1 to conditions column if payment >90%
                     # this need to be done because of situation when
@@ -182,8 +197,9 @@ class TKE(Algorithm):
                                             column=columnWithConditions, 
                                             row=cellWithPercent.row).value
                     if (cellWithPercent.value > 90 and 
-                            (cellWithConditions != None or
-                            cellWithConditions != "")):
+                        cellWithConditions != None and
+                        cellWithConditions != ""):
+                        
                         todayWs.cell(column=columnWithConditions, 
                                     row=cellWithPercent.row).value = 1
                         todayWsData.cell(column=columnWithConditions, 
@@ -716,122 +732,63 @@ class TKELess(TKE):
 
         # Incerts column left to "AS" column in today TKE 
         self.todayTKE.insertColumn("AS")
-
+        # Delete column "B" from yesterday
+        yestWs.Columns("B").Delete()
 
         yesterdayLenght = yestWs.UsedRange.Rows.Count
         todayLenght = todayWs.UsedRange.Rows.Count
-        yesterdayData = []
-        todayData = [] 
-
-        #if yesterdayLenght != todayLenght:
-
-        #elif yesterdayLenght == todayLenght:
-            
-
-        start = time.time()
-        columnEDRPOU = openpyxl.utils.column_index_from_string("P")
-        columnCompany = openpyxl.utils.column_index_from_string("R")
         limit = todayLenght if todayLenght > yesterdayLenght else yesterdayLenght
-        for row in range(10, limit):
-            yesterdayData.append([
-                            yestWs.Cells(row, columnEDRPOU).Value,
-                            yestWs.Cells(row, columnCompany).Value
-                            ])
-        for row in range(10, limit):
-            todayData.append([
-                            todayWs.Cells(row, columnEDRPOU).Value,
-                            todayWs.Cells(row, columnCompany).Value
-                            ])
-        todayData.append([None, None])
-        yesterdayData.append([None, None])
-        print("time1 =", time.time() - start)
-        start = time.time()
-        rowsInToday = []
-
-        for i in range(0, len(todayData)-1):
-            if todayData[i][0] != yesterdayData[i][0]:
-                if todayData[i+1][0] == yesterdayData[i][0]:
-                    # Company added
-                    yesterdayData.insert(i, todayData[i])
-
-                elif todayData[i][0] == yesterdayData[i+1][0]:
-                    # Company deleted
-                    yesterdayData.remove(yesterdayData[i])
-                
-                rowsInToday.append(i)
-                print(todayData[i][1], yesterdayData[i][1])
-                # else:
-                    
-                #     # Company deleted or moved
-                #     moved = False
-                #     for j in range(i, len(yesterdayData)):
-                #         # Company moved
-                #         if (yesterdayData[j][0] == todayData[i][0] and
-                #             yesterdayData[j][1] == todayData[i][1]):
-                #             tmp = yesterdayData[j]
-                #             yesterdayData.remove(yesterdayData[j])
-                #             yesterdayData.insert(i, tmp)
-                #             moved = True
-                #             break
-                #     # if moved == False:
-
-
-        print("time2 =", time.time() - start)
-
-            
-
         
         # Looks through all rows in today TKE and compare values in "P"
         # column (wich corresponds to company EDRPOU) and if values don`t match
         # then it say`s that there is a new company in today TKE and it should 
         # be copied to yesterday TKE
         """Added defferent column name in yesterday TKE"""
-        columnP = openpyxl.utils.column_index_from_string("P")
-        columnQ = openpyxl.utils.column_index_from_string("Q")
-        numberOfCycles = 0
-        startRow = 10
-        while True:
-            wasMismatch = False
-            for row in range(startRow, todayWs.UsedRange.Rows.Count):
-                value1 = todayWs.Cells(row, columnP).Value
-                value2 = yestWs.Cells(row, columnQ).Value
-                if value1 != value2:
-                    wasMismatch = True
+        columnEDRPOU = openpyxl.utils.column_index_from_string("P")
+        columnCompany = openpyxl.utils.column_index_from_string("R")
+        
+        for row in range(10, limit):            
+            if (todayWs.Cells(row, columnEDRPOU).Value != 
+                    yestWs.Cells(row, columnEDRPOU).Value):
+                if (todayWs.Cells(row+1, columnEDRPOU).Value == 
+                        yestWs.Cells(row, columnEDRPOU).Value):
+                    # Company added
                     print(bcolors.OKGREEN +\
-                            "Внимание!!! Новое предприятие в списке:", 
-                            value1, todayWs.Cells(row, columnP+2).Value\
+                            "Новое предприятие в списке:", 
+                            todayWs.Cells(row, columnCompany).Value\
                             + bcolors.ENDC)
                     self.yesterdayTKE.insertRow(str(row))
-                    for column in range(2, yestWs.UsedRange.Columns.Count):
-                        # Copy row from today and paste it as values (without formulas) in
-                        # yesterday excel book
-                        todayWs.Range(str(openpyxl.utils.get_column_letter(column-1)) + str(row)).Copy()
-                        # Got this from https://docs.microsoft.com/en-us/office/vba/api/excel.xlpastetype
+                    for column in range(1, yestWs.UsedRange.Columns.Count):
+                        # Copy row from today and paste it as 
+                        # values (without formulas) in yesterday 
+                        # excel book
+                        todayWs.Range(openpyxl.utils.get_column_letter(column)\
+                            + str(row)).Copy()
+                        # Got this from 
+                        # https://docs.microsoft.com/en-us/office/vba/api/excel.xlpastetype
                         # paste values
                         xlPasteValues = -4163
-                        yestWs.Range(str(openpyxl.utils.get_column_letter(column)) + \
+                        yestWs.Range(openpyxl.utils.get_column_letter(column) + \
                                     str(row)).PasteSpecial(Paste=xlPasteValues)
-                    # Copy 1 cell with condition from AT and paste it to AS
+                    # Copy 1 cell with condition from AT 
+                    # and paste it to AS
                     """Renamed columns in yesterdayTKE"""
-                    yestWs.Range("AU" + str(row)).Copy()
+                    yestWs.Range("AT" + str(row)).Copy()
                     xlPasteValues = -4163
-                    yestWs.Range("AT" + str(row)).PasteSpecial(Paste=xlPasteValues)
-                    startRow = row
-                    break
-                
-            if wasMismatch == False:
-                break
-            elif wasMismatch == True:
-                numberOfCycles += 1
-            if numberOfCycles > 5:
-                print(bcolors.WARNING +\
-                    "Внимание!!! Слишком много несовпадений предприятий со вчерашним днем"\
-                    + bcolors.ENDC)
-                print(bcolors.WARNING + "Возможна ошибка" + bcolors.ENDC)
+                    yestWs.Range("AS" + str(row)).PasteSpecial(Paste=xlPasteValues)
+
+                elif (todayWs.Cells(row, columnEDRPOU).Value == 
+                        yestWs.Cells(row+1, columnEDRPOU).Value):
+                    # Company deleted
+                    print(bcolors.OKGREEN +\
+                            "Предприятие исчезло из списка:", 
+                            yestWs.Cells(row, columnCompany).Value\
+                            + bcolors.ENDC)
+                    yestWs.Rows(row).Delete()
         
         # Incerts column "AS" from yesterday TKE into today TKE
         """Renamed columns in yesterdayTKE"""
-        yestWs.Range("AT1:AT2").EntireColumn.Copy()
+        yestWs.Range("AS1:AS2").EntireColumn.Copy()
         todayWs.Paste(todayWs.Range("AS1:AS2"))
         # Saves files with rewriting exsited files in directory
         self.todayTKE.save(self.todayTKE.pathToFile, 
