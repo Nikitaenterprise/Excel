@@ -303,15 +303,21 @@ class TKE(Algorithm):
         return
 
     def copyColumn(self):
-
+        
         # Save to tmp variable today and yesterday TKE files
         tmpTodayTKE = self.todayTKE
         tmpYesterdayTKE = self.yesterdayTKE
         # Opens today and yesterday TKE files with pyWin
         self.todayTKE = self.mng.addFileByPath(self.todayTKE.pathToFile, 
-                        self.todayTKE.fileName, returnFile=True, defaultParser=False, openBy=1)
+                                                self.todayTKE.fileName, 
+                                                returnFile=True, 
+                                                defaultParser=False, 
+                                                openBy=1)
         self.yesterdayTKE = self.mng.addFileByPath(self.yesterdayTKE.pathToFile, 
-                        self.yesterdayTKE.fileName, returnFile=True, defaultParser=False, openBy=1)
+                                            self.yesterdayTKE.fileName, 
+                                            returnFile=True, 
+                                            defaultParser=False, 
+                                            openBy=1)
         self.todayTKE.open()
         self.yesterdayTKE.open()
         # Set first sheet as active
@@ -685,6 +691,7 @@ class TKELess(TKE):
         """This is just copy of copyColumn from TKE class
         with some changes highlited with "" coments
         """
+
         # Save to tmp variable today and yesterday TKE files
         tmpTodayTKE = self.todayTKE
         tmpYesterdayTKE = self.yesterdayTKE
@@ -709,6 +716,71 @@ class TKELess(TKE):
 
         # Incerts column left to "AS" column in today TKE 
         self.todayTKE.insertColumn("AS")
+
+
+        yesterdayLenght = yestWs.UsedRange.Rows.Count
+        todayLenght = todayWs.UsedRange.Rows.Count
+        yesterdayData = []
+        todayData = [] 
+
+        #if yesterdayLenght != todayLenght:
+
+        #elif yesterdayLenght == todayLenght:
+            
+
+        start = time.time()
+        columnEDRPOU = openpyxl.utils.column_index_from_string("P")
+        columnCompany = openpyxl.utils.column_index_from_string("R")
+        limit = todayLenght if todayLenght > yesterdayLenght else yesterdayLenght
+        for row in range(10, limit):
+            yesterdayData.append([
+                            yestWs.Cells(row, columnEDRPOU).Value,
+                            yestWs.Cells(row, columnCompany).Value
+                            ])
+        for row in range(10, limit):
+            todayData.append([
+                            todayWs.Cells(row, columnEDRPOU).Value,
+                            todayWs.Cells(row, columnCompany).Value
+                            ])
+        todayData.append([None, None])
+        yesterdayData.append([None, None])
+        print("time1 =", time.time() - start)
+        start = time.time()
+        rowsInToday = []
+
+        for i in range(0, len(todayData)-1):
+            if todayData[i][0] != yesterdayData[i][0]:
+                if todayData[i+1][0] == yesterdayData[i][0]:
+                    # Company added
+                    yesterdayData.insert(i, todayData[i])
+
+                elif todayData[i][0] == yesterdayData[i+1][0]:
+                    # Company deleted
+                    yesterdayData.remove(yesterdayData[i])
+                
+                rowsInToday.append(i)
+                print(todayData[i][1], yesterdayData[i][1])
+                # else:
+                    
+                #     # Company deleted or moved
+                #     moved = False
+                #     for j in range(i, len(yesterdayData)):
+                #         # Company moved
+                #         if (yesterdayData[j][0] == todayData[i][0] and
+                #             yesterdayData[j][1] == todayData[i][1]):
+                #             tmp = yesterdayData[j]
+                #             yesterdayData.remove(yesterdayData[j])
+                #             yesterdayData.insert(i, tmp)
+                #             moved = True
+                #             break
+                #     # if moved == False:
+
+
+        print("time2 =", time.time() - start)
+
+            
+
+        
         # Looks through all rows in today TKE and compare values in "P"
         # column (wich corresponds to company EDRPOU) and if values don`t match
         # then it say`s that there is a new company in today TKE and it should 
