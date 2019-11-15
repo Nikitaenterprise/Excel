@@ -92,7 +92,7 @@ class NKREKU_PAT(Algorithm):
                     columnP = openpyxl.utils.column_index_from_string("P")
                     VTVWs.cell(column=columnP, row=cell.row).value = data[0]
                     
-        self.VTV.save(self.VTV.pathToFile, "НКРЕКП ВТВ+НОРМ", extension=".xlsx")
+        self.VTV.save(self.VTV.pathToFile, "Месячная ВТВ+НОРМ", extension=".xlsx")
 
         self.deleteFiles()
 
