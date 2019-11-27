@@ -56,6 +56,7 @@ class NKREKU2(Algorithm):
         if programmIsDone == True:
             try:
                 self.saldo.close()
+                self.saldoEE.close()
             except:
                 print(bcolors.WARNING +\
                     "Программа не смогла закрыть экселевские файлы"\
@@ -229,51 +230,4 @@ class NKREKU2(Algorithm):
             self.templateWs.cell(column=i, 
                                 row=startRow).value = j
         
-                
-
-    # def findInSaldoAllValues(self, saldoSheet, whatCategory: list, whatResource: list, whatColumn: str):
-    #     """
-    #     """
-    #     rangeIter = "A10" + ":" + "A" + str(saldoSheet.max_row)
-    #     columnCategory = openpyxl.utils.column_index_from_string("C")
-    #     columnResource = openpyxl.utils.column_index_from_string("F")
-    #     columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
-    #     returnValue = 0
-    #     for cells in saldoSheet[rangeIter]:
-    #         for cell in cells:
-                
-    #             category = saldoSheet.cell(column=columnCategory,
-    #                                     row=cell.row).value
-    #             # Transform int value of resource into str 2019 -> "2019"
-    #             resource = str(saldoSheet.cell(column=columnResource,
-    #                                     row=cell.row).value).strip()
-                
-    #             # Next row if this is name of company
-    #             if category == None and resource == "":
-    #                 continue
-
-    #             value = saldoSheet.cell(column=columnWithData,
-    #                                     row=cell.row).value
-    #             if value != None:
-    #                 # If both category and resource 
-    #                 # are not specified then add all values
-    #                 if not whatCategory and not whatResource:       
-    #                     returnValue += value
-    #                 # If category is specified and resource aren`t
-    #                 elif whatCategory and not whatResource:
-    #                     if category in whatCategory:
-    #                         returnValue += value
-    #                 # If resource is specified and category aren`t
-    #                 elif whatResource and not whatCategory:
-    #                     if resource in whatResource:
-    #                         returnValue += value
-    #                 # If both are specified
-    #                 elif whatCategory and whatResource:
-    #                     if category in whatCategory and resource in whatResource:
-    #                         returnValue += value
-    #     try:
-    #         returnValue
-    #     except UnboundLocalError:
-    #         returnValue = 0
-            
-    #     return returnValue
+    return
