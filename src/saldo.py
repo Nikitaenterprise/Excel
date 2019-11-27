@@ -4,7 +4,7 @@ import win32com.client
 def findInSaldo(saldoSheet, whatToFind: str, 
                 whatCategory: list, whatResource: list, 
                 whatColumns: list, inWhatColumnFind="A"):
-    """Search saldo excel sheet for company name of other 
+    """Search saldo excel sheet for company name or other 
     value equal to whatToFind in column inWhatColumnFind.
     Returns list with size of whatColumns list size.
 
@@ -164,7 +164,7 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
                                     row=cell.row).value).strip()
             
             # Next row if this is name of company
-            if category == None and resource == "":
+            if category == None and resource == "None":
                 continue
 
             # Get values from different columns

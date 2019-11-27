@@ -9,13 +9,21 @@ class NKREKU2(Algorithm):
         self.template = self.mng.getFile("Шаблон", extension=".xlsx")
         self.template.shouldBeDeleted = False
 
-        self.mng.getFile("Оборотно-сальдова вiдомiсть")
+        self.mng.getFile("Оборотно-сальдова вiдомiсть", exactMatch=True)
+        self.mng.getFile("Оборотно-сальдова вiдомiсть пром", exactMatch=True)
 
         self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
 
         try:
-            self.saldo = self.mng.getFile("Оборотно-сальдова вiдомiсть", extension=".xlsx")
+            self.saldo = self.mng.getFile(
+                                    "Оборотно-сальдова вiдомiсть",
+                                    extension=".xlsx", 
+                                    exactMatch=True)
+            self.saldoEE = self.mng.getFile(
+                                    "Оборотно-сальдова вiдомiсть пром", 
+                                    extension=".xlsx", 
+                                    exactMatch=True)
             
             if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
                 raise AttributeError
@@ -26,6 +34,11 @@ class NKREKU2(Algorithm):
                     даные заполняются из : Финансы\Движение денежных средств\Импорт платежей
             2. Оборотно-сальдова вiдомiсть : за предыдущий месяц (1 число месяца - последнее число месяца),
                     по категориям ТЕ, БО, КП, РО, НС, ВТЕ,
+                    без лимитов, без судовых решений, 
+                    без ВАТ и ЗБУТ (признак суб.(-) Усі ВАТ+ЗБУТ)
+                    (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
+            2. Оборотно-сальдова вiдомiсть пром : за предыдущий месяц (1 число месяца - последнее число месяца),
+                    по категориям промисловість,
                     без лимитов, без судовых решений, 
                     без ВАТ и ЗБУТ (признак суб.(-) Усі ВАТ+ЗБУТ)
                     (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
@@ -60,10 +73,13 @@ class NKREKU2(Algorithm):
         self.templateWs = self.template.getWs()
         self.saldo.open(data_only=True)
         self.saldoWs = self.saldo.getWs()
+        self.saldoEE.open(data_only=True)
+        self.saldoEEWs = self.saldoEE.getWs()
         
         isReady = self.checkIfFileIsReady()
         if isReady:
             self.columnFiller()
+            self.addEE()
             self.template.save(self.template.pathToFile, "НКРЕКП №2", extension=".xlsx")
         else:
             msg = r"""Заполните столбец L с названием :
@@ -85,15 +101,14 @@ class NKREKU2(Algorithm):
         self.template = self.mng.addFileByPath(
                                             self.template.pathToFile, 
                                             self.template.fileName,
-                                            returnFile=True
-                                            ) 
+                                            returnFile=True) 
         self.template.open(data_only=True)
         templateWs = self.template.getWs()
 
         columnL = openpyxl.utils.column_index_from_string("L")
         startRow = 48
         self.listOfValuesFromColumnL = []
-        for i in range(0, 4):
+        for i in range(0, 5):
             value = templateWs.cell(column=columnL, row=startRow+i).value
             self.listOfValuesFromColumnL.append(value)
 
@@ -128,9 +143,9 @@ class NKREKU2(Algorithm):
             toWrite = findInSaldoAllValues(self.saldoWs, 
                                             listOfCategories[i],
                                             None,
-                                            ["G", "H", "I", "L",])
-            # Multiply by 1000 because its already divided by 1000 
-            # in saldo excel data
+                                            ["G", "H", "I", "L"])
+            # Multiply by 1000 because "H" column 
+            # already divided by 1000 in saldo excel data
             toWrite[1] *= 1000
 
             for j in range(0, 4):
@@ -165,50 +180,100 @@ class NKREKU2(Algorithm):
 
         return
 
-        
-    def findInSaldoAllValues(self, saldoSheet, whatCategory: list, whatResource: list, whatColumn: str):
-        """
-        """
-        rangeIter = "A10" + ":" + "A" + str(saldoSheet.max_row)
-        columnCategory = openpyxl.utils.column_index_from_string("C")
-        columnResource = openpyxl.utils.column_index_from_string("F")
-        columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
-        returnValue = 0
-        for cells in saldoSheet[rangeIter]:
+    def addEE(self):
+        # Open saldo with prom and EE contracts 
+        # and delete all data except EE contacts
+        rangeIter = "A10" + ":" + "A" + str(self.saldoEEWs.max_row)
+        for cells in self.saldoEEWs[rangeIter]:
             for cell in cells:
-                
-                category = saldoSheet.cell(column=columnCategory,
-                                        row=cell.row).value
-                # Transform int value of resource into str 2019 -> "2019"
-                resource = str(saldoSheet.cell(column=columnResource,
-                                        row=cell.row).value).strip()
-                
-                # Next row if this is name of company
-                if category == None and resource == "":
-                    continue
+                if cell.value != None and "ЕЕ" not in cell.value:
+                    for i in range(1, self.saldoEEWs.max_column):
+                        self.saldoEEWs.cell(row=cell.row, 
+                                            column=i).value = None
+        
+        startRow = 52
+        
 
-                value = saldoSheet.cell(column=columnWithData,
-                                        row=cell.row).value
-                if value != None:
-                    # If both category and resource 
-                    # are not specified then add all values
-                    if not whatCategory and not whatResource:       
-                        returnValue += value
-                    # If category is specified and resource aren`t
-                    elif whatCategory and not whatResource:
-                        if category in whatCategory:
-                            returnValue += value
-                    # If resource is specified and category aren`t
-                    elif whatResource and not whatCategory:
-                        if resource in whatResource:
-                            returnValue += value
-                    # If both are specified
-                    elif whatCategory and whatResource:
-                        if category in whatCategory and resource in whatResource:
-                            returnValue += value
-        try:
-            returnValue
-        except UnboundLocalError:
-            returnValue = 0
+        columnToWriteList = ["E", "F", "G", "M", "N", "O", "Q"]
+        columnList = []
+        for column in columnToWriteList:
+            columnList.append(openpyxl.utils.column_index_from_string(column))
+
+        toWrite = findInSaldoAllValues(self.saldoEEWs,
+                                        None,
+                                        None,
+                                        ["G", "H", "I", "L"])
+        for i in range(0, 4):
+                toWrite[i] /= 1000
+        toWrite[1] *= 1000
+
+        toN = findInSaldoAllValues(self.saldoEEWs, 
+                                        None, 
+                                        None, 
+                                        ["T"])
+        
+        toN[0] -= (self.listOfValuesFromColumnL[4] - toWrite[3])*1000
+        toN[0] /= 1000
+                                        
+        toOandQ = findInSaldoAllValues(self.saldoEEWs, 
+                                        None, 
+                                        ["!2019"], 
+                                        ["T", "U"])
+        toOandQ[0] /= 1000
+        toOandQ[1] /= 1000
+        #toWrite.extend(toM)
+        toWrite.extend(toN)
+        toWrite.extend(toOandQ)
+
+        for i,j in zip(columnList, toWrite):
+            self.templateWs.cell(column=i, 
+                                row=startRow).value = j
+        
+                
+
+    # def findInSaldoAllValues(self, saldoSheet, whatCategory: list, whatResource: list, whatColumn: str):
+    #     """
+    #     """
+    #     rangeIter = "A10" + ":" + "A" + str(saldoSheet.max_row)
+    #     columnCategory = openpyxl.utils.column_index_from_string("C")
+    #     columnResource = openpyxl.utils.column_index_from_string("F")
+    #     columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
+    #     returnValue = 0
+    #     for cells in saldoSheet[rangeIter]:
+    #         for cell in cells:
+                
+    #             category = saldoSheet.cell(column=columnCategory,
+    #                                     row=cell.row).value
+    #             # Transform int value of resource into str 2019 -> "2019"
+    #             resource = str(saldoSheet.cell(column=columnResource,
+    #                                     row=cell.row).value).strip()
+                
+    #             # Next row if this is name of company
+    #             if category == None and resource == "":
+    #                 continue
+
+    #             value = saldoSheet.cell(column=columnWithData,
+    #                                     row=cell.row).value
+    #             if value != None:
+    #                 # If both category and resource 
+    #                 # are not specified then add all values
+    #                 if not whatCategory and not whatResource:       
+    #                     returnValue += value
+    #                 # If category is specified and resource aren`t
+    #                 elif whatCategory and not whatResource:
+    #                     if category in whatCategory:
+    #                         returnValue += value
+    #                 # If resource is specified and category aren`t
+    #                 elif whatResource and not whatCategory:
+    #                     if resource in whatResource:
+    #                         returnValue += value
+    #                 # If both are specified
+    #                 elif whatCategory and whatResource:
+    #                     if category in whatCategory and resource in whatResource:
+    #                         returnValue += value
+    #     try:
+    #         returnValue
+    #     except UnboundLocalError:
+    #         returnValue = 0
             
-        return returnValue
+    #     return returnValue

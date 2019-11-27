@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 killProcess(0)
                 break
             elif what == "4":
-                alg = NKREKU2(r"NKREKU2", 2)
+                alg = NKREKU2(r"NKREKU2", 3)
                 alg.run()
                 print("Время выполнения :", alg.getTimeOfRun())
                 killProcess(0)
