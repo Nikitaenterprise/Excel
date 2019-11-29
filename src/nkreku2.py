@@ -230,4 +230,4 @@ class NKREKU2(Algorithm):
             self.templateWs.cell(column=i, 
                                 row=startRow).value = j
         
-    return
+        return
