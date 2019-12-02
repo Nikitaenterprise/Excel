@@ -606,9 +606,9 @@ class TKE(Algorithm):
                             ws.cell(column=column2, row=garantRow).value
         except AttributeError:
             print(bcolors.WARNING + \
-                    "Программа не смогла внести данные" +\ 
-                    " о задолженности Гарант Енерго М ПП" +\
-                    bcolors.ENDC)
+                "Программа не смогла внести данные" + \
+                " о задолженности Гарант Енерго М ПП" + \
+                bcolors.ENDC)
 
     def hideColumns(self):
         
