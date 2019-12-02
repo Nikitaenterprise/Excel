@@ -526,16 +526,20 @@ class TKE(Algorithm):
             column1=openpyxl.utils.column_index_from_string(str("AF"))
             column2=openpyxl.utils.column_index_from_string(str("AD"))
             # Set the right value in cell with debt
+
+            realisation = ws.cell(column=column1, row=kyivEnergoRow).value
+            remainings = ws.cell(column=column2, row=kyivEnergoRow).value
+            
+            # Check for not None type
+            if realisation == None:
+                realisation = 0
+            if remainings == None:
+                remainings = 0
+            
             ws.cell(column=column, row=kyivEnergoRow).value =\
-                            ws.cell(column=column1, 
-                                row=kyivEnergoRow).value -\
-                                    ws.cell(column=column2, 
-                                        row=kyivEnergoRow).value - money
+                                    realisation - remainings - money
             wsData.cell(column=column, row=kyivEnergoRow).value =\
-                            ws.cell(column=column1, 
-                                row=kyivEnergoRow).value -\
-                                    ws.cell(column=column2, 
-                                        row=kyivEnergoRow).value - money
+                                    realisation - remainings - money
             
             columnAH = openpyxl.utils.column_index_from_string("AH")
             columnAM = openpyxl.utils.column_index_from_string("AM")
@@ -601,8 +605,10 @@ class TKE(Algorithm):
                             ws.cell(column=column1, row=garantRow).value - \
                             ws.cell(column=column2, row=garantRow).value
         except AttributeError:
-            print(bcolors.WARNING + "Программа не смогла внести данные о \
-                            задолженности Гарант Енерго М ПП" + bcolors.ENDC)
+            print(bcolors.WARNING + \
+                    "Программа не смогла внести данные" +\ 
+                    " о задолженности Гарант Енерго М ПП" +\
+                    bcolors.ENDC)
 
     def hideColumns(self):
         
