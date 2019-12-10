@@ -382,7 +382,7 @@ class Manager:
                         what class to use openpyxl or pyWin
                         if False then it should be specified in openBy 
                         variable
-        openBy -- if defaultParser is True then would be influence
+        openBy -- if defaultParser is True then would be passed
                         if defaultParser False then if:
                         openBy == 0 --> openpyxl
                         openBy == 1 --> pyWin

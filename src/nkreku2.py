@@ -9,8 +9,10 @@ class NKREKU2(Algorithm):
         self.template = self.mng.getFile("Шаблон", extension=".xlsx")
         self.template.shouldBeDeleted = False
 
-        self.mng.getFile("Оборотно-сальдова вiдомiсть", exactMatch=True)
-        self.mng.getFile("Оборотно-сальдова вiдомiсть пром", exactMatch=True)
+        self.mng.getFile("Оборотно-сальдова вiдомiсть", 
+                        exactMatch=True)
+        self.mng.getFile("Оборотно-сальдова вiдомiсть пром", 
+                        exactMatch=True)
 
         self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
@@ -30,19 +32,28 @@ class NKREKU2(Algorithm):
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
             msg = r"""Файлы, нужные для работы:
-            1. Шаблон... файл-форма отчетности НКРЭКУ №2 с заполненными данными в колонке L в строках 48(4.1)-51(4.4)
-                    даные заполняются из : Финансы\Движение денежных средств\Импорт платежей
-            2. Оборотно-сальдова вiдомiсть : за предыдущий месяц (1 число месяца - последнее число месяца),
+            1. Шаблон... файл-форма отчетности НКРЭКУ №2 с заполненными 
+                        данными в колонке L в строках 48(4.1)-51(4.4)
+                    даные заполняются из : 
+                    Финансы\Движение денежных средств\Импорт платежей
+            2. Оборотно-сальдова вiдомiсть : 
+                    за предыдущий месяц (1 - 30 числа),
                     по категориям ТЕ, БО, КП, РО, НС, ВТЕ,
                     без лимитов, без судовых решений, 
                     без ВАТ и ЗБУТ (признак суб.(-) Усі ВАТ+ЗБУТ)
-                    (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
-            2. Оборотно-сальдова вiдомiсть пром : за предыдущий месяц (1 число месяца - последнее число месяца),
+                    (Менеджер отчетов\Стан розрахунків\
+                        Оборотно-сальдовая\
+                            Оборотно-сальдова відомість... (2gv))
+            2. Оборотно-сальдова вiдомiсть пром : 
+                    за предыдущий месяц (1 - 30 числа),
                     по категориям промисловість,
                     без лимитов, без судовых решений, 
                     без ВАТ и ЗБУТ (признак суб.(-) Усі ВАТ+ЗБУТ)
-                    (Менеджер отчетов\Стан розрахунків\Оборотно-сальдовая\Оборотно-сальдова відомість... (2gv))
-            После исправления запустите программу заново. Сейчас программа завершит работу
+                    (Менеджер отчетов\Стан розрахунків\
+                        Оборотно-сальдовая\
+                            Оборотно-сальдова відомість... (2gv))
+            После исправления запустите программу заново. 
+            Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter
             """
             print(bcolors.OKGREEN + msg + bcolors.ENDC)
@@ -80,18 +91,28 @@ class NKREKU2(Algorithm):
         isReady = self.checkIfFileIsReady()
         if isReady:
             self.columnFiller()
+            # Add EE to calculation
+            # Will be added into "ТКЕ ЕЕ" row
             self.addEE()
-            self.template.save(self.template.pathToFile, "НКРЕКП №2", extension=".xlsx")
+            # Save file
+            self.saveData()
+
         else:
             msg = r"""Заполните столбец L с названием :
-            перераховано коштів на поточний рахунок із спеціальним режимом використання
-            Заполняется из : Финансы\Движение денежных средств\Импорт платежей
+                перераховано коштів на поточний рахунок із 
+                спеціальним режимом використання
+            в файле Шаблон.xlsx
+            Заполняется из : 
+                    Финансы\Движение денежных средств\Импорт платежей
             Фильтры:
-                    4.1 -> Ощадбанк ТКЕ-НАС
-                    4.2 -> Ощадбанк ТКЕ-РО
-                    4.3 -> Укргазбанк ТКЕ-БО
-                    4.4 -> Укргазбанк ПРЛ
-            После заполнения данных и сохранения файла запустите программу еще раз"""
+                    ТКЕ населення -> Ощадбанк ТКЕ-НАС
+                    ТКЕ релігія -> Ощадбанк ТКЕ-РО
+                    ТКЕ бюджет -> Укргазбанк ТКЕ-БО
+                    ТКЕ ВТЕ, НС, КП -> Укргазбанк ПРЛ
+                    ТКЕ ЕЕ -> Укргазбанк Генер ПКМУ-670-Р
+
+            После заполнения данных и сохранения файла 
+            запустите программу еще раз"""
             print(msg)
         
         return        
@@ -106,6 +127,8 @@ class NKREKU2(Algorithm):
         self.template.open(data_only=True)
         templateWs = self.template.getWs()
 
+        # Get values from pre-writed data in template xlsx
+        # from column L
         columnL = openpyxl.utils.column_index_from_string("L")
         startRow = 48
         self.listOfValuesFromColumnL = []
@@ -192,42 +215,83 @@ class NKREKU2(Algorithm):
                         self.saldoEEWs.cell(row=cell.row, 
                                             column=i).value = None
         
-        startRow = 52
-        
-
         columnToWriteList = ["E", "F", "G", "M", "N", "O", "Q"]
         columnList = []
         for column in columnToWriteList:
             columnList.append(openpyxl.utils.column_index_from_string(column))
 
+        # Get list of values (columns G, H, I, L) from saldo
         toWrite = findInSaldoAllValues(self.saldoEEWs,
                                         None,
                                         None,
                                         ["G", "H", "I", "L"])
+        
+        # Divide all values by 1000 except data from H 
         for i in range(0, 4):
                 toWrite[i] /= 1000
         toWrite[1] *= 1000
 
+        # Get data from T column from saldo. Result is a list
+        # with one element
         toN = findInSaldoAllValues(self.saldoEEWs, 
                                         None, 
                                         None, 
                                         ["T"])
-        
-        toN[0] -= (self.listOfValuesFromColumnL[4] - toWrite[3])*1000
+        # Subtract  
+        # data from column L and row 52 from template sheet
+        #             +
+        # data from saldo sheet column L
+        toN[0] -= (self.listOfValuesFromColumnL[4] + toWrite[3])*1000
         toN[0] /= 1000
-                                        
+        
+        # Get data from columns T and U from saldo, then divide by 1000
         toOandQ = findInSaldoAllValues(self.saldoEEWs, 
                                         None, 
                                         ["!2019"], 
                                         ["T", "U"])
         toOandQ[0] /= 1000
         toOandQ[1] /= 1000
-        #toWrite.extend(toM)
+        
         toWrite.extend(toN)
         toWrite.extend(toOandQ)
-
+        # Write values into template sheet
         for i,j in zip(columnList, toWrite):
             self.templateWs.cell(column=i, 
-                                row=startRow).value = j
+                                    row=52).value = j
         
-        return
+    def saveData(self):
+        """Save file with formulas and then reopen it for make 
+        it with numbers
+        """
+        saveName = "НКРЕКП №2 с формулами"
+        # Save file with formulas
+        self.template.save(self.template.pathToFile, 
+                                saveName, 
+                                extension=".xlsx")
+        # Open this file making it with values only
+        newFile = self.mng.addFileByPath(self.template.pathToFile,
+                                            saveName+".xlsx",
+                                            returnFile=True,
+                                            defaultParser=False,
+                                            openBy=1)
+        newFile.open()
+
+        # Copy and paste data as values
+        ws = newFile.getWs(isActiveSheet=True)
+        row = 53
+        ws.Rows(row).Copy()
+        xlPasteValues = -4163
+        ws.Rows(row).PasteSpecial(Paste=xlPasteValues)
+
+        # Delete 2 rows with "ТКЕ ВТЕ, НС, КП" and "ТКЕ ЕЕ"
+        deleteRows = [51, 51]   # rows 51 and 52 
+                                # but after first delete 
+                                # second row moves up
+        for row in deleteRows:
+            ws.Rows(row).Delete()
+
+        # Save file again
+        saveName = "НКРЕКП №2"
+        newFile.save(self.template.pathToFile, 
+                                saveName, 
+                                extension=".xlsx")

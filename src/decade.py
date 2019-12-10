@@ -288,17 +288,23 @@ class Decade(Algorithm):
         prom = 0
         
         naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs(
-                                                "Населення"),
-                                                rangeIterPAT,
-                                                saldoNasBudgRelWs,
-                                                ["населення"],
-                                                "A")
+                                    "Населення"),
+                                    rangeIterPAT,
+                                    saldoNasBudgRelWs,
+                                    [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ],
+                                    "A")
         naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs(
-                                                "Населення"),
-                                                rangeIterTOV,
-                                                saldoNasBudgRelWs,
-                                                ["населення"],
-                                                "A")
+                                    "Населення"),
+                                    rangeIterTOV,
+                                    saldoNasBudgRelWs,
+                                    [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ],
+                                    "A")
 
         budget += self.getTotalPaymentFromSaldo(self.decade.getWs(
                                                 "Бюджет"),
@@ -314,31 +320,35 @@ class Decade(Algorithm):
                                                 "A")
 
         religion += self.getTotalPaymentFromSaldo(self.decade.getWs(
-                                                "Релігія"),
-                                                rangeIterPAT,
-                                                saldoNasBudgRelWs,
-                                                ["релігійні організації", 
-                                                "вічний вогонь"],
-                                                "A")
+                                    "Релігія"),
+                                    rangeIterPAT,
+                                    saldoNasBudgRelWs,
+                                    [
+                                        "релігійні організації", 
+                                        "вічний вогонь"
+                                    ],
+                                    "A")
         religion += self.getTotalPaymentFromSaldo(self.decade.getWs(
-                                                "Релігія"),
-                                                rangeIterTOV,
-                                                saldoNasBudgRelWs,
-                                                ["релігійні організації", 
-                                                "вічний вогонь"],
-                                                "A")
+                                    "Релігія"),
+                                    rangeIterTOV,
+                                    saldoNasBudgRelWs,
+                                    [
+                                        "релігійні організації", 
+                                        "вічний вогонь"
+                                    ],
+                                    "A")
         
         column = openpyxl.utils.column_index_from_string("T")
         TKE = saldoTKEWs.cell(column=column, row=9).value
         
         prom = saldoPromWs.cell(column=column, row=9).value
         naftogazTrading = self.findInSaldo(
-                                            saldoSheet=saldoPromWs,
-                                            whatToFind='ТОВ "ГАЗОПОСТАЧАЛЬНА КОМПАНІЯ "НАФТОГАЗ ТРЕЙДИНГ"',
-                                            whatColumn="T",
-                                            whatCategory=None,
-                                            whatResource=None
-                                            )
+                            saldoSheet=saldoPromWs,
+                            whatToFind='ТОВ "ГАЗОПОСТАЧАЛЬНА КОМПАНІЯ "НАФТОГАЗ ТРЕЙДИНГ"',
+                            whatColumn="T",
+                            whatCategory=None,
+                            whatResource=None
+                            )
         if naftogazTrading != None:
             prom -= naftogazTrading
 
@@ -414,81 +424,173 @@ class Decade(Algorithm):
             for cell in cells:
                 if cell.value != None:
                     companyName = cell.value
-                    value = self.findInSaldo(saldoSheet, companyName, whatCategory, None, "T", inWhatColumnFind)
+                    value = self.findInSaldo(saldoSheet, companyName, 
+                                                whatCategory, None, 
+                                                "T", inWhatColumnFind)
                     if value != None:
                         returnValue += value
         return returnValue
 
     
-    def naselenieIterateInTOVandPAT(self, decadeSheet, saldoSheet, saldoLastMonthSheet, gasConsumtionSheet):
+    def naselenieIterateInTOVandPAT(self, decadeSheet, saldoSheet, 
+                            saldoLastMonthSheet, gasConsumtionSheet):
         """
         """
         numberOfRows = decadeSheet.max_row
         # Iterate in column with TOV companies
         rangeIter = "B7" + ":" + "B" + str(numberOfRows)
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["населення"], None, "G", "D")
+                                        [
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                        ], 
+                                        None, "G", "D")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["населення"], ["2018"], "U", "E")
+                                        [
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                        ], 
+                                        ["2018"], "U", "E")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["населення"], ["2019"], "T", "H")
+                                        [
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                        ], 
+                                        ["2019"], "T", "H")
         self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
-                    rangeIter, "J", ["населення"])
+                    rangeIter, "J", [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ])
         self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
-                    rangeIter, "J", ["населення"])
+                    rangeIter, "J", [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ])
         self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, ["населення"])
+        self.columnJ(decadeSheet, saldoSheet, rangeIter, 
+                                    [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ])
         
         # Iterate in column with PAT companies
         rangeIter = "C7" + ":" + "C" + str(numberOfRows)
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["населення"], None, "G", "D")
+                                        [
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                        ], 
+                                        None, "G", "D")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["населення"], ["2018"], "U", "E") 
+                                        [
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                        ], 
+                                        ["2018"], "U", "E") 
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["населення"], ["2019"], "T", "H")
+                                        [
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                        ], 
+                                        ["2019"], "T", "H")
         self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
-                    rangeIter, "J", ["населення"])
+                    rangeIter, "J", [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ])
         self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
-                    rangeIter, "J", ["населення"])
+                    rangeIter, "J", [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ])
         self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, ["населення"])
+        self.columnJ(decadeSheet, saldoSheet, rangeIter, 
+                                    [
+                                        "населення", 
+                                        "населення (газовий депозит)"
+                                    ])
 
         return
 
-    def religionIterateInTOVandPAT(self, decadeSheet, saldoSheet, saldoLastMonthSheet, gasConsumtionSheet):
+    def religionIterateInTOVandPAT(self, decadeSheet, saldoSheet, 
+                                saldoLastMonthSheet, gasConsumtionSheet):
         """
         """
         numberOfRows = decadeSheet.max_row
         # Iterate in column with TOV companies
         rangeIter = "B7" + ":" + "B" + str(numberOfRows)
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["релігійні організації", "вічний вогонь"], None, "G", "D")
+                                        [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ], 
+                                        None, "G", "D")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["релігійні організації", "вічний вогонь"], ["2018"], "U", "E")
+                                        [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ], 
+                                        ["2018"], "U", "E")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["релігійні організації", "вічний вогонь"], ["2019"], "T", "H")
+                                        [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ], 
+                                        ["2019"], "T", "H")
         self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
-                    rangeIter, "W", ["релігійні організації", "вічний вогонь"])
+                        rangeIter, "W", [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ])
         self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
-                    rangeIter, "W", ["релігійні організації", "вічний вогонь"])
+                        rangeIter, "W", [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ])
         self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, ["релігійні організації", "вічний вогонь"])
+        self.columnJ(decadeSheet, saldoSheet, 
+                        rangeIter, [
+                                        "релігійні організації", 
+                                        "вічний вогонь"
+                                    ])
         
         # Iterate in column with PAT companies
         rangeIter = "C7" + ":" + "C" + str(numberOfRows)
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["релігійні організації", "вічний вогонь"], None, "G", "D")
+                                        [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ], 
+                                        None, "G", "D")
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["релігійні організації", "вічний вогонь"], ["2018"], "U", "E") 
+                                        [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ], 
+                                        ["2018"], "U", "E") 
         self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
-                                        ["релігійні організації", "вічний вогонь"], ["2019"], "T", "H")
+                                        [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ], 
+                                        ["2019"], "T", "H")
         self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
-                    rangeIter, "W", ["релігійні організації", "вічний вогонь"])
+                        rangeIter, "W", [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ])
         self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
-                    rangeIter, "W", ["релігійні організації", "вічний вогонь"])
+                        rangeIter, "W", [
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                        ])
         self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, ["релігійні організації", "вічний вогонь"])
+        self.columnJ(decadeSheet, saldoSheet, 
+                        rangeIter, [
+                                        "релігійні організації", 
+                                        "вічний вогонь"
+                                    ])
 
         return
 
