@@ -8,12 +8,16 @@ import win32com.client
 
 from src.manager import *
 
+# Just for less writning
+columnIndexFromString = openpyxl.utils.column_index_from_string
+    
 class Algorithm():
     def __init__(self, dir, files):
         self.start_time = time.time()
         self.mng = Manager(os.path.abspath(dir))
         self.numberOfFilesToStart = files
         self.checkIfDirectoryIsReady(dir)
+    
 
     def checkIfDirectoryIsReady(self, path: str):
         pass
