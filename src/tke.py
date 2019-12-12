@@ -314,7 +314,8 @@ class TKE(Algorithm):
                         todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
-        self.garantMM(todayTkeWithData)
+        self.calculationOfDebtLikeGarantMM(todayTkeWithData, "Гарант Енерго М ПП")
+        self.calculationOfDebtLikeGarantMM(todayTkeWithData, "Нафтогаз Тепло ТОВ")
         todayTkeWithData.close()
         return
 
@@ -588,26 +589,28 @@ class TKE(Algorithm):
         
         return 
 
-    def garantMM(self, dataFile):
-        """Set right calculation of debt for garant energo MM
+    def calculationOfDebtLikeGarantMM(self, dataFile, companyName: str):
+        """Set right calculation of debt for company 
+        like for garant energo M
         Keyword arguments:
         dataFile -- TKE file
+        companyName -- name of company (example: "Гарант Енерго М ПП")
         """
         try:
-            garantRow = dataFile.getFirstCellByCriteria("Гарант Енерго М ПП", "R").row
+            garantRow = dataFile.getFirstCellByCriteria(companyName, "R").row
             ws = self.todayTKE.getWs("Sheet1")
             # For all contracts column value
-            column=openpyxl.utils.column_index_from_string(str("AE"))
-            column1=openpyxl.utils.column_index_from_string(str("AF"))
+            columnAE=openpyxl.utils.column_index_from_string(str("AE"))
+            columnAF=openpyxl.utils.column_index_from_string(str("AF"))
             # Payment column value
-            column2=openpyxl.utils.column_index_from_string(str("AQ"))
-            ws.cell(column=column, row=garantRow).value = \
-                            ws.cell(column=column1, row=garantRow).value - \
-                            ws.cell(column=column2, row=garantRow).value
+            columnAQ=openpyxl.utils.column_index_from_string(str("AQ"))
+            ws.cell(column=columnAE, row=garantRow).value = \
+                            ws.cell(column=columnAF, row=garantRow).value - \
+                            ws.cell(column=columnAQ, row=garantRow).value
         except AttributeError:
             print(bcolors.WARNING + \
-                "Программа не смогла внести данные" + \
-                " о задолженности Гарант Енерго М ПП" + \
+                "Программа не смогла внести данные о задолженности " + \
+                companyName + \
                 bcolors.ENDC)
 
     def hideColumns(self):
