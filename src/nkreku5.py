@@ -102,7 +102,7 @@ class NKREKU5(Algorithm):
         self.saldoThirdMonthWs = self.saldoThirdMonth.getWs()
         self.saldoTotal.open(data_only=True)
         self.saldoTotalWs = self.saldoTotal.getWs()
-        
+
         self.listWithSaldos = [self.saldoFirstMonth,
                                 self.saldoSecondMonth,
                                 self.saldoThirdMonth
@@ -113,7 +113,7 @@ class NKREKU5(Algorithm):
                                 ]
 
         self.section1()
-        #self.section2()
+        self.section2()
 
         self.template.save(self.template.pathToFile,
                             "НКРЕКП №5",
@@ -155,4 +155,46 @@ class NKREKU5(Algorithm):
                                     row=startRow+j).value = dataList[k]
 
 
-    #def section2(self):
+    def section2(self):
+        listOfCategories = [
+                            ["ТЕ теплоенергетика"], 
+                            ["БО теплоенергетика"], 
+                            ["РО теплоенергетика"], 
+                                [
+                                "НС теплоенергетика",
+                                "КП теплоенергетика", 
+                                "ВТЕ теплоенергетика"
+                                ],
+                            ["промисловість"]
+                            ]
+        columnList = [columnIndexFromString(x) for x in ["E", "F", 
+                                                         "G", "J", "H"]]
+        startRow = 61
+        for i in range(0, len(listOfCategories)):
+
+            dataFromSaldo = findInSaldoAllValues(self.saldoTotalWs,
+                                                listOfCategories[i],
+                                                None,
+                                                ["H", "I", "T", "U"])
+            forPreviousYears = findInSaldoAllValues(self.saldoTotalWs,
+                                                listOfCategories[i],
+                                                ["!2019"],
+                                                ["T"])
+
+            # Group data in one list for simplisity
+            # Data grouped in right order according 
+            # to columnList order
+            # also data is divided by 1000 except first one
+            dataFromSaldo[0] *= 1000
+            dataList = []
+            for element in dataFromSaldo:
+                dataList.append(element/1000)
+            for element in forPreviousYears:
+                dataList.append(element/1000)
+
+            # Iterate in columns in one row
+            for j in range(0, len(columnList)):
+                self.templateWs.cell(column=columnList[j], 
+                                    row=startRow+i).value = dataList[j]
+
+
