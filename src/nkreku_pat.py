@@ -5,7 +5,7 @@ class NKREKU_PAT(Algorithm):
     def checkIfDirectoryIsReady(self, path: str):
         self.mng.addFilesInDir()
 
-        self.VTV = self.mng.getFile("ВТВ", extension=".xlsx")
+        self.VTV = self.mng.getFile("Шаблон", extension=".xlsx")
         self.mng.getFile("Оборотно-сальдова вiдомiсть")
 
         self.mng.deleteUnCalledFiles()               
@@ -31,7 +31,7 @@ class NKREKU_PAT(Algorithm):
                             Оборотно-сальдовая\
                                 Оборотно-сальдова відомість... (2gv))
             Файлы, которые не надо загружать, но они должны быть в папке
-            1. ВТВ : пустой шаблон
+            1. Шаблон : пустой шаблон
             После исправления запустите программу заново. 
             Сейчас программа завершит работу
             Нажмите любую клавишу а затем Enter

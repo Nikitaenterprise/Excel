@@ -30,14 +30,11 @@ class NKREKU3(Algorithm):
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
             msg = r"""Файлы, нужные для работы:
-            1. Шаблон... файл-форма отчетности НКРЭКУ №2 с заполненными 
-                        данными в колонке L в строках 48(4.1)-51(4.4)
-                    даные заполняются из : 
-                    Финансы\Движение денежных средств\Импорт платежей
+            1. Шаблон... файл-форма отчетности НКРЭКУ №3
             2. Оборотно-сальдова вiдомiсть : 
                     за предыдущий месяц (1 - 30),
                     по категориям 
-                            ТЕ, РО
+                            ТЕ, РО, КП, БО, НС, ВТЕ
                     без лимитов, 
                     без судовых решений, 
                     без ВАТ и ЗБУТ (признак суб.(-) Усі ВАТ+ЗБУТ)
@@ -107,6 +104,7 @@ class NKREKU3(Algorithm):
                                             ["H", "I"])
             if tkeCategory[0] != 0 and tkeCategory[0] != None:
                 tkeCost = tkeCategory[1] / tkeCategory[0]
+                tkeCost = tkeCost / 1.2 - 157.19
             else:
                 tkeCost = 0
             costList.append(tkeCost)
@@ -125,20 +123,32 @@ class NKREKU3(Algorithm):
                     for i in range(1, self.saldoEEWs.max_column):
                         self.saldoEEWs.cell(row=cell.row, 
                                             column=i).value = None
-        
+        # Calculate other categories 
+        listOfCat = [
+                        "БО теплоенергетика",
+                        "КП теплоенергетика",
+                        "НС теплоенергетика",
+                        "ВТЕ теплоенергетика"
+                    ]
+        otherTke = findInSaldoAllValues(self.saldoWs,
+                                            listOfCat,
+                                            None,
+                                            ["H"])
+        # Calculate EE
         tkeEe = findInSaldoAllValues(self.saldoEEWs,
                                         None,
                                         None,
                                         ["H", "I"])
         if tkeEe[0] != 0 and tkeEe[0] != None:
             tkeEeCost = tkeEe[1] / tkeEe[0]
+            tkeEeCost = tkeEeCost / 1.2 - 157.19
         else:
             tkeEeCost = 0
         costList.append(tkeEeCost)
         self.templateWs.cell(column=columnD, 
-                                    row=startRow).value = tkeEe[0]
+                            row=startRow).value = tkeEe[0] + otherTke[0]
         self.templateWs.cell(column=columnE, 
-                                    row=startRow).value = tkeEeCost
+                            row=startRow).value = tkeEeCost
 
         for i in range(0, len(costList)-1):
             delta = costList[i+1] - costList[i]
