@@ -53,7 +53,7 @@ if __name__ == "__main__":
                 killProcess(0)
                 break
             elif what == "20":
-                alg = TKELess(r"TKE", 4)
+                alg = TKELess(r"TKE", 5)
                 alg.run()
                 print("Время выполнения :", alg.getTimeOfRun())
                 killProcess(0)

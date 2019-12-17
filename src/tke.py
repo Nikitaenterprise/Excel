@@ -9,6 +9,7 @@ class TKE(Algorithm):
         # Checks if the files are present
         self.mng.getFile("Новый отчет")
         self.mng.getFile("Киiвтеплоенерго")
+        self.mng.getFile("Оператор ГТС")
         self.mng.getFile("Звiт_Рестр")
         self.mng.getFile("90%ТКЕ_ПСО")
         # Deletes other files in dir
@@ -19,6 +20,7 @@ class TKE(Algorithm):
             self.todayTKE = self.mng.getFile("Новый отчет", extension=".xlsx")
             self.yesterdayTKE = self.mng.getFile("90%ТКЕ_ПСО", extension=".xlsx")
             self.kyivEnergoPas = self.mng.getFile("Киiвтеплоенерго", extension=".xlsx")
+            self.OperatorGtsPas = self.mng.getFile("Оператор ГТС", extension=".xlsx")
             self.restructurization1730 = self.mng.getFile("Звiт_Рестр", extension=".xlsx")
             
             if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
