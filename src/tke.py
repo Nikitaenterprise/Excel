@@ -20,7 +20,7 @@ class TKE(Algorithm):
             self.todayTKE = self.mng.getFile("Новый отчет", extension=".xlsx")
             self.yesterdayTKE = self.mng.getFile("90%ТКЕ_ПСО", extension=".xlsx")
             self.kyivEnergoPas = self.mng.getFile("Киiвтеплоенерго", extension=".xlsx")
-            self.OperatorGtsPas = self.mng.getFile("Оператор ГТС", extension=".xlsx")
+            self.operatorGtsPas = self.mng.getFile("Оператор ГТС", extension=".xlsx")
             self.restructurization1730 = self.mng.getFile("Звiт_Рестр", extension=".xlsx")
             
             if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
@@ -93,7 +93,7 @@ class TKE(Algorithm):
         for cells in todayWsData[rangeIter]:
             for cell in cells:
                 if cell.value != "" and cell.value != None:
-                    columnWithConditions = openpyxl.utils.column_index_from_string("AT")
+                    columnWithConditions = columnIndexFromString("AT")
                     # This check needs for empty cell not to be filled
                     if todayWsData.cell(column=columnWithConditions, row=cell.row).value != "":
                         todayWs.cell(column=columnWithConditions, row=cell.row).value = 1
@@ -102,7 +102,7 @@ class TKE(Algorithm):
                         # Call restructurization() for get debt
                         summary = self.restructurization(todayWsData, cell.column, cell.row)
 
-                        column = openpyxl.utils.column_index_from_string("AM")
+                        column = columnIndexFromString("AM")
                         if summary != None:
                             # If company have debt >0 then this summ will appear in
                             # column "AM"
@@ -131,9 +131,9 @@ class TKE(Algorithm):
                             ]
         # Iterate in EDRPOU column
         rangeIter = "P12" + ":" + "P" + str(numberOfRows)
-        columnWithPercents = openpyxl.utils.column_index_from_string("AG")
-        columnWithConditions = openpyxl.utils.column_index_from_string("AT")
-        columnBV = openpyxl.utils.column_index_from_string("BV")
+        columnWithPercents = columnIndexFromString("AG")
+        columnWithConditions = columnIndexFromString("AT")
+        columnBV = columnIndexFromString("BV")
         for cells in todayWsData[rangeIter]:
             for cell in cells:
                 if cell.value in listOfDerzhMaino:
@@ -158,7 +158,7 @@ class TKE(Algorithm):
         rangeAG = "AG10" + ":" + "AG" + str(numberOfRows)
         rangeAI = "AI10" + ":" + "AI" + str(numberOfRows)
         rangeAM = "AM10" + ":" + "AM" + str(numberOfRows)
-        columnR = openpyxl.utils.column_index_from_string("R")
+        columnR = columnIndexFromString("R")
         for cells in todayWsData[rangeAG]:
             for cellWithPercent in cells:
                 try:
@@ -234,7 +234,7 @@ class TKE(Algorithm):
         # Check the range
         list1 = todayTkeWithData.getListOfCellsByCriteria(0, "AS")  
         list2 = todayTkeWithData.getListOfCellsByCriteria(0, "AT")
-        columnPlan = openpyxl.utils.column_index_from_string("AU")
+        columnPlan = columnIndexFromString("AU")
 
         for cell1 in list1:
             if cell1.value == 0:
@@ -274,7 +274,7 @@ class TKE(Algorithm):
             listOtherProvider = content
 
         rangeIter = "R12" + ":" + "R" + str(numberOfRows)
-        columnPlan = openpyxl.utils.column_index_from_string("AU")
+        columnPlan = columnIndexFromString("AU")
         for cells in todayWsData[rangeIter]:
             for cell in cells:
                 if cell.value in listOtherProvider:
@@ -289,13 +289,13 @@ class TKE(Algorithm):
 
         # Find the difference between columns with 'план на декаду' and 'поточний лимит'
         for row in range(10, numberOfRows):
-            column = openpyxl.utils.column_index_from_string("AU")
+            column = columnIndexFromString("AU")
             cellValueCheck = todayWsData.cell(column=column, row=row).value
             if cellValueCheck == None:
                 continue
             else:
-                columnAS = openpyxl.utils.column_index_from_string("AS")
-                columnAT = openpyxl.utils.column_index_from_string("AT")
+                columnAS = columnIndexFromString("AS")
+                columnAT = columnIndexFromString("AT")
                 cellValueCheck1 = todayWsData.cell(column=columnAS, row=row).value
                 cellValueCheck2 = todayWsData.cell(column=columnAT, row=row).value
                 # Check fo cells not to be empty
@@ -304,7 +304,7 @@ class TKE(Algorithm):
                 elif cellValueCheck1 == None and cellValueCheck2 == None:
                     continue
                 else:
-                    column1 = openpyxl.utils.column_index_from_string("BO")
+                    column1 = columnIndexFromString("BO")
                     value1 = todayWsData.cell(column=column1, row=row).value
                     value2 = todayWsData.cell(column=column, row=row).value
                     try:
@@ -312,10 +312,11 @@ class TKE(Algorithm):
                     except TypeError:
                         continue
                     if dx > 1e-6 or dx < -1e-6:
-                        column = openpyxl.utils.column_index_from_string("BW")
+                        column = columnIndexFromString("BW")
                         todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
+        self.oeratorGtsMoney(todayTkeWithData)
         self.calculationOfDebtLikeGarantMM(todayTkeWithData, "Гарант Енерго М ПП")
         self.calculationOfDebtLikeGarantMM(todayTkeWithData, "Нафтогаз Тепло ТОВ")
         todayTkeWithData.close()
@@ -348,7 +349,7 @@ class TKE(Algorithm):
         # column (wich corresponds to company EDRPOU) and if values don`t match
         # then it say`s that there is a new company in today TKE and it should 
         # be copied to yesterday TKE
-        column = openpyxl.utils.column_index_from_string("P")
+        column = columnIndexFromString("P")
         numberOfCycles = 0
         startRow = 10
         while True:
@@ -426,8 +427,8 @@ class TKE(Algorithm):
                     "1730 не найдено предприятие с кодом ЕГРПОУ"\
                     + bcolors.ENDC, bcolors.OKGREEN + EGRPOU + bcolors.ENDC)
             return None
-        overpaymentColumn = openpyxl.utils.column_index_from_string("V")
-        debtColumn = openpyxl.utils.column_index_from_string("W")
+        overpaymentColumn = columnIndexFromString("V")
+        debtColumn = columnIndexFromString("W")
         overpayment = wsRestr.cell(column=overpaymentColumn, row=row).value
         debt = wsRestr.cell(column=debtColumn, row=row).value
         # Summary of debt (wich are positive values) and overpayment (negative value)
@@ -475,8 +476,6 @@ class TKE(Algorithm):
                     wsData.cell(column=cell.column - 1,
                             row=cell.row).value = restructNumber
         
-        
-
     def kyivEnergoMoney(self, dataFile):
         """Finds kyiv teplo energo money in their passport file
         Keyword arguments:
@@ -486,12 +485,12 @@ class TKE(Algorithm):
             self.kyivEnergoPas.open()
             kyivWs = self.kyivEnergoPas.getWs("Sheet1")
             
-            headerColumn = openpyxl.utils.column_index_from_string(str("A"))
-            contractColumn = openpyxl.utils.column_index_from_string(str("B"))
-            moneyColumn = openpyxl.utils.column_index_from_string(str("I"))
+            headerColumn = columnIndexFromString("A")
+            contractColumn = columnIndexFromString("B")
+            moneyColumn = columnIndexFromString("I")
             # Get list with cells with values "Період" in first column ("A")
             listOfHeaders = self.kyivEnergoPas.getListOfCellsByCriteria("Період", "A")
-            # Take row of second cell
+            # Take row of second intro of "Період"
             row = listOfHeaders[1].row
             # From that row iterate untill cell value would contain "рік" and
             # if column next to column "A" not contain "РЗ" in its contract then
@@ -522,12 +521,12 @@ class TKE(Algorithm):
             wsData = dataFile.getWs()
 
             # Payment column value
-            column=openpyxl.utils.column_index_from_string(str("AQ"))
+            column=columnIndexFromString("AQ")
             ws.cell(column=column, row=kyivEnergoRow).value = money
             # For all contracts column value
-            column=openpyxl.utils.column_index_from_string(str("AE"))
-            column1=openpyxl.utils.column_index_from_string(str("AF"))
-            column2=openpyxl.utils.column_index_from_string(str("AD"))
+            column=columnIndexFromString("AE")
+            column1=columnIndexFromString("AF")
+            column2=columnIndexFromString("AD")
             # Set the right value in cell with debt
 
             realisation = ws.cell(column=column1, row=kyivEnergoRow).value
@@ -544,8 +543,8 @@ class TKE(Algorithm):
             wsData.cell(column=column, row=kyivEnergoRow).value =\
                                     realisation - remainings - money
             
-            columnAH = openpyxl.utils.column_index_from_string("AH")
-            columnAM = openpyxl.utils.column_index_from_string("AM")
+            columnAH = columnIndexFromString("AH")
+            columnAM = columnIndexFromString("AM")
             # Reopen with pyWin for recalculate formula with debt
             self.todayTKE.save(self.todayTKE.pathToFile, 
                                 "tmp", 
@@ -567,7 +566,7 @@ class TKE(Algorithm):
             # If have >90% (no debt in column AH) and payed for 
             # restructurization then set 1
             # if other - set 0
-            columnAT = openpyxl.utils.column_index_from_string("AT")
+            columnAT = columnIndexFromString("AT")
 
             if (value1 == 0 and
                 value2 != None and
@@ -591,6 +590,112 @@ class TKE(Algorithm):
         
         return 
 
+    def oeratorGtsMoney(self, dataFile):
+        """Finds operator GTS money in passport file
+        Keyword arguments:
+        dataFile -- TKE file
+        """
+        try:
+            self.operatorGtsPas.open()
+            gtsWs = self.operatorGtsPas.getWs()
+
+            headerColumn = columnIndexFromString("A")
+            amountColumn = columnIndexFromString("G")
+            costColumn = columnIndexFromString("H")
+            paymentColumn = columnIndexFromString("I")
+            deptColumn = columnIndexFromString("J")
+
+            # Get list with cells with values "Період" in first column ("A")
+            listOfHeaders = self.operatorGtsPas.getListOfCellsByCriteria("Період", "A")
+            # Take row of second intro of "Період"
+            row = listOfHeaders[1].row
+            months = [
+                        "липень2019", 
+                        "серпень2019", 
+                        "вересень2019",
+                        "жовтень2019",
+                        "листопад2019",
+                        "грудень2019"
+                    ]
+            amount = 0
+            cost = 0
+            payment = 0
+            dept = 0
+            while True:
+                row += 1
+                header = gtsWs.cell(column=headerColumn, row=row).value
+                if header == "" or header == None:
+                    break
+                # Remove spaces because there are from 1 to 4 spaces
+                # between month and year (липень 2019 or липень   2019)
+                header = str(header).replace(" ", "")
+                if "рік" not in header:
+                    # For every date in list
+                    #for month in months:
+                    # If date in passport not equal to this date
+                    if header not in months:
+                        # Add all values from every column
+                        amount += gtsWs.cell(column=amountColumn, 
+                                            row=row).value
+                        cost += gtsWs.cell(column=costColumn, 
+                                            row=row).value
+                        payment += gtsWs.cell(column=paymentColumn, 
+                                            row=row).value
+                        dept += gtsWs.cell(column=deptColumn, 
+                                            row=row).value
+                    # But if date in passport is equal to that date
+                    elif header in months:
+                        # Then get payment from that row
+                        paymentData = gtsWs.cell(
+                                            column=paymentColumn, 
+                                            row=row).value
+                        # And if that payment is not 0
+                        if (paymentData != 0):
+                            # Then also add this value
+                            payment += paymentData
+
+            self.operatorGtsPas.close()
+
+        except:
+            print(bcolors.WARNING +\
+                'Программа не смогла посчитать' +\
+                    ' деньги Филии "Оператора ГТС" в паспорте' \
+                + bcolors.ENDC)
+
+        try:
+            # Finds cell with "Філія "Оператор ГТС України"" 
+            # using EDRPOU code
+            gtsRow = dataFile.getFirstCellByCriteria("41635376", "P").row
+            ws = self.todayTKE.getWs()
+            wsData = dataFile.getWs()
+
+            # Payment column value
+            columnAQ=columnIndexFromString("AQ")
+            ws.cell(column=columnAQ, row=gtsRow).value = payment
+            # For all contracts column value
+            columnAE=columnIndexFromString("AE")
+            columnAF=columnIndexFromString("AF")
+            columnAD=columnIndexFromString("AD")
+            # Set the right value in cell with debt
+            realisation = ws.cell(column=columnAF, row=gtsRow).value
+            remainings = ws.cell(column=columnAD, row=gtsRow).value
+            
+            # Check for not None type
+            if realisation == None:
+                realisation = 0
+            if remainings == None:
+                remainings = 0
+            
+            ws.cell(column=columnAE, row=gtsRow).value =\
+                                    realisation - remainings - payment
+            wsData.cell(column=columnAE, row=gtsRow).value =\
+                                    realisation - remainings - payment
+        except:
+            print(bcolors.WARNING +\
+                'Программа не смогла занести' +\
+                    ' деньги Филии "Оператора ГТС"' \
+                + bcolors.ENDC)
+
     def calculationOfDebtLikeGarantMM(self, dataFile, companyName: str):
         """Set right calculation of debt for company 
         like for garant energo M
@@ -602,10 +707,10 @@ class TKE(Algorithm):
             garantRow = dataFile.getFirstCellByCriteria(companyName, "R").row
             ws = self.todayTKE.getWs("Sheet1")
             # For all contracts column value
-            columnAE=openpyxl.utils.column_index_from_string(str("AE"))
-            columnAF=openpyxl.utils.column_index_from_string(str("AF"))
+            columnAE=columnIndexFromString("AE")
+            columnAF=columnIndexFromString("AF")
             # Payment column value
-            columnAQ=openpyxl.utils.column_index_from_string(str("AQ"))
+            columnAQ=columnIndexFromString("AQ")
             ws.cell(column=columnAE, row=garantRow).value = \
                             ws.cell(column=columnAF, row=garantRow).value - \
                             ws.cell(column=columnAQ, row=garantRow).value
@@ -677,7 +782,7 @@ class TKELess(TKE):
         columns = ["E", "G", "I", "K", "M", "N"]
         columnList = []
         for col in columns:
-            columnList.append(openpyxl.utils.column_index_from_string(col))
+            columnList.append(columnIndexFromString(col))
         
         numberOfDeletedCompanies = 0
         for row in range(11, ws.UsedRange.Rows.Count):
@@ -755,8 +860,8 @@ class TKELess(TKE):
         # then it say`s that there is a new company in today TKE and it should 
         # be copied to yesterday TKE
         """Added defferent column name in yesterday TKE"""
-        columnEDRPOU = openpyxl.utils.column_index_from_string("P")
-        columnCompany = openpyxl.utils.column_index_from_string("R")
+        columnEDRPOU = columnIndexFromString("P")
+        columnCompany = columnIndexFromString("R")
         
         for row in range(10, limit):            
             if (todayWs.Cells(row, columnEDRPOU).Value != 
