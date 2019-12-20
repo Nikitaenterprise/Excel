@@ -685,11 +685,15 @@ class TKE(Algorithm):
                 realisation = 0
             if remainings == None:
                 remainings = 0
-            
+
+            ws.cell(column=columnAD, row=gtsRow).value = 0
+            wsData.cell(column=columnAD, row=gtsRow).value = 0
             ws.cell(column=columnAE, row=gtsRow).value =\
-                                    realisation - remainings - payment
+                                                        cost - payment
             wsData.cell(column=columnAE, row=gtsRow).value =\
-                                    realisation - remainings - payment
+                                                        cost - payment
+            ws.cell(column=columnAF, row=gtsRow).value = cost
+            wsData.cell(column=columnAF, row=gtsRow).value = cost
         except:
             print(bcolors.WARNING +\
                 'Программа не смогла занести' +\
