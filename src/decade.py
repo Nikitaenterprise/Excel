@@ -6,9 +6,9 @@ class Decade(Algorithm):
         self.mng.addFilesInDir()
 
         # Checks if the files are present
-        self.decade = self.mng.getFile("Декадка", 
+        self.template = self.mng.getFile("Шаблон", 
                                         extension=".xlsx")
-        self.decade.shouldBeDeleted = False
+        self.template.shouldBeDeleted = False
         self.tkePrev = self.mng.getFile("ТКЕ начало года", 
                                         exactMatch=True, extension=".xlsx")
         self.tkePrev.shouldBeDeleted = False
@@ -63,16 +63,19 @@ class Decade(Algorithm):
                             Використання природного газу... (2480bk))
             2. Оборотно-сальдова вiдомiсть : 
                                 1 января - по декаду, 
-                                категории : населення,
+                                категории : 
+                                            населення,
                                             населення (газовий депозит), 
                                             бюджет, 
                                             релігійні організації, 
                                             вічний вогонь
+                                без лимитов
                         (Менеджер отчетов\Стан розрахунків\
                             Оборотно-сальдовая\
                                 Оборотно-сальдова відомість... (2gv))
             3. Оборотно-сальдова вiдомiсть последний месяц : 
                                 1 января - 30(31) предыдущий месяц
+                                без лимитов
                         (Менеджер отчетов\Стан розрахунків\
                             Оборотно-сальдовая\
                                 Оборотно-сальдова відомість... (2gv))
@@ -86,12 +89,14 @@ class Decade(Algorithm):
                                             РО, 
                                             НС, 
                                             ВТЕ
+                                без лимитов
                         (Менеджер отчетов\Стан розрахунків\
                             Оборотно-сальдовая\
                                 Оборотно-сальдова відомість... (2gv))
             5. Оборотно-сальдова вiдомiсть пром : 
                                 1 января - по декаду, 
                                 категория промисловість
+                                без лимитов
                         (Менеджер отчетов\Стан розрахунків\
                             Оборотно-сальдовая\
                                 Оборотно-сальдова відомість... (2gv))
@@ -106,7 +111,7 @@ class Decade(Algorithm):
 
             Файлы, которые не надо загружать, 
             но они должны быть в папке
-            1. Декадка : пустой шаблон
+            1. Шаблон : пустой шаблон
             2. ТКЕ начало года : база Зубарева, 
                                 построена на 1.01.2019
                         (Менеджер отчетов\Стан розрахунків\
@@ -171,7 +176,7 @@ class Decade(Algorithm):
         self.promishlennost()
         self.forPresident()
         self.generations()
-        self.decade.save(self.decade.pathToFile, 
+        self.template.save(self.template.pathToFile, 
                             "На печать", extension=".xlsx")
         self.deleteFiles()
 
@@ -179,8 +184,8 @@ class Decade(Algorithm):
 
     def naselenie(self):
         
-        self.decade.open(data_only=False)
-        decadeWsNas = self.decade.getWs("Населення")
+        self.template.open(data_only=False)
+        templateWsNas = self.template.getWs("Населення")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
         self.saldoLastMonth.open(data_only=True)
@@ -188,15 +193,15 @@ class Decade(Algorithm):
         self.gasConsumption.open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.naselenieIterateInTOVandPAT(decadeWsNas, saldoWs, 
+        self.naselenieIterateInTOVandPAT(templateWsNas, saldoWs, 
                                 saldoLastMonthWs, gasConsumptionWs)
 
         return
 
     def religion(self):
 
-        self.decade.open(data_only=False)
-        decadeWsReligion = self.decade.getWs("Релігія")
+        self.template.open(data_only=False)
+        templateWsReligion = self.template.getWs("Релігія")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
         self.saldoLastMonth.open(data_only=True)
@@ -204,15 +209,15 @@ class Decade(Algorithm):
         self.gasConsumption.open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.religionIterateInTOVandPAT(decadeWsReligion, saldoWs, 
+        self.religionIterateInTOVandPAT(templateWsReligion, saldoWs, 
                                 saldoLastMonthWs, gasConsumptionWs)
 
         return
 
     def budget(self):
 
-        self.decade.open(data_only=False)
-        decadeWsBudget = self.decade.getWs("Бюджет")
+        self.template.open(data_only=False)
+        templateWsBudget = self.template.getWs("Бюджет")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
         self.saldoLastMonth.open(data_only=True)
@@ -220,15 +225,15 @@ class Decade(Algorithm):
         self.gasConsumption.open(data_only=True)
         gasConsumptionWs = self.gasConsumption.getWs("За період")
 
-        self.budgetIterateInTOVandPAT(decadeWsBudget, saldoWs, 
+        self.budgetIterateInTOVandPAT(templateWsBudget, saldoWs, 
                                 saldoLastMonthWs, gasConsumptionWs)
 
         return
 
     def teploseti(self):
 
-        self.decade.open(data_only=False)
-        decadeWsTeploseti = self.decade.getWs("Тепломережі")
+        self.template.open(data_only=False)
+        templateWsTeploseti = self.template.getWs("Тепломережі")
         self.tkeDK.open(data_only=True)
         tkeDKWs = self.tkeDK.getWs()
         self.tkePrev.open(data_only=True)
@@ -238,17 +243,17 @@ class Decade(Algorithm):
 
         # Set range to max line -2 because of merged cell in the bottom
         # of the sheet
-        rangeIterInDecade = "A9" + ":" + "A" +\
-                                     str(decadeWsTeploseti.max_row-2)
-        self.teplosetiIterInRegions(decadeWsTeploseti, tkePrevWs, 
-                                    tkeWs, tkeDKWs, rangeIterInDecade)
+        rangeIterInTemplate = "A9" + ":" + "A" +\
+                                     str(templateWsTeploseti.max_row-2)
+        self.teplosetiIterInRegions(templateWsTeploseti, tkePrevWs, 
+                                    tkeWs, tkeDKWs, rangeIterInTemplate)
 
         return
 
     def promishlennost(self):
         
-        self.decade.open(data_only=False)
-        decadeWsProm = self.decade.getWs("Промисловість")
+        self.template.open(data_only=False)
+        templateWsProm = self.template.getWs("Промисловість")
         self.promDK.open(data_only=True)
         promDKWs = self.promDK.getWs()
         self.promPrev.open(data_only=True)
@@ -261,17 +266,17 @@ class Decade(Algorithm):
         
         # Set range to max line -2 because of merged cell in the bottom
         # of the sheet
-        rangeIterInDecade = "A9" + ":" + "A" +\
-                                        str(decadeWsProm.max_row-2)
-        self.promIterInRegions(decadeWsProm, promDKWs, 
-                                promWs, promPrevWs, rangeIterInDecade)
+        rangeIterInTemplate = "A9" + ":" + "A" +\
+                                        str(templateWsProm.max_row-2)
+        self.promIterInRegions(templateWsProm, promDKWs, 
+                                promWs, promPrevWs, rangeIterInTemplate)
 
         return
 
     def forPresident(self):
 
-        self.decade.open(data_only=False)
-        decadeWsPivot = self.decade.getWs("Зведена")
+        self.template.open(data_only=False)
+        templateWsPivot = self.template.getWs("Зведена")
         self.saldo.open(data_only=True)
         saldoNasBudgRelWs = self.saldo.getWs()
         self.saldoTKE.open(data_only=True)
@@ -279,7 +284,7 @@ class Decade(Algorithm):
         self.saldoProm.open(data_only=True)
         saldoPromWs = self.saldoProm.getWs()
 
-        numberOfRowsInPAT = self.decade.getWs("Населення").max_row
+        numberOfRowsInPAT = self.template.getWs("Населення").max_row
         rangeIterPAT = "B7" + ":" + "B" + str(numberOfRowsInPAT)
         rangeIterTOV = "C7" + ":" + "C" + str(numberOfRowsInPAT)
 
@@ -289,7 +294,7 @@ class Decade(Algorithm):
         TKE = 0
         prom = 0
         
-        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs(
+        naselenie += self.getTotalPaymentFromSaldo(self.template.getWs(
                                     "Населення"),
                                     rangeIterPAT,
                                     saldoNasBudgRelWs,
@@ -298,7 +303,7 @@ class Decade(Algorithm):
                                         "населення (газовий депозит)"
                                     ],
                                     "A")
-        naselenie += self.getTotalPaymentFromSaldo(self.decade.getWs(
+        naselenie += self.getTotalPaymentFromSaldo(self.template.getWs(
                                     "Населення"),
                                     rangeIterTOV,
                                     saldoNasBudgRelWs,
@@ -308,20 +313,20 @@ class Decade(Algorithm):
                                     ],
                                     "A")
 
-        budget += self.getTotalPaymentFromSaldo(self.decade.getWs(
+        budget += self.getTotalPaymentFromSaldo(self.template.getWs(
                                                 "Бюджет"),
                                                 rangeIterPAT,
                                                 saldoNasBudgRelWs,
                                                 ["бюджет"],
                                                 "A")
-        budget += self.getTotalPaymentFromSaldo(self.decade.getWs(
+        budget += self.getTotalPaymentFromSaldo(self.template.getWs(
                                                 "Бюджет"),
                                                 rangeIterTOV,
                                                 saldoNasBudgRelWs,
                                                 ["бюджет"],
                                                 "A")
 
-        religion += self.getTotalPaymentFromSaldo(self.decade.getWs(
+        religion += self.getTotalPaymentFromSaldo(self.template.getWs(
                                     "Релігія"),
                                     rangeIterPAT,
                                     saldoNasBudgRelWs,
@@ -330,7 +335,7 @@ class Decade(Algorithm):
                                         "вічний вогонь"
                                     ],
                                     "A")
-        religion += self.getTotalPaymentFromSaldo(self.decade.getWs(
+        religion += self.getTotalPaymentFromSaldo(self.template.getWs(
                                     "Релігія"),
                                     rangeIterTOV,
                                     saldoNasBudgRelWs,
@@ -340,7 +345,7 @@ class Decade(Algorithm):
                                     ],
                                     "A")
         
-        column = openpyxl.utils.column_index_from_string("T")
+        column = columnIndexFromString("T")
         TKE = saldoTKEWs.cell(column=column, row=9).value
         
         prom = saldoPromWs.cell(column=column, row=9).value
@@ -354,17 +359,17 @@ class Decade(Algorithm):
         if naftogazTrading != None:
             prom -= naftogazTrading
 
-        columnWhereToWrite = openpyxl.utils.column_index_from_string("J")
+        columnWhereToWrite = columnIndexFromString("J")
         try:
-            decadeWsPivot.cell(column=columnWhereToWrite, 
+            templateWsPivot.cell(column=columnWhereToWrite, 
                                 row=13).value = naselenie / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, 
+            templateWsPivot.cell(column=columnWhereToWrite, 
                                 row=14).value = budget / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, 
+            templateWsPivot.cell(column=columnWhereToWrite, 
                                 row=15).value = TKE / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, 
+            templateWsPivot.cell(column=columnWhereToWrite, 
                                 row=16).value = prom / 1000
-            decadeWsPivot.cell(column=columnWhereToWrite, 
+            templateWsPivot.cell(column=columnWhereToWrite, 
                                 row=19).value = religion / 1000
         except (UnboundLocalError, AttributeError):
             print("Не заполнен последний столбец во вкладке со сводной таблицей")
@@ -373,8 +378,8 @@ class Decade(Algorithm):
 
     def generations(self):
 
-        self.decade.open(data_only=False)
-        decadeWs = self.decade.getWs("Зведена")
+        self.template.open(data_only=False)
+        templateWsPivot = self.template.getWs("Зведена")
         self.promPrev.open(data_only=True)
         promLastWs = self.promPrev.getWs()
         self.prom.open(data_only=True)
@@ -382,7 +387,7 @@ class Decade(Algorithm):
 
         values = []
         rangeIter = "C11" + ":" + "C" + str(promLastWs.max_row)
-        columnIG = openpyxl.utils.column_index_from_string("IG")
+        columnIG = columnIndexFromString("IG")
 
         # Get cell with "Генерації" name in it. This cell is needed 
         # for row number
@@ -395,7 +400,7 @@ class Decade(Algorithm):
         columnList = ["AB", "CX", "CY", "CZ", "DS", "DQ"]
         columnNumber = []
         for column in columnList:
-            columnNumber.append(openpyxl.utils.column_index_from_string(column))
+            columnNumber.append(columnIndexFromString(column))
         # Get cell with "Генерації" name in it. This cell is needed 
         # for row number
         cell = self.prom.getFirstCellByCriteria("Генерації", 
@@ -410,19 +415,19 @@ class Decade(Algorithm):
         columnList = ["B", "C", "D", "E", "F", "H", "I"]
         columnNumber = []
         for column in columnList:
-            columnNumber.append(openpyxl.utils.column_index_from_string(column))
+            columnNumber.append(columnIndexFromString(column))
         if len(values) != 7 or len(values) != len(columnNumber):
             print("Возможны проблемы в заполнении сводной таблицы",
                     "по категории 2.1. Генерації")
         for column, value in zip(columnNumber, values):
-            decadeWs.cell(column=column, row=17).value = value / 1000
+            templateWsPivot.cell(column=column, row=17).value = value / 1000
         
 
-    def getTotalPaymentFromSaldo(self, decadeSheet, rangeIter, 
+    def getTotalPaymentFromSaldo(self, templateSheet, rangeIter, 
                     saldoSheet, whatCategory: list, inWhatColumnFind):
             
         returnValue = 0
-        for cells in decadeSheet[rangeIter]:
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     companyName = cell.value
@@ -434,43 +439,43 @@ class Decade(Algorithm):
         return returnValue
 
     
-    def naselenieIterateInTOVandPAT(self, decadeSheet, saldoSheet, 
+    def naselenieIterateInTOVandPAT(self, templateSheet, saldoSheet, 
                             saldoLastMonthSheet, gasConsumtionSheet):
         """
         """
-        numberOfRows = decadeSheet.max_row
+        numberOfRows = templateSheet.max_row
         # Iterate in column with TOV companies
         rangeIter = "B7" + ":" + "B" + str(numberOfRows)
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
                                         None, "G", "D")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
                                         ["2018"], "U", "E")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
                                         ["2019"], "T", "H")
-        self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
+        self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, "J", [
                                         "населення", 
                                         "населення (газовий депозит)"
                                     ])
-        self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
+        self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
                     rangeIter, "J", [
                                         "населення", 
                                         "населення (газовий депозит)"
                                     ])
-        self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, 
+        self.columnIandK(templateSheet, rangeIter)
+        self.columnJ(templateSheet, saldoSheet, rangeIter, 
                                     [
                                         "населення", 
                                         "населення (газовий депозит)"
@@ -478,36 +483,36 @@ class Decade(Algorithm):
         
         # Iterate in column with PAT companies
         rangeIter = "C7" + ":" + "C" + str(numberOfRows)
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
                                         None, "G", "D")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
                                         ["2018"], "U", "E") 
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
                                         ["2019"], "T", "H")
-        self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
+        self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, "J", [
                                         "населення", 
                                         "населення (газовий депозит)"
                                     ])
-        self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
+        self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
                     rangeIter, "J", [
                                         "населення", 
                                         "населення (газовий депозит)"
                                     ])
-        self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, 
+        self.columnIandK(templateSheet, rangeIter)
+        self.columnJ(templateSheet, saldoSheet, rangeIter, 
                                     [
                                         "населення", 
                                         "населення (газовий депозит)"
@@ -515,43 +520,43 @@ class Decade(Algorithm):
 
         return
 
-    def religionIterateInTOVandPAT(self, decadeSheet, saldoSheet, 
+    def religionIterateInTOVandPAT(self, templateSheet, saldoSheet, 
                                 saldoLastMonthSheet, gasConsumtionSheet):
         """
         """
-        numberOfRows = decadeSheet.max_row
+        numberOfRows = templateSheet.max_row
         # Iterate in column with TOV companies
         rangeIter = "B7" + ":" + "B" + str(numberOfRows)
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
                                         None, "G", "D")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
                                         ["2018"], "U", "E")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
                                         ["2019"], "T", "H")
-        self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
+        self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                         rangeIter, "W", [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ])
-        self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
+        self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
                         rangeIter, "W", [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ])
-        self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, 
+        self.columnIandK(templateSheet, rangeIter)
+        self.columnJ(templateSheet, saldoSheet, 
                         rangeIter, [
                                         "релігійні організації", 
                                         "вічний вогонь"
@@ -559,36 +564,36 @@ class Decade(Algorithm):
         
         # Iterate in column with PAT companies
         rangeIter = "C7" + ":" + "C" + str(numberOfRows)
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
                                         None, "G", "D")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
                                         ["2018"], "U", "E") 
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
                                         ["2019"], "T", "H")
-        self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
+        self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                         rangeIter, "W", [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ])
-        self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
+        self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
                         rangeIter, "W", [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ])
-        self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, 
+        self.columnIandK(templateSheet, rangeIter)
+        self.columnJ(templateSheet, saldoSheet, 
                         rangeIter, [
                                         "релігійні організації", 
                                         "вічний вогонь"
@@ -596,49 +601,50 @@ class Decade(Algorithm):
 
         return
 
-    def budgetIterateInTOVandPAT(self, decadeSheet, saldoSheet, saldoLastMonthSheet, gasConsumtionSheet):
+    def budgetIterateInTOVandPAT(self, templateSheet, saldoSheet, 
+                            saldoLastMonthSheet, gasConsumtionSheet):
         """
         """
-        numberOfRows = decadeSheet.max_row
+        numberOfRows = templateSheet.max_row
         # Iterate in column with TOV companies
         rangeIter = "B7" + ":" + "B" + str(numberOfRows)
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], None, "G", "D")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], ["2018"], "U", "E")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], ["2019"], "T", "H")
-        self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
+        self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, None, ["бюджет"])
-        self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
+        self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
                     rangeIter, None, ["бюджет"])
-        self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, ["бюджет"])
+        self.columnIandK(templateSheet, rangeIter)
+        self.columnJ(templateSheet, saldoSheet, rangeIter, ["бюджет"])
         
         # Iterate in column with PAT companies
         rangeIter = "C7" + ":" + "C" + str(numberOfRows)
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], None, "G", "D")
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], ["2018"], "U", "E") 
-        self.findInSaldoWriteToDecade(decadeSheet, saldoSheet, rangeIter,
+        self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], ["2019"], "T", "H")
-        self.columnF(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet, 
+        self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, None, ["бюджет"])
-        self.columnG(decadeSheet, saldoLastMonthSheet, gasConsumtionSheet,
+        self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
                     rangeIter, None, ["бюджет"])
-        self.columnIandK(decadeSheet, rangeIter)
-        self.columnJ(decadeSheet, saldoSheet, rangeIter, ["бюджет"])
+        self.columnIandK(templateSheet, rangeIter)
+        self.columnJ(templateSheet, saldoSheet, rangeIter, ["бюджет"])
 
         return
         
-    def findInSaldoWriteToDecade(self, decadeSheet, saldoSheet, rangeIter, 
+    def findInSaldoWriteToTemplate(self, templateSheet, saldoSheet, rangeIter, 
                                     whatCategory: list, whatResource: list, 
                                     whatColumn: str, whereToPut: str):
         """
         """
-        columnWhereToPut = openpyxl.utils.column_index_from_string(whereToPut)
-        for cells in decadeSheet[rangeIter]:
+        columnWhereToPut = columnIndexFromString(whereToPut)
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     companyName = cell.value
@@ -648,7 +654,7 @@ class Decade(Algorithm):
                                             whatResource=whatResource,
                                             whatColumn=whatColumn)
                     if value != None:
-                        decadeSheet.cell(column=columnWhereToPut, 
+                        templateSheet.cell(column=columnWhereToPut, 
                                         row=cell.row).value = value / 1000
         return
 
@@ -658,9 +664,9 @@ class Decade(Algorithm):
         """
         numberOfRows = saldoSheet.max_row
         rangeIter = inWhatColumnFind + "10" + ":" + inWhatColumnFind + str(numberOfRows)
-        columnCategory = openpyxl.utils.column_index_from_string("C")
-        columnResource = openpyxl.utils.column_index_from_string("F")
-        columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
+        columnCategory = columnIndexFromString("C")
+        columnResource = columnIndexFromString("F")
+        columnWithData = columnIndexFromString(whatColumn)
         for cells in saldoSheet[rangeIter]:
             for cell in cells:
                 # If company name equals to what to find variable
@@ -711,17 +717,17 @@ class Decade(Algorithm):
         
         return
         
-    def columnF(self, decadeSheet, saldoSheet, gasConsumptionSheet, 
+    def columnF(self, templateSheet, saldoSheet, gasConsumptionSheet, 
                 rangeIter: str, whatColumnInConsumption: str, whatCategory: list):
         """
         """
-        columnWhereToPut = openpyxl.utils.column_index_from_string("F")
-        for cells in decadeSheet[rangeIter]:
+        columnWhereToPut = columnIndexFromString("F")
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     companyName = cell.value
 
-                    # Working with F column in decade sheet
+                    # Working with F column in template sheet
                     if whatColumnInConsumption != None:
                         valueFromGasConsumption = self.findInGasConsumption(gasConsumptionSheet, 
                                                                 whatToFind=companyName,
@@ -740,20 +746,20 @@ class Decade(Algorithm):
                         valueFromSaldoLastMonth = 0
 
                     summary = valueFromGasConsumption + valueFromSaldoLastMonth
-                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary / 1000
+                    templateSheet.cell(column=columnWhereToPut, row=cell.row).value = summary / 1000
         return
 
-    def columnG(self, decadeSheet, saldoSheet, gasConsumptionSheet,
+    def columnG(self, templateSheet, saldoSheet, gasConsumptionSheet,
                 rangeIter: str, whatColumnInConsumption: str, whatCategory: list):
         """
         """
-        columnWhereToPut = openpyxl.utils.column_index_from_string("G")
-        for cells in decadeSheet[rangeIter]:
+        columnWhereToPut = columnIndexFromString("G")
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     companyName = cell.value
 
-                    # Working with G column in decade sheet
+                    # Working with G column in template sheet
                     if whatColumnInConsumption != None:
                         valueFromGasConsumption = self.findInGasConsumption(gasConsumptionSheet, 
                                                                 whatToFind=companyName,
@@ -773,14 +779,14 @@ class Decade(Algorithm):
 
                     summary = valueFromGasConsumption / 1000 *\
                             self.price + valueFromSaldoLastMonth / 1000 
-                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = summary
+                    templateSheet.cell(column=columnWhereToPut, row=cell.row).value = summary
         return
 
 
     def findInGasConsumption(self, gasConsumptionSheet, whatToFind: str, whatColumn: str):
         """
         """
-        columnWithData = openpyxl.utils.column_index_from_string(whatColumn)
+        columnWithData = columnIndexFromString(whatColumn)
         numberOfRows = gasConsumptionSheet.max_row
         rangeIter = "B13" + ":" + "B" + str(numberOfRows)
         for cells in gasConsumptionSheet[rangeIter]:
@@ -794,54 +800,55 @@ class Decade(Algorithm):
                         return 0
         return 0
 
-    def columnIandK(self, decadeSheet, rangeIter):
+    def columnIandK(self, templateSheet, rangeIter):
         """
         """
-        columnWithPercent = openpyxl.utils.column_index_from_string("I")
-        columnWithDebt = openpyxl.utils.column_index_from_string("K")
-        columnPaymentForConsumedGas = openpyxl.utils.column_index_from_string("H")
-        columnAmountConsumedGas = openpyxl.utils.column_index_from_string("G")
-        for cells in decadeSheet[rangeIter]:
+        columnWithPercent = columnIndexFromString("I")
+        columnWithDebt = columnIndexFromString("K")
+        columnPaymentForConsumedGas = columnIndexFromString("H")
+        columnAmountConsumedGas = columnIndexFromString("G")
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     # Find in Декадка numbers in columns H, G with value that were divided by 1000
                     # thats why they should be multiplied by 1000
-                    paymentForConsumedGas = decadeSheet.cell(column=columnPaymentForConsumedGas, 
+                    paymentForConsumedGas = templateSheet.cell(column=columnPaymentForConsumedGas, 
                                             row=cell.row).value * 1000
-                    amountConsumedGas = decadeSheet.cell(column=columnAmountConsumedGas, 
+                    amountConsumedGas = templateSheet.cell(column=columnAmountConsumedGas, 
                                             row=cell.row).value * 1000
                     
-                    # Fill column I in decade
+                    # Fill column I in template
                     if amountConsumedGas == 0:
-                        decadeSheet.cell(column=columnWithPercent, 
+                        templateSheet.cell(column=columnWithPercent, 
                                             row=cell.row).value = 0
                     elif amountConsumedGas != 0:
-                        decadeSheet.cell(column=columnWithPercent, 
+                        templateSheet.cell(column=columnWithPercent, 
                                             row=cell.row).value = \
                                             paymentForConsumedGas / amountConsumedGas * 100
 
-                    # Fill column K in decade
-                    decadeSheet.cell(column=columnWithDebt, 
+                    # Fill column K in template
+                    templateSheet.cell(column=columnWithDebt, 
                                             row=cell.row).value = (amountConsumedGas - paymentForConsumedGas) / 1000
         return
 
-    def columnJ(self, decadeSheet, saldoSheet, rangeIter: str, whatCategory: list):
+    def columnJ(self, templateSheet, saldoSheet, 
+                        rangeIter: str, whatCategory: list):
         """
         """
-        columnWithDebtPreviousYears = openpyxl.utils.column_index_from_string("D")
-        columnConsumedGasAmount = openpyxl.utils.column_index_from_string("G")
-        columnPaymentForConsumedGas = openpyxl.utils.column_index_from_string("H")
-        columnWhereToPut = openpyxl.utils.column_index_from_string("J")
-        for cells in decadeSheet[rangeIter]:
+        columnWithDebtPreviousYears = columnIndexFromString("D")
+        columnConsumedGasAmount = columnIndexFromString("G")
+        columnPaymentForConsumedGas = columnIndexFromString("H")
+        columnWhereToPut = columnIndexFromString("J")
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     # Find in Декадка numbers in columns D, G, H with value that were divided by 1000
                     # thats why they should be multiplied by 1000
-                    lastPeriodDebt = decadeSheet.cell(column=columnWithDebtPreviousYears,
+                    lastPeriodDebt = templateSheet.cell(column=columnWithDebtPreviousYears,
                                             row=cell.row).value * 1000
-                    consumedGasAmount = decadeSheet.cell(column=columnConsumedGasAmount,
+                    consumedGasAmount = templateSheet.cell(column=columnConsumedGasAmount,
                                             row=cell.row).value * 1000
-                    paymentForConsumedGas = decadeSheet.cell(column=columnPaymentForConsumedGas,
+                    paymentForConsumedGas = templateSheet.cell(column=columnPaymentForConsumedGas,
                                             row=cell.row).value * 1000
 
                     valueFromColumnTSaldo = self.findInSaldo(saldoSheet, 
@@ -864,14 +871,14 @@ class Decade(Algorithm):
                                 valueFromColumnTSaldo2019 + valueFromColumnJSaldo + \
                                 consumedGasAmount - paymentForConsumedGas
                     
-                    decadeSheet.cell(column=columnWhereToPut, row=cell.row).value = total / 1000
+                    templateSheet.cell(column=columnWhereToPut, row=cell.row).value = total / 1000
         return
 
-    def teplosetiIterInRegions(self, decadeSheet, tkePrevWs, 
+    def teplosetiIterInRegions(self, templateSheet, tkePrevWs, 
                                 tkeWs, tkeDKsheet, rangeIter):
         """
         """
-        for cells in decadeSheet[rangeIter]:
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     region = cell.value
@@ -880,40 +887,50 @@ class Decade(Algorithm):
                                                     tkeDKsheet, region)
                     # Get debt of NAK and tkeDK together
                     summOfTwoValues = listOfTwoValues[0] + listOfTwoValues[1]
-                    decadeSheet.cell(column=cell.column+1, 
+                    templateSheet.cell(column=cell.column+1, 
                             row=cell.row).value = summOfTwoValues / 1000
                                     
+                    listOfValues = self.teplosetiColumnsFromCToF(tkeWs,
+                                                        region, 
+                                                        ["DI", "DJ",
+                                                        "DK", "DQ",
+                                                        "CU", "CG",
+                                                        "GR", "GS"])
+                    valueDI = listOfValues[0]
+                    templateSheet.cell(column=cell.column+2, 
+                            row=cell.row).value = valueDI / 1000
+                    valueGR = listOfValues[6] # gas deposit                
+                    valueDJ = listOfValues[1]
+                    templateSheet.cell(column=cell.column+3, 
+                            row=cell.row).value = (valueDJ+valueGR) / 1000
                     
-                    value1 = self.teplosetiColumnsFromCToF(tkeWs, 
-                                                        region, "DI")
-                    decadeSheet.cell(column=cell.column+2, 
-                            row=cell.row).value = value1 / 1000
+                    valueGS = listOfValues[7] # gas deposit    
+                    valueDK = listOfValues[2]
+                    templateSheet.cell(column=cell.column+4, 
+                            row=cell.row).value = (valueDK+valueGS) / 1000
+
+                    valueDQ = listOfValues[3]
+                    templateSheet.cell(column=cell.column+5, 
+                            row=cell.row).value = (valueDQ+valueGS) / 1000
                                     
-                    decadeSheet.cell(column=cell.column+3, 
-                            row=cell.row).value = \
-                            self.teplosetiColumnsFromCToF(tkeWs, 
-                                                            region,    
-                                                            "DJ") / 1000
+                    valueCU = listOfValues[4]
+                    valueCG = listOfValues[5]
+                    valueFromListOfTwoValues = listOfTwoValues[1]
+                    total = valueDI + valueCU + valueCG + \
+                            valueFromListOfTwoValues + valueDK - valueDQ
+
+                    templateSheet.cell(column=cell.column+7, 
+                            row=cell.row).value = total / 1000
                     
-                    value2 = self.teplosetiColumnsFromCToF(tkeWs, region, "DK")
-                    decadeSheet.cell(column=cell.column+4, row=cell.row).value = value2 / 1000
+                    if valueDK != 0:
+                        templateSheet.cell(column=cell.column+6, 
+                            row=cell.row).value = (valueDQ+valueGS) / (valueDK+valueGS) * 100
+                    elif valueDK == 0:
+                        templateSheet.cell(column=cell.column+6, 
+                            row=cell.row).value = 0
 
-                    value3 = self.teplosetiColumnsFromCToF(tkeWs, region, "DQ")
-                    decadeSheet.cell(column=cell.column+5, row=cell.row).value = value3 / 1000
-                                    
-                    value4 = self.teplosetiColumnsFromCToF(tkeWs, region, "CU")
-                    value5 = self.teplosetiColumnsFromCToF(tkeWs, region, "CG")
-                    value6 = listOfTwoValues[1]
-                    total = value1 + value4 + value5 + value6 + value2 - value3
-
-                    decadeSheet.cell(column=cell.column+7, row=cell.row).value = total / 1000
-                    
-                    if value2 != 0:
-                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = value3 / value2 * 100
-                    elif value2 == 0:
-                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = 0
-
-                    decadeSheet.cell(column=cell.column+8, row=cell.row).value = (value2 - value3) / 1000
+                    templateSheet.cell(column=cell.column+8, 
+                            row=cell.row).value = valueDK-valueDQ / 1000
 
 
                     
@@ -921,7 +938,7 @@ class Decade(Algorithm):
         """
         """
         rangeIterInTkePrev = "B15" + ":" + "B" + str(tkeSheet.max_row)
-        columnDebtInTke = openpyxl.utils.column_index_from_string("EO")
+        columnDebtInTke = columnIndexFromString("EO")
         returnValueFromTke = 0
         isDone = False
         for cells in tkeSheet[rangeIterInTkePrev]:
@@ -937,7 +954,7 @@ class Decade(Algorithm):
                 break
 
         rangeIterInTkeDK = "B12" + ":" + "B" + str(tkeDKsheet.max_row)
-        columnDebtInTkeDK = openpyxl.utils.column_index_from_string("EG")
+        columnDebtInTkeDK = columnIndexFromString("EG")
         returnValueFromTkeDK = 0
         isDone = False
         for cells in tkeDKsheet[rangeIterInTkeDK]:
@@ -960,35 +977,39 @@ class Decade(Algorithm):
 
         return [returnValueFromTke, returnValueFromTkeDK]
 
-    def teplosetiColumnsFromCToF(self, tkeSheet, regionName, fromWhatColumn: str):
+    def teplosetiColumnsFromCToF(self, tkeSheet, 
+                            regionName, whatColumns: list):
         """
         """
+        listOfColumns = [columnIndexFromString(column) for column in whatColumns]
         rangeIterInTke = "C15" + ":" + "C" + str(tkeSheet.max_row)
-        columnWithData = openpyxl.utils.column_index_from_string(fromWhatColumn)
-        returnValue = 0
+        returnValuesList = [0]*len(listOfColumns)
         isDone = False
+
         for cells in tkeSheet[rangeIterInTke]:
             for cell in cells:
                 # If null then its end of data
                 if cell.value == "Область / Населений пункт":
                     isDone = True
                     break
-                
                 if cell.value == regionName:
-                    returnValue += tkeSheet.cell(column=columnWithData, row=cell.row).value
+                    for i in range(0, len(listOfColumns)):
+                        returnValuesList[i] += tkeSheet.cell(column=listOfColumns[i], 
+                                                                row=cell.row).value        
             if isDone:
                 break
+            
+        for value in returnValuesList:
+            if value == None:
+                value = 0
         
-        if returnValue != None:
-            return returnValue
-        elif returnValue == None:
-            return 0          
+        return returnValuesList
 
     def promColumnB(self, promPrevSheet, promDkSheet, regionName):
         """
         """
         rangeIterInPromPrev = "C12" + ":" + "C" + str(promPrevSheet.max_row)
-        columnTotalDebt = openpyxl.utils.column_index_from_string("IG")
+        columnTotalDebt = columnIndexFromString("IG")
         returnValuePromPrev = 0
         isDone = False
         for cells in promPrevSheet[rangeIterInPromPrev]:
@@ -1026,12 +1047,13 @@ class Decade(Algorithm):
         """
         """
         rangeIterInProm = "H12" + ":" + "H" + str(promSheet.max_row)
-        columnWithData = openpyxl.utils.column_index_from_string(fromWhatColumn)
+        columnWithData = columnIndexFromString(fromWhatColumn)
         returnValue = 0
         for cells in promSheet[rangeIterInProm]:
             for cell in cells:                
                 if cell.value == region:
-                    returnValue += promSheet.cell(column=columnWithData, row=cell.row).value
+                    returnValue += promSheet.cell(column=columnWithData, 
+                                                    row=cell.row).value
         
         if returnValue != None:
             return returnValue
@@ -1054,7 +1076,7 @@ class Decade(Algorithm):
         self.prom.open()
         promWs = self.prom.getWs("База_2")
 
-        column = openpyxl.utils.column_index_from_string("E")
+        column = columnIndexFromString("E")
         maxColumn = openpyxl.utils.get_column_letter(promWs.UsedRange.Columns.Count)
 
         for row in range(12, promWs.UsedRange.Rows.Count):
@@ -1073,10 +1095,11 @@ class Decade(Algorithm):
 
         return
 
-    def promIterInRegions(self, decadeSheet, promDkSheet, promSheet, promPrevSheet, rangeIter):
+    def promIterInRegions(self, templateSheet, promDkSheet, 
+                            promSheet, promPrevSheet, rangeIter):
         """
         """
-        for cells in decadeSheet[rangeIter]:
+        for cells in templateSheet[rangeIter]:
             for cell in cells:
                 if cell.value != None:
                     region = cell.value
@@ -1085,35 +1108,43 @@ class Decade(Algorithm):
                     # Get debt of NAK and DK together
                     summOfTwoValues = listOfTwoValues[0] + listOfTwoValues[1]
                     value1 = listOfTwoValues[1]
-                    decadeSheet.cell(column=cell.column+1, row=cell.row).value = summOfTwoValues / 1000
+                    templateSheet.cell(column=cell.column+1, 
+                            row=cell.row).value = summOfTwoValues / 1000
 
                     value2 = self.promColumnsFromCToF(promSheet, region, "DP")
-                    decadeSheet.cell(column=cell.column+2, row=cell.row).value = value2 / 1000
+                    templateSheet.cell(column=cell.column+2, 
+                            row=cell.row).value = value2 / 1000
                     
-                    decadeSheet.cell(column=cell.column+3, row=cell.row).value =\
-                                    self.promColumnsFromCToF(promSheet, region, "CX") / 1000
+                    templateSheet.cell(column=cell.column+3, row=cell.row).value =\
+                            self.promColumnsFromCToF(promSheet, region, "CX") / 1000
                     
                     value3 = self.promColumnsFromCToF(promSheet, region, "CY")
-                    decadeSheet.cell(column=cell.column+4, row=cell.row).value = value3 / 1000
+                    templateSheet.cell(column=cell.column+4, 
+                            row=cell.row).value = value3 / 1000
                     
                     value4 = self.promColumnsFromCToF(promSheet, region, "CZ")
-                    decadeSheet.cell(column=cell.column+5, row=cell.row).value = value4 / 1000
+                    templateSheet.cell(column=cell.column+5, 
+                            row=cell.row).value = value4 / 1000
 
                     if value3 != 0:
-                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = value4 / value3 * 100
+                        templateSheet.cell(column=cell.column+6, 
+                            row=cell.row).value = value4 / value3 * 100
                     elif value3 == 0:
-                        decadeSheet.cell(column=cell.column+6, row=cell.row).value = 0
+                        templateSheet.cell(column=cell.column+6, 
+                            row=cell.row).value = 0
 
                     value5 = self.promColumnsFromCToF(promSheet, region, "AB")
                     value6 = self.promColumnsFromCToF(promSheet, region, "DO")
                     total = value5 + value6 + value2 + value1 + value3 - value4
-                    decadeSheet.cell(column=cell.column+7, row=cell.row).value = total / 1000
-                    decadeSheet.cell(column=cell.column+8, row=cell.row).value = (value3 - value4) / 1000
+                    templateSheet.cell(column=cell.column+7, 
+                                row=cell.row).value = total / 1000
+                    templateSheet.cell(column=cell.column+8, 
+                                row=cell.row).value = (value3 - value4) / 1000
 
     def getPrice(self):
         """Get price value from Цена.txt
         """
-        with open(self.decade.pathToFile+"\\"+"Цена.txt", "r") as f:
+        with open(self.template.pathToFile+"\\"+"Цена.txt", "r") as f:
             content = f.read().splitlines()
             while True:
                 haveEmpty = False
