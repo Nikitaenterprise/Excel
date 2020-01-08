@@ -75,6 +75,12 @@ class Decade(Algorithm):
                                 Оборотно-сальдова відомість... (2gv))
             3. Оборотно-сальдова вiдомiсть последний месяц : 
                                 1 января - 30(31) предыдущий месяц
+                                категории : 
+                                            населення,
+                                            населення (газовий депозит), 
+                                            бюджет, 
+                                            релігійні організації, 
+                                            вічний вогонь
                                 без лимитов
                         (Менеджер отчетов\Стан розрахунків\
                             Оборотно-сальдовая\
@@ -113,11 +119,11 @@ class Decade(Algorithm):
             но они должны быть в папке
             1. Шаблон : пустой шаблон
             2. ТКЕ начало года : база Зубарева, 
-                                построена на 1.01.2019
+                                построена на 1.01 текущего года
                         (Менеджер отчетов\Стан розрахунків\
                             Розрахунки_ТКЕ_2018-2019)
             3. Промисловість_ начало года : база Зубарева, 
-                                построена на 1.01.2019
+                                построена на 1.01 текущего года
                         (Менеджер отчетов\Стан розрахунків\
                             Розрахунки_ПРОМ)
             4. ТКЕ ДК : база за 2010-2011 год, 
@@ -457,13 +463,13 @@ class Decade(Algorithm):
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
-                                        ["2018"], "U", "E")
+                                        ["2019"], "U", "E")
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
-                                        ["2019"], "T", "H")
+                                        ["2020"], "T", "H")
         self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, "J", [
                                         "населення", 
@@ -494,13 +500,13 @@ class Decade(Algorithm):
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
-                                        ["2018"], "U", "E") 
+                                        ["2019"], "U", "E") 
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "населення", 
                                             "населення (газовий депозит)"
                                         ], 
-                                        ["2019"], "T", "H")
+                                        ["2020"], "T", "H")
         self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, "J", [
                                         "населення", 
@@ -538,13 +544,13 @@ class Decade(Algorithm):
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
-                                        ["2018"], "U", "E")
+                                        ["2019"], "U", "E")
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
-                                        ["2019"], "T", "H")
+                                        ["2020"], "T", "H")
         self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                         rangeIter, "W", [
                                             "релігійні організації", 
@@ -575,13 +581,13 @@ class Decade(Algorithm):
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
-                                        ["2018"], "U", "E") 
+                                        ["2019"], "U", "E") 
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         [
                                             "релігійні організації", 
                                             "вічний вогонь"
                                         ], 
-                                        ["2019"], "T", "H")
+                                        ["2020"], "T", "H")
         self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                         rangeIter, "W", [
                                             "релігійні організації", 
@@ -611,9 +617,9 @@ class Decade(Algorithm):
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], None, "G", "D")
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
-                                        ["бюджет"], ["2018"], "U", "E")
+                                        ["бюджет"], ["2019"], "U", "E")
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
-                                        ["бюджет"], ["2019"], "T", "H")
+                                        ["бюджет"], ["2020"], "T", "H")
         self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, None, ["бюджет"])
         self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
@@ -626,9 +632,9 @@ class Decade(Algorithm):
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
                                         ["бюджет"], None, "G", "D")
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
-                                        ["бюджет"], ["2018"], "U", "E") 
+                                        ["бюджет"], ["2019"], "U", "E") 
         self.findInSaldoWriteToTemplate(templateSheet, saldoSheet, rangeIter,
-                                        ["бюджет"], ["2019"], "T", "H")
+                                        ["бюджет"], ["2020"], "T", "H")
         self.columnF(templateSheet, saldoLastMonthSheet, gasConsumtionSheet, 
                     rangeIter, None, ["бюджет"])
         self.columnG(templateSheet, saldoLastMonthSheet, gasConsumtionSheet,
@@ -856,10 +862,10 @@ class Decade(Algorithm):
                                             whatCategory=whatCategory,
                                             whatResource=None,
                                             whatColumn="T")
-                    valueFromColumnTSaldo2019 = self.findInSaldo(saldoSheet, 
+                    valueFromColumnTSaldoThisYear = self.findInSaldo(saldoSheet, 
                                             whatToFind=cell.value, 
                                             whatCategory=whatCategory,
-                                            whatResource=["2019"],
+                                            whatResource=["2020"],
                                             whatColumn="T")
                     valueFromColumnJSaldo = self.findInSaldo(saldoSheet, 
                                             whatToFind=cell.value, 
@@ -868,7 +874,7 @@ class Decade(Algorithm):
                                             whatColumn="J")
                     
                     total = lastPeriodDebt - valueFromColumnTSaldo + \
-                                valueFromColumnTSaldo2019 + valueFromColumnJSaldo + \
+                                valueFromColumnTSaldoThisYear + valueFromColumnJSaldo + \
                                 consumedGasAmount - paymentForConsumedGas
                     
                     templateSheet.cell(column=columnWhereToPut, row=cell.row).value = total / 1000
@@ -930,7 +936,7 @@ class Decade(Algorithm):
                             row=cell.row).value = 0
 
                     templateSheet.cell(column=cell.column+8, 
-                            row=cell.row).value = valueDK-valueDQ / 1000
+                            row=cell.row).value = (valueDK-valueDQ) / 1000
 
 
                     
@@ -943,8 +949,9 @@ class Decade(Algorithm):
         isDone = False
         for cells in tkeSheet[rangeIterInTkePrev]:
             for cell in cells:
-                # If left cell is equal to ВАТ/ПАТ
-                if tkeSheet.cell(column=cell.column-1, row=cell.row).value == "РАЗОМ (Прямі договори та ВАТ/ПАТ):":
+                # If cell in P column is equal to ВАТ/ПАТ
+                if tkeSheet.cell(column=columnIndexFromString("P"), 
+                                    row=cell.row).value == "РАЗОМ:":
                     isDone = True
                     break
                 
@@ -1008,19 +1015,26 @@ class Decade(Algorithm):
     def promColumnB(self, promPrevSheet, promDkSheet, regionName):
         """
         """
-        rangeIterInPromPrev = "C12" + ":" + "C" + str(promPrevSheet.max_row)
-        columnTotalDebt = columnIndexFromString("IG")
+        rangeIterInPromPrev = "D12" + ":" + "D" + str(promPrevSheet.max_row)
+        columnTotalDebt = columnIndexFromString("DS")
         returnValuePromPrev = 0
         isDone = False
         for cells in promPrevSheet[rangeIterInPromPrev]:
             for cell in cells:
                 # If cell equal to "Всього:" then it is the end of the sheet
-                if cell.value == "Всього:":
+                row = cell.row
+                if promPrevSheet.cell(column=columnIndexFromString("C"),
+                                        row=row).value == "Всього:":
                     isDone = True
                     break
                 # Add debt of all regions in sheet
                 if cell.value == regionName:
-                    returnValuePromPrev += promPrevSheet.cell(column=columnTotalDebt, row=cell.row).value
+                    debt = promPrevSheet.cell(column=columnTotalDebt, 
+                                                row=cell.row).value
+                    # Check for not None type
+                    if debt == None:
+                        debt = 0
+                    returnValuePromPrev += debt
             
             if isDone:
                 break
@@ -1036,11 +1050,15 @@ class Decade(Algorithm):
                     break
                 # Add debt of all regions in sheet
                 if cell.value == regionName:
-                    returnValuePromDK += promDkSheet.cell(column=columnTotalDebt, row=cell.row).value
+                    debt = promDkSheet.cell(column=columnTotalDebt, 
+                                                row=cell.row).value
+                    if debt == None:
+                        debt = 0
+                    returnValuePromDK += debt
             
             if isDone:
                 break
-
+        
         return [returnValuePromPrev, returnValuePromDK]
 
     def promColumnsFromCToF(self, promSheet, region, fromWhatColumn: str):
