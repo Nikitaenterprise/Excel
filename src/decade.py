@@ -1016,7 +1016,7 @@ class Decade(Algorithm):
         """
         """
         rangeIterInPromPrev = "D12" + ":" + "D" + str(promPrevSheet.max_row)
-        columnTotalDebt = columnIndexFromString("DS")
+        columnTotalDebt = columnIndexFromString("IG")
         returnValuePromPrev = 0
         isDone = False
         for cells in promPrevSheet[rangeIterInPromPrev]:
@@ -1029,6 +1029,12 @@ class Decade(Algorithm):
                     break
                 # Add debt of all regions in sheet
                 if cell.value == regionName:
+                    # Check if its region in total with all
+                    # companies but not company itself in that region
+                    if promPrevSheet.cell(column=columnIndexFromString("C"),
+                                            row=row).value == None:
+                        break
+
                     debt = promPrevSheet.cell(column=columnTotalDebt, 
                                                 row=cell.row).value
                     # Check for not None type
