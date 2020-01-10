@@ -108,7 +108,8 @@ def findInSaldo(saldoSheet, whatToFind: str,
     return returnValuesList
 
 def findInSaldoAllValues(saldoSheet, whatCategory: list, 
-                        whatResource: list, whatColumns: list):
+                        whatResource: list, whatColumns: list,
+                        whatRegion=None):
     """Search saldo excel sheet for all values with some criteria 
     Returns list with size of whatColumns list size.
 
@@ -123,10 +124,13 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
                                     with this criteria
                     ["!2019"] will return all values except "2019"
     whatColumns -- list of columns from which the data would be taken
+    whatRegion -- list with regions. If None then will return
+                    data about all regions
     """
     rangeIter = "A10" + ":" + "A" + str(saldoSheet.max_row)
     columnCategory = openpyxl.utils.column_index_from_string("C")
     columnResource = openpyxl.utils.column_index_from_string("F")
+    columnRegion = openpyxl.utils.column_index_from_string("V")
     
     listOfColumns = []
     for column in whatColumns:
@@ -152,6 +156,16 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
             elif "!" not in res:
                 additionListResource.append(res)
 
+
+    additionListRegion = []
+    exclusionListRegion = []
+    if whatRegion != None:
+        for reg in whatRegion:
+            if "!" in reg:
+                exclusionListRegion.append(reg.split("!")[1]) 
+            elif "!" not in reg:
+                additionListRegion.append(reg)
+
     returnValuesList = [0]*len(whatColumns)
 
     for cells in saldoSheet[rangeIter]:
@@ -162,9 +176,13 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
             # Transform int value of resource into str 2019 -> "2019"
             resource = str(saldoSheet.cell(column=columnResource,
                                     row=cell.row).value).strip()
+            region = saldoSheet.cell(column=columnRegion,
+                                    row=cell.row).value
             
             # Next row if this is name of company
-            if category == None and resource == "None":
+            if (category == None 
+                and resource == "None" 
+                and region == None):
                 continue
 
             # Get values from different columns
@@ -179,6 +197,7 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
                 
             willBeCalculatedCategory = False
             willBeCalculatedResource = False
+            willBeCalculatedRegion = False
 
             willBeCalculatedCategory = makeDecision(
                                 additionListCategory,
@@ -188,9 +207,14 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
                                 additionListResource,
                                 exclusionListResource,
                                 resource)
+            willBeCalculatedRegion = makeDecision(
+                                additionListRegion,
+                                exclusionListRegion,
+                                region)
 
             if (willBeCalculatedCategory and 
-                willBeCalculatedResource):
+                willBeCalculatedResource and
+                willBeCalculatedRegion):
                 for i in range(0, len(valuesList)):
                     returnValuesList[i] += valuesList[i]
 
