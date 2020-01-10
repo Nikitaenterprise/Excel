@@ -665,7 +665,7 @@ class TKE(Algorithm):
         try:
             # Finds cell with "Філія "Оператор ГТС України"" 
             # using EDRPOU code
-            gtsRow = dataFile.getFirstCellByCriteria("41635376", "P").row
+            gtsRow = dataFile.getFirstCellByCriteria("42795490", "P").row
             ws = self.todayTKE.getWs()
             wsData = dataFile.getWs()
 
