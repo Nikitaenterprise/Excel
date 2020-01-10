@@ -316,7 +316,7 @@ class TKE(Algorithm):
                         todayWs.cell(column=column, row=row).value = dx
 
         self.kyivEnergoMoney(todayTkeWithData)
-        self.oeratorGtsMoney(todayTkeWithData)
+        #self.oeratorGtsMoney(todayTkeWithData)
         self.calculationOfDebtLikeGarantMM(todayTkeWithData, "Гарант Енерго М ПП")
         self.calculationOfDebtLikeGarantMM(todayTkeWithData, "Нафтогаз Тепло ТОВ")
         todayTkeWithData.close()
