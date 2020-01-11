@@ -1,5 +1,6 @@
 from src.alg import *
 from src.saldo import *
+import time
 
 class Decade(Algorithm):
 
@@ -110,13 +111,18 @@ class Decade(Algorithm):
                                         ])
 
     def teploseti(self):
+        start = time.time()
         self.template.open(data_only=False)
         templateWsTeploseti = self.template.getWs("Тепломережі")
-        self.tkeDK.open(data_only=True)
-        #tkeDKWs = self.tkeDK.getWs()
+        print("opened template =", time.time()-start)
+        start = time.time()
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
-
+        print("opened TKE =", time.time()-start)
+        start = time.time()
+        self.tkeDK.open(data_only=True)
+        tkeDKWs = self.tkeDK.getWs()
+        print("opened DK =", time.time()-start)
 
         self.fill(templateWs=templateWsTeploseti,
                         saldoWs=saldoWs,
@@ -128,13 +134,22 @@ class Decade(Algorithm):
                                         "НС теплоенергетика",
                                         "КП теплоенергетика",
                                         "ВТЕ теплоенергетика"
-                                        ])
+                                        ],
+                        dkSheet=tkeDKWs)
         
-    def fill(self, templateWs, saldoWs, listOfCategories):
+    def fill(self, templateWs, saldoWs, listOfCategories, dkSheet=None):
 
         rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
         columnsToFill = [columnIndexFromString(x) for x in 
                             ["B", "C", "D", "E", "F", "H", "I"]]
+        
+        # If calculating TKE then set DkTkeDept to true
+        DkTkeDept, DkPromDept = False, False
+        if "ТЕ теплоенергетика" in listOfCategories: 
+            DkTkeDept = True
+        # If calculating prom then set DkPromDept to true
+        elif "промисловість" in listOfCategories:
+            DkPromDept = True
 
         for cells in templateWs[rangeIter]:
             for cell in cells:
@@ -145,18 +160,27 @@ class Decade(Algorithm):
                                         whatResource=None,
                                         whatColumns=["G"],
                                         whatRegion=[cell.value])[0]
+                    if DkTkeDept:
+                        debtFromDk = self.debtFromTkeDk(region=cell.value,
+                                                        dkSheet=dkSheet)
+                        allYearsDebt += debtFromDk
+                    
+                    if DkPromDept:
+                        debtFromDk = self.debtFromPromDk(region=cell.value,
+                                                        dkSheet=dkSheet)
+                        allYearsDebt += debtFromDk
 
                     previousYearDebt = findInSaldoAllValues(
                                         saldoSheet=saldoWs, 
                                         whatCategory=listOfCategories,
-                                        whatResource=["2019"],
+                                        whatResource=["2018"],
                                         whatColumns=["U"],
                                         whatRegion=[cell.value])[0]
 
                     data = findInSaldoAllValues(
                                         saldoSheet=saldoWs, 
                                         whatCategory=listOfCategories,
-                                        whatResource=["2020"],
+                                        whatResource=["2019"],
                                         whatColumns=["H", "I", "K"],
                                         whatRegion=[cell.value])
                     consumedGas = data[0]
@@ -175,11 +199,11 @@ class Decade(Algorithm):
                     data2 = findInSaldoAllValues(
                                         saldoSheet=saldoWs, 
                                         whatCategory=listOfCategories,
-                                        whatResource=["2020"],
+                                        whatResource=["2019"],
                                         whatColumns=["T", "U"],
                                         whatRegion=[cell.value])
                     income2020 = data2[0]
-                    debt2020 = data[1]
+                    debt2020 = data2[1]
 
                     totalDebt = 0
                     totalDebt += allYearsDebt - income
@@ -202,5 +226,50 @@ class Decade(Algorithm):
                             row=cell.row).value = listToPutInTemplate[i]
 
                     
+    def debtFromTkeDk(self, region, dkSheet):
+        rangeIter = "B12" + ":" + "B" + str(dkSheet.max_row)
+        columnDebt = columnIndexFromString("EG")
+        debt = 0
+        isDone = False
+        for cells in dkSheet[rangeIter]:
+            for cell in cells:
+                if cell.value == "Всього:":
+                    isDone = True
+                    break
 
-                    
+                if cell.value == region:
+                    debt = dkSheet.cell(column=columnDebt, 
+                                        row=cell.row).value
+                    isDone = True
+                    break
+            if isDone:
+                break
+        
+        if debt == None:
+            debt = 0
+
+        return debt
+    
+    def debtFromPromDk(self, region, dkSheet):
+        rangeIter = "C12" + ":" + "C" + str(dkSheet.max_row)
+        columnTotalDebt = columnIndexFromString("IG")
+        debt = 0
+        isDone = False
+        for cells in dkSheet[rangeIter]:
+            for cell in cells:
+                # If cell equal to "Всього:" then it is the end of the sheet
+                if cell.value == "Всього:":
+                    isDone = True
+                    break
+                # Add debt of all regions in sheet
+                if cell.value == region:
+                    value = dkSheet.cell(column=columnTotalDebt, 
+                                        row=cell.row).value
+                    if value == None:
+                        value = 0
+                    debt += value
+            
+            if isDone:
+                break
+        
+        return debt
