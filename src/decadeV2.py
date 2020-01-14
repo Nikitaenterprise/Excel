@@ -20,8 +20,8 @@ class Decade(Algorithm):
 
         self.mng.getFile("Оборотно-сальдова вiдомiсть", 
                                     exactMatch=True)
-        # self.mng.getFile("Оборотно-сальдова вiдомiсть последний месяц", 
-        #                             exactMatch=True)
+        self.mng.getFile("Оборотно-сальдова вiдомiсть последний месяц", 
+                                    exactMatch=True)
 
         self.mng.deleteUnCalledFiles()               
         self.mng.allFromXlsToXlsx()
@@ -29,8 +29,8 @@ class Decade(Algorithm):
         try:
             self.saldo = self.mng.getFile("Оборотно-сальдова вiдомiсть", 
                                     extension=".xlsx", exactMatch=True)
-            # self.saldoLastMonth = self.mng.getFile("Оборотно-сальдова вiдомiсть последний месяц", 
-            #                         extension=".xlsx", exactMatch=True)
+            self.saldoLastMonth = self.mng.getFile("Оборотно-сальдова вiдомiсть последний месяц", 
+                                     extension=".xlsx", exactMatch=True)
             
             if self.mng.getNumberOfFiles() != self.numberOfFilesToStart:
                     raise AttributeError
@@ -56,92 +56,255 @@ class Decade(Algorithm):
         self.mng.deleteClosedFiles()
 
     def run(self):
+        self.getNumberOfDecade()
+
         # self.naselenie()
         # self.religion()
         # self.budget()
-        self.teploseti()
-        # self.forPresident()
+        # self.teploseti()
+        self.promishlennost()
+        self.forPresident()
         # self.generations()
         self.template.save(self.template.pathToFile, 
                             "На печать", extension=".xlsx")
         self.deleteFiles()
 
+    def getNumberOfDecade(self):
+        self.numberOfDecade = 1
+        try:
+            print("Какая декада?")
+            print("1 - первая декада")
+            print("2 - вторая декада")
+            print("3 - третья декада")
+            answer = int(input())
+            if(answer == 1 or answer == 2 or answer == 3):
+                self.numberOfDecade = answer
+        except:
+            print("Неправильно введен номер декады")
+            print("Программа считает что декада первая")
+
+
     def naselenie(self):
         self.template.open(data_only=False)
-        templateWsNas = self.template.getWs("Населення")
+        templateWs = self.template.getWs("Населення")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
-        #self.saldoLastMonth.open(data_only=True)
-        #saldoLastMonthWs = self.saldoLastMonth.getWs()
+        self.saldoLastMonth.open(data_only=True)
+        saldoLastMonthWs = self.saldoLastMonth.getWs()
+        
+        # Should be list because of immutibility of basic types
+        self.naselenieForPresident = []
+        self.naselenieForPresident.append(0)
 
-        self.fill(templateWs=templateWsNas,
-                        saldoWs=saldoWs,
-                        listOfCategories=[
-                                        "населення", 
-                                        "населення (газовий депозит)"
-                                        ])
+        rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
+        totalData = []
+        for cells in templateWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    value = self.getData(region=cell.value,
+                            saldoWs=saldoWs,
+                            saldoLastMonthWs=saldoLastMonthWs,
+                            listOfCategories=[
+                                            "населення", 
+                                            "населення (газовий депозит)"
+                                            ],
+                            dataForPresident=self.naselenieForPresident)
+                    
+                    totalData.append(value)
+        
+        startRow = 9
+        for i in range(0, len(totalData)):
+            for j in range(0, len(totalData[i])):
+                templateWs.cell(column=columnIndexFromString("B")+j,
+                                row=startRow+i).value = totalData[i][j]
 
     def religion(self):
         self.template.open(data_only=False)
-        templateWsReligion = self.template.getWs("Релігія")
+        templateWs = self.template.getWs("Релігія")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
-        # self.saldoLastMonth.open(data_only=True)
-        # saldoLastMonthWs = self.saldoLastMonth.getWs()
+        self.saldoLastMonth.open(data_only=True)
+        saldoLastMonthWs = self.saldoLastMonth.getWs()
 
-        self.fill(templateWs=templateWsReligion,
-                        saldoWs=saldoWs,
-                        listOfCategories=[
-                                        "релігійні організації", 
-                                        "вічний вогонь"
-                                        ])
+        self.religionForPresident = []
+        self.religionForPresident.append(0)
+
+        rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
+        totalData = []
+        for cells in templateWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    value = self.getData(region=cell.value,
+                            saldoWs=saldoWs,
+                            saldoLastMonthWs=saldoLastMonthWs,
+                            listOfCategories=[
+                                            "релігійні організації", 
+                                            "вічний вогонь"
+                                            ],
+                            dataForPresident=self.religionForPresident)
+                    
+                    totalData.append(value)
+
+        startRow = 9
+        for i in range(0, len(totalData)):
+            for j in range(0, len(totalData[i])):
+                templateWs.cell(column=columnIndexFromString("B")+j,
+                                row=startRow+i).value = totalData[i][j]
 
     def budget(self):
         self.template.open(data_only=False)
-        templateWsBudget = self.template.getWs("Бюджет")
+        templateWs = self.template.getWs("Бюджет")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
-        # self.saldoLastMonth.open(data_only=True)
-        # saldoLastMonthWs = self.saldoLastMonth.getWs()
+        self.saldoLastMonth.open(data_only=True)
+        saldoLastMonthWs = self.saldoLastMonth.getWs()
 
-        self.fill(templateWs=templateWsBudget,
-                        saldoWs=saldoWs,
-                        listOfCategories=[
-                                        "бюджет"
-                                        ])
+        self.budgetForPresident = []
+        self.budgetForPresident.append(0)
+        
+        rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
+        totalData = []
+        for cells in templateWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    value = self.getData(region=cell.value,
+                            saldoWs=saldoWs,
+                            saldoLastMonthWs=saldoLastMonthWs,
+                            listOfCategories=[
+                                            "бюджет"
+                                            ],
+                            dataForPresident=self.budgetForPresident)
+                    
+                    totalData.append(value)
+
+        startRow = 9
+        for i in range(0, len(totalData)):
+            for j in range(0, len(totalData[i])):
+                templateWs.cell(column=columnIndexFromString("B")+j,
+                                row=startRow+i).value = totalData[i][j]
 
     def teploseti(self):
-        start = time.time()
         self.template.open(data_only=False)
-        templateWsTeploseti = self.template.getWs("Тепломережі")
-        print("opened template =", time.time()-start)
-        start = time.time()
+        templateWs = self.template.getWs("Тепломережі")
         self.saldo.open(data_only=True)
         saldoWs = self.saldo.getWs()
-        print("opened TKE =", time.time()-start)
-        start = time.time()
+        self.saldoLastMonth.open(data_only=True)
+        saldoLastMonthWs = self.saldoLastMonth.getWs()
         self.tkeDK.open(data_only=True)
         tkeDKWs = self.tkeDK.getWs()
-        print("opened DK =", time.time()-start)
 
-        self.fill(templateWs=templateWsTeploseti,
-                        saldoWs=saldoWs,
-                        listOfCategories=[
-                                        "ТЕ теплоенергетика",
-                                        "ТЕ (газовий депозит)",
-                                        "БО теплоенергетика",
-                                        "РО теплоенергетика",
-                                        "НС теплоенергетика",
-                                        "КП теплоенергетика",
-                                        "ВТЕ теплоенергетика"
-                                        ],
-                        dkSheet=tkeDKWs)
-        
-    def fill(self, templateWs, saldoWs, listOfCategories, dkSheet=None):
+        self.tkeForPresident = []
+        self.tkeForPresident.append(0)
 
         rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
-        columnsToFill = [columnIndexFromString(x) for x in 
-                            ["B", "C", "D", "E", "F", "H", "I"]]
+        totalData = []
+        for cells in templateWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    value = self.getData(region=cell.value,
+                            saldoWs=saldoWs,
+                            saldoLastMonthWs=saldoLastMonthWs,
+                            listOfCategories=[
+                                            "ТЕ теплоенергетика",
+                                            "ТЕ (газовий депозит)",
+                                            "БО теплоенергетика",
+                                            "РО теплоенергетика",
+                                            "НС теплоенергетика",
+                                            "КП теплоенергетика",
+                                            "ВТЕ теплоенергетика"
+                                            ],
+                            dataForPresident=self.tkeForPresident,
+                            dkSheet=tkeDKWs)
+                    
+                    totalData.append(value)
+
+        startRow = 9
+        for i in range(0, len(totalData)):
+            for j in range(0, len(totalData[i])):
+                templateWs.cell(column=columnIndexFromString("B")+j,
+                                row=startRow+i).value = totalData[i][j]
+
+    def promishlennost(self):
+        self.template.open(data_only=False)
+        templateWs = self.template.getWs("Промисловість")
+        self.saldo.open(data_only=True)
+        saldoWs = self.saldo.getWs()
+        self.saldoLastMonth.open(data_only=True)
+        saldoLastMonthWs = self.saldoLastMonth.getWs()
+        self.promDK.open(data_only=True)
+        promDKWs = self.promDK.getWs()
+
+        self.promForPresident = []
+        self.promForPresident.append(0)
+
+        rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
+        totalData = []
+        for cells in templateWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    value = self.getData(region=cell.value,
+                            saldoWs=saldoWs,
+                            saldoLastMonthWs=saldoLastMonthWs,
+                            listOfCategories=[
+                                            "промисловість"
+                                            ],
+                            dataForPresident=self.promForPresident,
+                            dkSheet=promDKWs)
+                    
+                    totalData.append(value)
+
+        startRow = 9
+        for i in range(0, len(totalData)):
+            for j in range(0, len(totalData[i])):
+                templateWs.cell(column=columnIndexFromString("B")+j,
+                                row=startRow+i).value = totalData[i][j]
+
+        # Generations 
+        # Create category "генерації" if contract contain EE
+        self.generationsCreation(saldoWs)
+        self.generationsCreation(saldoLastMonthWs)
+
+        totalData = []
+        dontNeedThis = 0
+        for cells in templateWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None:
+                    value = self.getData(region=cell.value,
+                            saldoWs=saldoWs,
+                            saldoLastMonthWs=saldoLastMonthWs,
+                            listOfCategories=[
+                                            "генерації"
+                                            ],
+                            dataForPresident=dontNeedThis)
+                    
+                    totalData.append(value)
+
+        # Summ all regions in one row
+        templateWs = self.template.getWs("Зведена")
+        toWrite = []
+        for j in range(0, len(totalData[0])):
+            value = 0
+            for i in range(0, len(totalData)):
+                value += totalData[i][j]
+            toWrite.append(value)
+        
+        # Recalculate percent value because it was summed up
+        if toWrite[3] != 0:
+            toWrite[5] = toWrite[4]/toWrite[3] * 100
+        else:
+            toWrite[5] = 0
+        
+        # Fill row with Генерації
+        for i in range(0, len(toWrite)):
+            templateWs.cell(column=columnIndexFromString("B")+i,
+                                row=17).value = toWrite[i]
+        
+    def getData(self, region, saldoWs, saldoLastMonthWs,
+            listOfCategories, dataForPresident, dkSheet=None):
+
+        #rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
+        #columnsToFill = [columnIndexFromString(x) for x in 
+        #                    ["B", "C", "D", "E", "F", "H", "I"]]
         
         # If calculating TKE then set DkTkeDept to true
         DkTkeDept, DkPromDept = False, False
@@ -151,81 +314,96 @@ class Decade(Algorithm):
         elif "промисловість" in listOfCategories:
             DkPromDept = True
 
-        for cells in templateWs[rangeIter]:
-            for cell in cells:
-                if cell.value != None:
-                    allYearsDebt = findInSaldoAllValues(
-                                        saldoSheet=saldoWs, 
-                                        whatCategory=listOfCategories,
-                                        whatResource=None,
-                                        whatColumns=["G"],
-                                        whatRegion=[cell.value])[0]
-                    if DkTkeDept:
-                        debtFromDk = self.debtFromTkeDk(region=cell.value,
-                                                        dkSheet=dkSheet)
-                        allYearsDebt += debtFromDk
-                    
-                    if DkPromDept:
-                        debtFromDk = self.debtFromPromDk(region=cell.value,
-                                                        dkSheet=dkSheet)
-                        allYearsDebt += debtFromDk
+        allYearsDebt = findInSaldoAllValues(
+                            saldoSheet=saldoWs, 
+                            whatCategory=listOfCategories,
+                            whatResource=None,
+                            whatColumns=["G"],
+                            whatRegion=[region])[0]
+        if DkTkeDept:
+            debtFromDk = self.debtFromTkeDk(region=region,
+                                            dkSheet=dkSheet)
+            allYearsDebt += debtFromDk
+        
+        if DkPromDept:
+            debtFromDk = self.debtFromPromDk(region=region,
+                                            dkSheet=dkSheet)
+            allYearsDebt += debtFromDk
 
-                    previousYearDebt = findInSaldoAllValues(
-                                        saldoSheet=saldoWs, 
-                                        whatCategory=listOfCategories,
-                                        whatResource=["2018"],
-                                        whatColumns=["U"],
-                                        whatRegion=[cell.value])[0]
+        previousYearDebt = findInSaldoAllValues(
+                            saldoSheet=saldoWs, 
+                            whatCategory=listOfCategories,
+                            whatResource=["2019"],
+                            whatColumns=["U"],
+                            whatRegion=[region])[0]
 
-                    data = findInSaldoAllValues(
-                                        saldoSheet=saldoWs, 
-                                        whatCategory=listOfCategories,
-                                        whatResource=["2019"],
-                                        whatColumns=["H", "I", "K"],
-                                        whatRegion=[cell.value])
-                    consumedGas = data[0]
-                    cost = data[1]
-                    payment = data[2]
-                    
-                    data1 = findInSaldoAllValues(
-                                        saldoSheet=saldoWs, 
-                                        whatCategory=listOfCategories,
-                                        whatResource=None,
-                                        whatColumns=["T", "J"],
-                                        whatRegion=[cell.value])
-                    income = data1[0]
-                    penalty = data1[1]
+        data = findInSaldoAllValues(
+                            saldoSheet=saldoWs, 
+                            whatCategory=listOfCategories,
+                            whatResource=["2020"],
+                            whatColumns=["H", "I", "K"],
+                            whatRegion=[region])
+        consumedGas = data[0]
+        cost = data[1]
+        payment = data[2]
 
-                    data2 = findInSaldoAllValues(
-                                        saldoSheet=saldoWs, 
-                                        whatCategory=listOfCategories,
-                                        whatResource=["2019"],
-                                        whatColumns=["T", "U"],
-                                        whatRegion=[cell.value])
-                    income2020 = data2[0]
-                    debt2020 = data2[1]
+        tmp = findInSaldoAllValues(
+                            saldoSheet=saldoLastMonthWs,
+                            whatCategory=listOfCategories,
+                            whatResource=["2020"],
+                            whatColumns=["H", "I"],
+                            whatRegion=[region])
+        # Gas amount and gas cost fron start  
+        # of the year to previous month
+        consumedGasLastMonth = tmp[0]
+        costLastMonth = tmp[1]
+        # Find gas amount and cost only for this month
+        consumedGas -= consumedGasLastMonth
+        cost -= costLastMonth
+        # Divide by number of decade to get 
+        # amount of gas in this period
+        consumedGas *= self.numberOfDecade/3
+        cost *= self.numberOfDecade/3
 
-                    totalDebt = 0
-                    totalDebt += allYearsDebt - income
-                    totalDebt += income2020 + penalty
-                    totalDebt += consumedGas - payment
+        
+        data1 = findInSaldoAllValues(
+                            saldoSheet=saldoWs, 
+                            whatCategory=listOfCategories,
+                            whatResource=None,
+                            whatColumns=["T", "J"],
+                            whatRegion=[region])
+        income = data1[0]
+        # Write total income to dataForPresident value
+        dataForPresident[0] += data1[0]
+        penalty = data1[1]
 
-                    listToPutInTemplate = []
-                    listToPutInTemplate.append(allYearsDebt/1000)
-                    listToPutInTemplate.append(previousYearDebt/1000)
-                    listToPutInTemplate.append(consumedGas/1000)
-                    listToPutInTemplate.append(cost/1000)
-                    listToPutInTemplate.append(payment/1000)
-                    
-                    listToPutInTemplate.append(totalDebt/1000)
-                    listToPutInTemplate.append(debt2020/1000)
+        debt2020 = findInSaldoAllValues(
+                            saldoSheet=saldoWs, 
+                            whatCategory=listOfCategories,
+                            whatResource=["2020"],
+                            whatColumns=["U"],
+                            whatRegion=[region])[0]
 
-                    # Fill one row in template file
-                    for i in range(0, len(listToPutInTemplate)):
-                        templateWs.cell(column=columnsToFill[i],
-                            row=cell.row).value = listToPutInTemplate[i]
+        totalDebt = 0
+        totalDebt += allYearsDebt - income
+        totalDebt += penalty
+        totalDebt += cost - payment
 
-                    
+        listOfOneRegion = []
+        listOfOneRegion.append(allYearsDebt/1000)
+        listOfOneRegion.append(previousYearDebt/1000)
+        listOfOneRegion.append(consumedGas/1000)
+        listOfOneRegion.append(cost/1000)
+        listOfOneRegion.append(payment/1000)
+        if cost != 0:
+            listOfOneRegion.append(payment/cost*100)
+        else:
+            listOfOneRegion.append(0)
+        listOfOneRegion.append(totalDebt/1000)
+        listOfOneRegion.append(debt2020/1000)
+        
+        return listOfOneRegion
+
     def debtFromTkeDk(self, region, dkSheet):
         rangeIter = "B12" + ":" + "B" + str(dkSheet.max_row)
         columnDebt = columnIndexFromString("EG")
@@ -273,3 +451,38 @@ class Decade(Algorithm):
                 break
         
         return debt
+
+    # def addToTemplate(self, templateWs, listWithData):
+    #     # Fill one row in template file
+    #     for i in range(0, len(listToPutInTemplate)):
+    #         templateWs.cell(column=columnsToFill[i],
+    #                         row=cell.row).value = listToPutInTemplate[i]
+
+    def generationsCreation(self, saldoWs):
+        rangeIter = "A10" + ":" + "A" + str(saldoWs.max_row)
+        columnCategory = columnIndexFromString("C")
+        for cells in saldoWs[rangeIter]:
+            for cell in cells:
+                if cell.value != None and "ЕЕ" in cell.value:
+                    saldoWs.cell(column=columnCategory,
+                                row=cell.row).value = "генерації"
+
+    def forPresident(self):
+        self.template.open(data_only=False)
+        templateWsPivot = self.template.getWs("Зведена")
+        columnWhereToWrite = columnIndexFromString("J")
+        try:
+            templateWsPivot.cell(column=columnWhereToWrite, 
+                    row=13).value = self.naselenieForPresident[0] / 1000
+            templateWsPivot.cell(column=columnWhereToWrite, 
+                    row=14).value = self.budgetForPresident[0] / 1000
+            templateWsPivot.cell(column=columnWhereToWrite, 
+                    row=15).value = self.tkeForPresident[0] / 1000
+            templateWsPivot.cell(column=columnWhereToWrite, 
+                    row=16).value = self.promForPresident[0] / 1000
+            templateWsPivot.cell(column=columnWhereToWrite, 
+                    row=19).value = self.religionForPresident[0] / 1000
+        except (UnboundLocalError, AttributeError):
+            print("Не заполнен последний столбец во вкладке со сводной таблицей")
+
+                    

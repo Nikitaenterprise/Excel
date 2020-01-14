@@ -173,16 +173,16 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
             
             category = saldoSheet.cell(column=columnCategory,
                                     row=cell.row).value
-            # Transform int value of resource into str 2019 -> "2019"
+            # Transform int value of resource into str: 2019 -> "2019"
             resource = str(saldoSheet.cell(column=columnResource,
                                     row=cell.row).value).strip()
             region = saldoSheet.cell(column=columnRegion,
                                     row=cell.row).value
             
             # Next row if this is name of company
+            # In company name row resource and category are empty
             if (category == None 
-                and resource == "None" 
-                and region == None):
+                and resource == "None"):
                 continue
 
             # Get values from different columns
@@ -200,17 +200,17 @@ def findInSaldoAllValues(saldoSheet, whatCategory: list,
             willBeCalculatedRegion = False
 
             willBeCalculatedCategory = makeDecision(
-                                additionListCategory,
-                                exclusionListCategory,
-                                category)
+                                        additionListCategory,
+                                        exclusionListCategory,
+                                        category)
             willBeCalculatedResource = makeDecision(
-                                additionListResource,
-                                exclusionListResource,
-                                resource)
+                                        additionListResource,
+                                        exclusionListResource,
+                                        resource)
             willBeCalculatedRegion = makeDecision(
-                                additionListRegion,
-                                exclusionListRegion,
-                                region)
+                                        additionListRegion,
+                                        exclusionListRegion,
+                                        region)
 
             if (willBeCalculatedCategory and 
                 willBeCalculatedResource and

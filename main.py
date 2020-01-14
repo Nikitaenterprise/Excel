@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 break
             elif what == "3":
                 #alg = Decade(r"Decade", 12)
-                alg = Decade(r"Decade", 4)
+                alg = Decade(r"Decade", 5)
                 alg.run()
                 print("Время выполнения :", alg.getTimeOfRun())
                 killProcess(0)
