@@ -36,7 +36,34 @@ class Decade(Algorithm):
                     raise AttributeError
         except AttributeError:
             print("Не хватает файлов для работы. Проверьте директорию " + str(path))
-            msg = r"""Файлы, нужные для работы : """
+            msg = r"""Файлы, нужные для работы : 
+            1. Оборотно-сальдова вiдомiсть : 
+                                1 января - по декаду,
+                                по всем категориям, 
+                                с планами
+                        (Менеджер отчетов\Стан розрахунків\
+                            Оборотно-сальдовая\
+                                Оборотно-сальдова відомість... (2gv))
+            2. Оборотно-сальдова вiдомiсть последний месяц: 
+                                1 января - 30 число предыдущего месяца,
+                                по всем категориям 
+                        (Менеджер отчетов\Стан розрахунків\
+                            Оборотно-сальдовая\
+                                Оборотно-сальдова відомість... (2gv))
+            Файлы, которые не надо загружать, 
+            но они должны быть в папке
+            1. Шаблон : пустой шаблон
+            2. ТКЕ ДК : база за 2010-2011 год, 
+                                построена в 2018 году
+                        (Dept\Monitoring.Gas\4. Газ України\
+                            ДК Газ України.  База ТКЕ 2010-2011)
+            3. Промисловість_ ДК : база за 2010-2011 год, 
+                                построена в 2018 году
+                        (Dept\Monitoring.Gas\4. Газ України\
+                            ДК Газ України. Промисловість)
+            После исправления запустите программу заново. 
+            Сейчас программа завершит работу
+            Нажмите любую клавишу а затем Enter"""
             print(bcolors.OKGREEN + msg + bcolors.ENDC)
             input()
             exit()
@@ -302,10 +329,6 @@ class Decade(Algorithm):
     def getData(self, region, saldoWs, saldoLastMonthWs,
             listOfCategories, dataForPresident, dkSheet=None):
 
-        #rangeIter = "A9" + ":" + "A" + str(templateWs.max_row-2)
-        #columnsToFill = [columnIndexFromString(x) for x in 
-        #                    ["B", "C", "D", "E", "F", "H", "I"]]
-        
         # If calculating TKE then set DkTkeDept to true
         DkTkeDept, DkPromDept = False, False
         if "ТЕ теплоенергетика" in listOfCategories: 
@@ -451,12 +474,6 @@ class Decade(Algorithm):
                 break
         
         return debt
-
-    # def addToTemplate(self, templateWs, listWithData):
-    #     # Fill one row in template file
-    #     for i in range(0, len(listToPutInTemplate)):
-    #         templateWs.cell(column=columnsToFill[i],
-    #                         row=cell.row).value = listToPutInTemplate[i]
 
     def generationsCreation(self, saldoWs):
         rangeIter = "A10" + ":" + "A" + str(saldoWs.max_row)
