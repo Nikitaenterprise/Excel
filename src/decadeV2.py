@@ -58,13 +58,12 @@ class Decade(Algorithm):
     def run(self):
         self.getNumberOfDecade()
 
-        # self.naselenie()
-        # self.religion()
-        # self.budget()
-        # self.teploseti()
+        self.naselenie()
+        self.religion()
+        self.budget()
+        self.teploseti()
         self.promishlennost()
         self.forPresident()
-        # self.generations()
         self.template.save(self.template.pathToFile, 
                             "На печать", extension=".xlsx")
         self.deleteFiles()
@@ -265,7 +264,8 @@ class Decade(Algorithm):
         self.generationsCreation(saldoLastMonthWs)
 
         totalData = []
-        dontNeedThis = 0
+        dontNeedThis = []
+        dontNeedThis.append(0)
         for cells in templateWs[rangeIter]:
             for cell in cells:
                 if cell.value != None:
