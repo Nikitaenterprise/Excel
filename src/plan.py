@@ -180,8 +180,7 @@ class FiscalPlan(Algorithm):
             populationRow = cashWB.getFirstCellByCriteria(
                 "1.2. Населення", "C").row
             # Column J contain cash
-            populationColumn = openpyxl.utils.column_index_from_string(
-                str("J"))
+            populationColumn = columnIndexFromString("J")
             populationCash = cashWB.getWs(0).cell(
                 column=populationColumn, row=populationRow).value
         except AttributeError:
@@ -214,8 +213,7 @@ class FiscalPlan(Algorithm):
             teploenergyRow = cashWB.getFirstCellByCriteria(
                 "3.2. Теплоенергетика за прямими договорами", "C").row
             # Column J contain cash
-            teploenergyColumn = openpyxl.utils.column_index_from_string(
-                str("J"))
+            teploenergyColumn = columnIndexFromString("J")
             teploenergyCash = cashWB.getWs(0).cell(
                 column=teploenergyColumn, row=teploenergyRow).value
         except AttributeError:
@@ -234,10 +232,9 @@ class FiscalPlan(Algorithm):
             # Column J contain cash
             kyivEnergoNotEeColumn = teploenergyColumn  # the same column
             # Column E contain names of contracts wich were concluded with companies
-            kyivEnergoNotEeColumnWithNameOfContract = openpyxl.utils.column_index_from_string(
-                str("E"))
+            kyivEnergoNotEeColumnWithNameOfContract = columnIndexFromString("E")
             # Column B contain category number
-            categoryNumberColumn = openpyxl.utils.column_index_from_string(str("B"))
+            categoryNumberColumn = columnIndexFromString("B")
             
             # Here, the contracts wich not contain EE are calculated
             kyivEnergoNotEeCash = 0
@@ -279,16 +276,13 @@ class FiscalPlan(Algorithm):
             industryEeRow = cashWB.getFirstCellByCriteria(
                 "2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
-            industryEeColumnWithCash = openpyxl.utils.column_index_from_string(
-                str("J"))
+            industryEeColumnWithCash = columnIndexFromString("J")
             # Column E contain names of contracts wich were concluded with companies
-            industryEeColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(
-                str("E"))
+            industryEeColumnWithNameOfContracts = columnIndexFromString("E")
             # Column C contain names and categories
-            industryEeColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
-                str("C"))
+            industryEeColumnWithNameOfCompanyOrCategory = columnIndexFromString("C")
             # Column B contain category number
-            categoryNumberColumn = openpyxl.utils.column_index_from_string(str("B"))
+            categoryNumberColumn = columnIndexFromString("B")
 
             industryEeCash = 0
             TEZCash = 0
@@ -369,16 +363,13 @@ class FiscalPlan(Algorithm):
             industryPrRow = cashWB.getFirstCellByCriteria(
                 "2.2. Промисловість за прямими договорами", "C").row
             # Column J contain cash
-            industryPrColumn = openpyxl.utils.column_index_from_string(
-                str("J"))
+            industryPrColumn = columnIndexFromString("J")
             # Column E contain names of contracts wich were concluded with companies
-            industryPrColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(
-                str("E"))
+            industryPrColumnWithNameOfContracts = columnIndexFromString("E")
             # Column C contain names and categories
-            industryPrColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
-                str("C"))
+            industryPrColumnWithNameOfCompanyOrCategory = columnIndexFromString("C")
             # Column B contain category number
-            categoryNumberColumn = openpyxl.utils.column_index_from_string(str("B"))
+            categoryNumberColumn = columnIndexFromString("B")
 
             industryPrCash = 0
             naftogazTradingCash = 0
@@ -441,14 +432,11 @@ class FiscalPlan(Algorithm):
 
         try:
             # Column J contain cash
-            energoGenerationColumn = openpyxl.utils.column_index_from_string(
-                str("J"))
+            energoGenerationColumn = columnIndexFromString("J")
             # Column C contain company name or category
-            energoGenerationColumnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
-                str("C"))
+            energoGenerationColumnWithNameOfCompanyOrCategory = columnIndexFromString("C")
             # Column E contain names of contracts wich were concluded with companies
-            energoGenerationColumnWithNameOfContracts = openpyxl.utils.column_index_from_string(
-                str("E"))
+            energoGenerationColumnWithNameOfContracts = columnIndexFromString("E")
             
             # Column C contain company name or category
             energoGenerationRow = cashWB.getFirstCellByCriteria(
@@ -457,7 +445,7 @@ class FiscalPlan(Algorithm):
             energoGenerationRow += 1
 
             # Column B contain category number
-            categoryNumberColumn = openpyxl.utils.column_index_from_string(str("B"))
+            categoryNumberColumn = columnIndexFromString("B")
 
             energoGenerationCashPR = 0
             energoGenerationCashEE = 0
@@ -501,7 +489,7 @@ class FiscalPlan(Algorithm):
         Returns list
         """
         # Column J contain cash
-        cashColumn = openpyxl.utils.column_index_from_string(str("J"))
+        cashColumn = columnIndexFromString("J")
         try:
             # Column C contain names and categories
             prVatRow = cashWB.getFirstCellByCriteria(
@@ -550,10 +538,9 @@ class FiscalPlan(Algorithm):
             vtvCash = 0
         try:
             # Column C contain names and categories
-            columnWithNameOfCompanyOrCategory = openpyxl.utils.column_index_from_string(
-                str("C"))
+            columnWithNameOfCompanyOrCategory = columnIndexFromString("C")
             # Column B contain category number
-            categoryNumberColumn = openpyxl.utils.column_index_from_string(str("B"))
+            categoryNumberColumn = columnIndexFromString("B")
             transGasVtvCash = 0
             while True:
                 vtvRow += 1
@@ -609,15 +596,15 @@ class FiscalPlan(Algorithm):
 
         for i in range(1, 6):
             self.fiscalPlan.getWs().cell(
-                    column=openpyxl.utils.column_index_from_string("AH"),
+                    column=columnIndexFromString("AH"),
                     row=cellWithDate.row + i).value = lastYearMoney[i-1]
         # UKRTRANSGAS(VTV)
         self.fiscalPlan.getWs().cell(
-                    column=openpyxl.utils.column_index_from_string("AH"),
+                    column=columnIndexFromString("AH"),
                     row = cellWithDate.row + 7).value = lastYearMoney[5]
         # Additional income
         self.fiscalPlan.getWs().cell(
-                    column=openpyxl.utils.column_index_from_string("AH"),
+                    column=columnIndexFromString("AH"),
                     row = cellWithDate.row + 8).value = lastYearMoney[6]
 
         self.fiscalPlan.save(self.fiscalPlan.pathToFile, 

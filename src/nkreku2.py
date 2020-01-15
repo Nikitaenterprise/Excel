@@ -247,7 +247,7 @@ class NKREKU2(Algorithm):
         # Get data from columns T and U from saldo, then divide by 1000
         toOandQ = findInSaldoAllValues(self.saldoEEWs, 
                                         None, 
-                                        ["!2019"], 
+                                        ["!2020"], 
                                         ["T", "U"])
         toOandQ[0] /= 1000
         toOandQ[1] /= 1000

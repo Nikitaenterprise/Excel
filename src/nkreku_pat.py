@@ -73,21 +73,29 @@ class NKREKU_PAT(Algorithm):
                 if cell.value != None:
                     company = cell.value
 
-                    data = self.findInSaldo(saldoWs, company, None, None, whatColumns=["G", "H", "I"])
+                    data = self.findInSaldo(saldoWs, company, 
+                                            None, None, 
+                                            whatColumns=["G", "H", "I"])
                     for i in range(0, len(data)):
                         VTVWs.cell(column=columnList[i], row=cell.row).value = data[i]
 
-                    data = self.findInSaldo(saldoWs, company, None, ["2019"], whatColumns=["K", "L", "S"])
+                    data = self.findInSaldo(saldoWs, company, 
+                                            None, ["2020"], 
+                                            whatColumns=["K", "L", "S"])
                     for i in range(0, len(data)):
                         # i + 4 to shift columns from C D E to G H I
                         VTVWs.cell(column=columnList[i]+4, row=cell.row).value = data[i]
 
-                    data = self.findInSaldo(saldoWs, company, None, ["!2019"], whatColumns=["K", "L", "S"])
+                    data = self.findInSaldo(saldoWs, company, 
+                                            None, ["!2020"], 
+                                            whatColumns=["K", "L", "S"])
                     for i in range(0, len(data)):
                         # i + 4 to shift columns from C D E to K L M
                         VTVWs.cell(column=columnList[i]+8, row=cell.row).value = data[i]
 
-                    data = self.findInSaldo(saldoWs, company, None, None, whatColumns=["J"])
+                    data = self.findInSaldo(saldoWs, company, 
+                                            None, None, 
+                                            whatColumns=["J"])
                     columnP = openpyxl.utils.column_index_from_string("P")
                     VTVWs.cell(column=columnP, row=cell.row).value = data[0]
                     
@@ -96,7 +104,8 @@ class NKREKU_PAT(Algorithm):
         self.deleteFiles()
 
     def findInSaldo(self, saldoSheet, whatToFind: str, 
-                    whatCategory: list, whatResource: list, whatColumns: list, inWhatColumnFind="A"):
+                    whatCategory: list, whatResource: list, 
+                    whatColumns: list, inWhatColumnFind="A"):
         """
         """
         numberOfRows = saldoSheet.max_row
