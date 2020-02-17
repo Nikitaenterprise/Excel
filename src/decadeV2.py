@@ -387,7 +387,9 @@ class Decade(Algorithm):
         # amount of gas in this period
         consumedGas *= self.numberOfDecade/3
         cost *= self.numberOfDecade/3
-
+        # Add this month gas to total
+        consumedGas += consumedGasLastMonth
+        cost += costLastMonth
         
         data1 = findInSaldoAllValues(
                             saldoSheet=saldoWs, 

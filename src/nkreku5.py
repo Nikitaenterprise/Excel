@@ -136,7 +136,10 @@ class NKREKU5(Algorithm):
     
     def section1(self):
         listOfCategories = [
-                            ["ТЕ теплоенергетика"], 
+                            [
+                                "ТЕ теплоенергетика",
+                                "ТЕ (газовий депозит)"
+                            ], 
                             ["БО теплоенергетика"], 
                             ["РО теплоенергетика"], 
                                 [
@@ -171,14 +174,17 @@ class NKREKU5(Algorithm):
 
     def section2(self):
         listOfCategories = [
-                            ["ТЕ теплоенергетика"], 
+                            [
+                                "ТЕ теплоенергетика",
+                                "ТЕ (газовий депозит)"
+                            ], 
                             ["БО теплоенергетика"], 
                             ["РО теплоенергетика"], 
-                                [
+                            [
                                 "НС теплоенергетика",
                                 "КП теплоенергетика", 
                                 "ВТЕ теплоенергетика"
-                                ],
+                            ],
                             ["промисловість"]
                             ]
         columnList = [columnIndexFromString(x) for x in ["E", "F", 
@@ -192,7 +198,7 @@ class NKREKU5(Algorithm):
                                                 ["H", "I", "T", "U"])
             forPreviousYears = findInSaldoAllValues(self.saldoTotalWs,
                                                 listOfCategories[i],
-                                                ["!2020"],
+                                                ["!2019", "!2020"],
                                                 ["T"])
 
             # Group data in one list for simplisity

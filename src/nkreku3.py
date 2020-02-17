@@ -104,7 +104,7 @@ class NKREKU3(Algorithm):
                                             ["H", "I"])
             if tkeCategory[0] != 0 and tkeCategory[0] != None:
                 tkeCost = tkeCategory[1] / tkeCategory[0]
-                tkeCost = tkeCost / 1.2 - 157.19
+                tkeCost = tkeCost / 1.2 - 124.16
             else:
                 tkeCost = 0
             costList.append(tkeCost)
@@ -141,7 +141,7 @@ class NKREKU3(Algorithm):
                                         ["H", "I"])
         if tkeEe[0] != 0 and tkeEe[0] != None:
             tkeEeCost = tkeEe[1] / tkeEe[0]
-            tkeEeCost = tkeEeCost / 1.2 - 157.19
+            tkeEeCost = tkeEeCost / 1.2 - 124.16
         else:
             tkeEeCost = 0
         costList.append(tkeEeCost)
@@ -152,6 +152,5 @@ class NKREKU3(Algorithm):
 
         for i in range(0, len(costList)-1):
             delta = costList[i+1] - costList[i]
-            print(delta)
             if delta >= 0.0001 or delta <= -0.0001:
                 print("Цены не сходятся")
