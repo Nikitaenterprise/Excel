@@ -198,7 +198,7 @@ class NKREKU5(Algorithm):
                                                 ["H", "I", "T", "U"])
             forPreviousYears = findInSaldoAllValues(self.saldoTotalWs,
                                                 listOfCategories[i],
-                                                ["!2019", "!2020"],
+                                                ["!2020", "!2021"],
                                                 ["T"])
 
             # Group data in one list for simplisity

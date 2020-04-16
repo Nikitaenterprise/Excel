@@ -900,10 +900,8 @@ class TKELess(TKE):
                 elif (todayWs.Cells(row, columnEDRPOU).Value == 
                         yestWs.Cells(row+1, columnEDRPOU).Value):
                     # Company deleted
-                    print(bcolors.OKGREEN +\
-                            "Предприятие исчезло из списка:", 
-                            yestWs.Cells(row, columnCompany).Value\
-                            + bcolors.ENDC)
+                    print("Предприятие исчезло из списка:", 
+                            yestWs.Cells(row, columnCompany).Value)
                     yestWs.Rows(row).Delete()
         
         # Incerts column "AS" from yesterday TKE into today TKE
