@@ -149,7 +149,7 @@ class NKREKU5(Algorithm):
                                 ],
                             ["промисловість"]
                             ]
-        columnList = [columnIndexFromString(x) for x in ["G", "H", "I"]]
+        columnList = [columnIndexFromString(x) for x in ["G", "I"]]
         startRow = 43
         # Iterate in 3 months (3 groups of columns)
         for i in range (0, len(self.listWithSaldoWs)):
@@ -160,14 +160,14 @@ class NKREKU5(Algorithm):
                                                     None,
                                                     ["H", "I"])
                 costWithPDV = dataFromSaldo[1] / dataFromSaldo[0]
-                costWithoutPDV = costWithPDV / 1.2
+                #costWithoutPDV = costWithPDV / 1.2
                 # Group in one list
                 dataList = [dataFromSaldo[0], 
-                            costWithoutPDV, 
+                            #costWithoutPDV, 
                             costWithPDV
                             ]
                 # Iterate in one column group in 3 columns
-                for k in range(0, 3):
+                for k in range(0, 2):
                     self.templateWs.cell(column=columnList[k]+3*i,
                                     row=startRow+j).value = dataList[k]
 
