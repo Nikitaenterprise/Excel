@@ -4,8 +4,7 @@ import time
 
 from src.plan import FiscalPlan
 from src.tke import TKE, TKELess
-#from src.decade import Decade
-from src.decadeV2 import Decade
+from src.decade import Decade
 from src.nkreku_pat import NKREKU_PAT
 from src.nkreku_pat_zbut import NKREKU_PAT_ZBUT_VTV_naselenie
 from src.nkreku2 import NKREKU2
@@ -60,7 +59,6 @@ if __name__ == "__main__":
                 killProcess(0)
                 break
             elif what == "3":
-                #alg = Decade(r"Decade", 12)
                 alg = Decade(r"Decade", 5)
                 alg.run()
                 print("Время выполнения :", alg.getTimeOfRun())
