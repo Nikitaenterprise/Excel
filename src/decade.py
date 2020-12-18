@@ -356,14 +356,14 @@ class Decade(Algorithm):
         previousYearDebt = findInSaldoAllValues(
                             saldoSheet=saldoWs, 
                             whatCategory=listOfCategories,
-                            whatResource=["2019"],
+                            whatResource=["2020"],
                             whatColumns=["U"],
                             whatRegion=[region])[0]
 
         data = findInSaldoAllValues(
                             saldoSheet=saldoWs, 
                             whatCategory=listOfCategories,
-                            whatResource=["2020"],
+                            whatResource=["2021"],
                             whatColumns=["H", "I", "T"],
                             whatRegion=[region])
         consumedGas = data[0]
@@ -373,7 +373,7 @@ class Decade(Algorithm):
         tmp = findInSaldoAllValues(
                             saldoSheet=saldoLastMonthWs,
                             whatCategory=listOfCategories,
-                            whatResource=["2020"],
+                            whatResource=["2021"],
                             whatColumns=["H", "I"],
                             whatRegion=[region])
         # Gas amount and gas cost fron start  
@@ -402,10 +402,10 @@ class Decade(Algorithm):
         dataForPresident[0] += data1[0]
         penalty = data1[1]
 
-        debt2020 = findInSaldoAllValues(
+        debtThisYear = findInSaldoAllValues(
                             saldoSheet=saldoWs, 
                             whatCategory=listOfCategories,
-                            whatResource=["2020"],
+                            whatResource=["2021"],
                             whatColumns=["U"],
                             whatRegion=[region])[0]
 
@@ -427,7 +427,7 @@ class Decade(Algorithm):
         else:
             listOfOneRegion.append(0)
         listOfOneRegion.append(totalDebt/1000)
-        listOfOneRegion.append(debt2020/1000)
+        listOfOneRegion.append(debtThisYear/1000)
         
         return listOfOneRegion
 

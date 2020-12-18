@@ -74,7 +74,7 @@ class NKREKU_PAT_ZBUT_VTV_naselenie(Algorithm):
                     data = findInSaldo(saldoWs,
                                         company,
                                         ["населення"],
-                                        ["2019", "2020"],
+                                        ["2020", "2021"],
                                         ["I", "T", "U"])
                     summary.append(data)
 
