@@ -102,16 +102,15 @@ class NKREKU3(Algorithm):
                                             category,
                                             None,
                                             ["H", "I"])
+            TkePrice = 0
             if tkeCategory[0] != 0 and tkeCategory[0] != None:
-                tkeCost = tkeCategory[1] / tkeCategory[0]
-                tkeCost = tkeCost / 1.2 - 124.16
-            else:
-                tkeCost = 0
-            costList.append(tkeCost)
+                TkePrice = tkeCategory[1] / tkeCategory[0]
+                TkePrice = TkePrice / 1.2 - 124.16
+            costList.append(TkePrice)
             self.templateWs.cell(column=columnD, 
                                     row=startRow).value = tkeCategory[0]
             self.templateWs.cell(column=columnE, 
-                                    row=startRow).value = tkeCost
+                                    row=startRow).value = TkePrice
             startRow += 1
         
         # Open saldo with prom and EE contracts 
@@ -133,22 +132,25 @@ class NKREKU3(Algorithm):
         otherTke = findInSaldoAllValues(self.saldoWs,
                                             listOfCat,
                                             None,
-                                            ["H"])
+                                            ["H", "I"])
         # Calculate EE
         tkeEe = findInSaldoAllValues(self.saldoEEWs,
                                         None,
                                         None,
                                         ["H", "I"])
-        if tkeEe[0] != 0 and tkeEe[0] != None:
-            tkeEeCost = tkeEe[1] / tkeEe[0]
-            tkeEeCost = tkeEeCost / 1.2 - 124.16
-        else:
-            tkeEeCost = 0
-        costList.append(tkeEeCost)
+        # Add EE data to other
+        otherTke[0] += tkeEe[0]
+        otherTke[1] += tkeEe[1]
+
+        TkeOthersPrice = 0
+        if otherTke[0] != 0 and otherTke[0] != None:
+            TkeOthersPrice = otherTke[1] / otherTke[0]
+            TkeOthersPrice = TkeOthersPrice / 1.2 - 124.16
+        costList.append(TkeOthersPrice)
         self.templateWs.cell(column=columnD, 
-                            row=startRow).value = tkeEe[0] + otherTke[0]
+                            row=startRow).value = otherTke[0]
         self.templateWs.cell(column=columnE, 
-                            row=startRow).value = tkeEeCost
+                            row=startRow).value = TkeOthersPrice
 
         for i in range(0, len(costList)-1):
             delta = costList[i+1] - costList[i]
