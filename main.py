@@ -2,8 +2,6 @@
 import traceback
 import time
 
-from src.plan import FiscalPlan
-from src.tke import TKE, TKELess
 from src.decade import Decade
 from src.nkreku_pat import NKREKU_PAT
 from src.nkreku_pat_zbut import NKREKU_PAT_ZBUT_VTV_naselenie
@@ -25,9 +23,6 @@ if __name__ == "__main__":
     print("Программа закрывает приложение excel")
     print("Сохраните книги, если они были открыты\n")
     print("Введите:")
-    print("\t1 для фин-плана")
-    print("\t2 для ТКЕ_ПСО")
-    print("\t20 для ТКЕ_ПСО без неработающих предприятий")
     print("\t3 для форм 1-8")
     print("\t4 для формы НКРЭКУ №2")
     print("\t5 для формы НКРЭКУ №3")
@@ -40,25 +35,7 @@ if __name__ == "__main__":
         killProcess(1)
         time.sleep(1)
         try:
-            if what == "1":
-                alg = FiscalPlan(r"FiscalPlan", 6)
-                alg.run()
-                print("Время выполнения :", alg.getTimeOfRun())
-                killProcess(0)
-                break
-            elif what == "2":
-                alg = TKE(r"TKE", 4)
-                alg.run()
-                print("Время выполнения :", alg.getTimeOfRun())
-                killProcess(0)
-                break
-            elif what == "20":
-                alg = TKELess(r"TKE", 5)
-                alg.run()
-                print("Время выполнения :", alg.getTimeOfRun())
-                killProcess(0)
-                break
-            elif what == "3":
+            if what == "3":
                 alg = Decade(r"Decade", 5)
                 alg.run()
                 print("Время выполнения :", alg.getTimeOfRun())

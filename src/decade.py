@@ -356,14 +356,14 @@ class Decade(Algorithm):
         previousYearDebt = findInSaldoAllValues(
                             saldoSheet=saldoWs, 
                             whatCategory=listOfCategories,
-                            whatResource=["2020"],
+                            whatResource=["2021"],
                             whatColumns=["U"],
                             whatRegion=[region])[0]
 
         data = findInSaldoAllValues(
                             saldoSheet=saldoWs, 
                             whatCategory=listOfCategories,
-                            whatResource=["2021"],
+                            whatResource=["2022"],
                             whatColumns=["H", "I", "T"],
                             whatRegion=[region])
         consumedGas = data[0]
@@ -373,7 +373,7 @@ class Decade(Algorithm):
         tmp = findInSaldoAllValues(
                             saldoSheet=saldoLastMonthWs,
                             whatCategory=listOfCategories,
-                            whatResource=["2021"],
+                            whatResource=["2022"],
                             whatColumns=["H", "I"],
                             whatRegion=[region])
         # Gas amount and gas cost fron start  
@@ -405,7 +405,7 @@ class Decade(Algorithm):
         debtThisYear = findInSaldoAllValues(
                             saldoSheet=saldoWs, 
                             whatCategory=listOfCategories,
-                            whatResource=["2021"],
+                            whatResource=["2022"],
                             whatColumns=["U"],
                             whatRegion=[region])[0]
 

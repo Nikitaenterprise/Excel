@@ -181,7 +181,7 @@ class NKREKU2(Algorithm):
         for i in range(0, 4):
             toWrite = findInSaldoAllValues(self.saldoWs, 
                                             listOfCategories[i], 
-                                            ["!2021", "!2022"], 
+                                            ["!2022", "!2023"], 
                                             ["T", "U"])
             self.templateWs.cell(column=columnO, row=startRow+i).value =\
                         toWrite[0] / 1000
@@ -247,7 +247,7 @@ class NKREKU2(Algorithm):
         # Get data from columns T and U from saldo, then divide by 1000
         toOandQ = findInSaldoAllValues(self.saldoEEWs, 
                                         None, 
-                                        ["!2021", "!2022"], 
+                                        ["!2022", "!2023"], 
                                         ["T", "U"])
         toOandQ[0] /= 1000
         toOandQ[1] /= 1000

@@ -81,14 +81,14 @@ class NKREKU_PAT(Algorithm):
                         VTVWs.cell(column=columnList[i], row=cell.row).value = data[i]
 
                     data = self.findInSaldo(saldoWs, company, 
-                                            None, ["2021"], 
+                                            None, ["2022"], 
                                             whatColumns=["K", "L", "S"])
                     for i in range(0, len(data)):
                         # i + 4 to shift columns from C D E to G H I
                         VTVWs.cell(column=columnList[i]+4, row=cell.row).value = data[i]
 
                     data = self.findInSaldo(saldoWs, company, 
-                                            None, ["!2021"], 
+                                            None, ["!2022"], 
                                             whatColumns=["K", "L", "S"])
                     for i in range(0, len(data)):
                         # i + 4 to shift columns from C D E to K L M
