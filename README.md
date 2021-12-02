@@ -1,2 +1,2 @@
 # Excel
- Repo for python program wich works with excel files
+ Repo for python program which works with excel files
